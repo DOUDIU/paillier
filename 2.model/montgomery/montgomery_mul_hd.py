@@ -387,35 +387,48 @@ def fastExpMod(b, e, m):
     return result
 
 def data_seperate_printf(data,nbit,n,order):#0 reverse,1 normal
+    RESULT_LOG = open("result_log.txt",'a',encoding="utf-8")
     if order==0:
+        print('--------------------------------------------------',end='\n',file=RESULT_LOG)
         for i in range(n):
-            print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+        print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     else:
+        print('--------------------------------------------------',end='\n',file=RESULT_LOG)
         for i in range(n-1,-1,-1):
-            print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+        print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     print('\n')
 
 def RSA2048_test(xx,yy,p,nbit):
+    
+    RESULT_LOG = open("result_log.txt",'w').close()
 
     result0 = fastExpMod(xx,yy,p)   
     print('mont_r2mm_hd():\n0x{:x}\n'.format(result0))
 
     rou = fastExpMod(2,2*nbit,p)
-    data_seperate_printf(rou,128,nbit//128,1)
+    # data_seperate_printf(rou,128,nbit//128,1)
 
     #two calculation methods are equivalent for result
     # result = mont_r2mm(rou,1,p,nbit)
     result = fastExpMod(2,nbit,p)
+    # data_seperate_printf(result,128,nbit//128,1)
 
-    data_seperate_printf(result,128,nbit//128,1)
     result2 = mont_r2mm(xx,rou,p,nbit)
+    # data_seperate_printf(result2,128,nbit//128,1)
 
     for(i) in range(nbit-1,-1,-1):
         result = mont_r2mm(result,result,p,nbit)
+        data_seperate_printf(result,128,nbit//128,1)
         if((yy>>i)&1==1):
             result = mont_r2mm(result,result2,p,nbit)
+            data_seperate_printf(result,128,nbit//128,1)
         num = (yy>>i)&1
     result = mont_r2mm(result,1,p,nbit)
+    data_seperate_printf(result,128,nbit//128,1)
     
     if result0==result:
         print('mont_iddmm()==x*y*r^(-1)modm  match!')
@@ -438,20 +451,16 @@ def main():
 
 
     # data_seperate_printf(m,128,k//128,1)
-    beta=2**k
-    p1=((-1*(mod_inv(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
-    print('m1=(-1*(mod_inv(m,2**K)))%2**K:\n0x{:x}\n'.format(p1))
+    # beta=2**k
+    # p1=((-1*(mod_inv(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
+    # print('m1=(-1*(mod_inv(m,2**K)))%2**K:\n0x{:x}\n'.format(p1))
 
-    # RSA2048_test(x,y,m,k)
+    RSA2048_test(x,y,m,k)
 
     return 0
 
 if __name__=='__main__':
     main()
-
-
-    
-
 
     # k = 2048
     # x = 0xABA5E025B607AA14F7F1B8CC88D6EC01C2D17C536508E7FA10114C9437D9616C9E1C689A4FC54744FA7DFE66D6C2FCF86E332BFD6195C13FE9E331148013987A947D9556A27A326A36C84FB38BFEFA0A0FFA2E121600A4B6AA4F9AD2F43FB1D5D3EB5EABA13D3B382FED0677DF30A089869E4E93943E913D0DC099AA320B8D8325B2FC5A5718B19254775917ED48A34E86324ADBC8549228B5C7BEEEFA86D27A44CEB204BE6F315B138A52EC714888C8A699F6000D1CD5AB9BF261373A5F14DA1F568BE70A0C97C2C3EFF0F73F7EBD47B521184DC3CA932C91022BF86DD029D21C660C7C6440D3A3AE799097642F0507DFAECAC11C2BD6941CBC66CEDEEAB744

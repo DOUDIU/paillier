@@ -158,8 +158,8 @@ mmp_iddmm_pe #(
     ,   .uj                 ( uj     [K-1  :0]      )
 );
 mm_iddmm_sub #(
-    .K ( K ),
-    .N ( N )
+    .K                      ( K                     ),
+    .N                      ( N                     )
 )mm_iddmm_sub_0 (
         .clk                ( clk                   )
     ,   .rst_n              ( rst_n                 )

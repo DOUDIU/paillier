@@ -42,7 +42,7 @@ module simple_ram#(
     input       [widthad-1:0]   rdaddress,
     output reg  [width-1:0]     q
 );
-
+integer i;
 localparam f=(deep==0)?(2**widthad):deep;
 (* ram_style = "distributed" *) reg [width-1:0] mem [0:f-1];
 // Xilinx feature,force LUT RAMs
@@ -50,7 +50,14 @@ localparam f=(deep==0)?(2**widthad):deep;
 
 
 initial begin
-    $readmemh(filename,mem);
+    if(filename == "none") begin
+        for(i = 0; i < f; i = i + 1) begin
+            mem[i]  <=  0;
+        end
+    end
+    else begin
+        $readmemh(filename,mem);
+    end
 end
 
 always @(posedge clk) begin

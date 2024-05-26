@@ -34,19 +34,20 @@ module me_iddmm_top#(
     ,   input       [K-1:0]     me_x
     ,   input                   me_x_valid
 
+    ,   input       [K-1:0]     me_y
+    ,   input                   me_y_valid
+
     ,   output      [K-1:0]     me_result   
     ,   output                  me_valid
 );
 
-wire    [K*N-1  : 0]    me_y                        ;
+reg     [K*N-1  : 0]    me_y_storage             = 0;
 wire    [K-1    : 0]    me_m            [N-1:0]     ;
 wire    [K-1    : 0]    me_m1                       ;
 reg     [K-1    : 0]    rou             [N-1:0]     ;
 reg     [K-1    : 0]    result          [N-1:0]     ;
 reg     [K-1    : 0]    result_backup   [N-1:0]     ;
 
-
-assign  me_y        =   2048'hD091BE9D9A4E98A172BD721C4BC50AC3F47DAA31522DB869EB6F98197E63535636C8A6F0BA2FD4C154C762738FBC7B38BDD441C5B9A43B347C5B65CFDEF4DCD355E5E6F538EFBB1CC161693FA2171B639A2967BEA0E3F5E429D991FE1F4DE802D2A1D600702E7D517B82BFFE393E090A41F57E966A394D34297842552E15550B387E0E485D81C8CCCAAD488B2C07A1E83193CE757FE00F3252E4BD670668B1728D73830F7AE7D1A4C02E7AFD913B3F011782422F6DE4ED0EF913A3A261176A7D922E65428AE7AAA2497BB75BFC52084EF9F74190D0D24D581EB0B3DAC6B5E44596881200B2CE5D0FB2831D65F036D8E30D5F42BECAB3A956D277E3510DF8CBA9;
 assign  me_m1       =   128'h328289a3442afa98c0d743199fd3cc59;//m1=(-1*(mod_inv(m,2**K)))%2**K
 assign  me_m        =   '{
     128'hd27bf9f01e2a901db957879f45f69733,
@@ -106,7 +107,7 @@ initial begin
     128'h5a44e50c031c206ae93f36a3643eb449,
     128'ha2e3acf873f937e53f0c12f279cbd9f1,
     128'hb84087f30b0b669f7b208cd6cae6bbe9
-    };//1*2^(K) mod m
+    };//2^(K) mod m
 end
 
 initial begin
@@ -127,7 +128,7 @@ initial begin
     128'h5a44e50c031c206ae93f36a3643eb449,
     128'ha2e3acf873f937e53f0c12f279cbd9f1,
     128'hb84087f30b0b669f7b208cd6cae6bbe9
-    };//1*2^(K) mod m
+    };//2^(K) mod m
 end
 
 reg     [4              : 0]    current_state           ;  
@@ -189,6 +190,18 @@ always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
 end
 
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        me_y_storage    <=  0;
+    end
+    // else if(me_start) begin
+    //     me_y_storage    <=  0;
+    // end
+    else if(me_y_valid) begin
+        me_y_storage    <=  {me_y,me_y_storage[K+:(K*N-K)]};
+    end
+end
+
 always@(posedge clk or negedge rst_n)begin
     if(!rst_n)begin
         current_state   <=  IDLE;
@@ -197,7 +210,7 @@ always@(posedge clk or negedge rst_n)begin
         wr_ena_x        <=  0;
         wr_ena_y        <=  0;
         wr_ena_m        <=  0;
-        yy              <=  me_y;
+        yy              <=  0;
         loop_counter    <=  0;
         result_valid    <=  0;
         result_out      <=  0;
@@ -209,7 +222,6 @@ always@(posedge clk or negedge rst_n)begin
         case (current_state)
             IDLE:begin
                 task_req          <=  0;
-                yy                <=  me_y;
                 loop_counter      <=  0;
                 result_valid      <=  0;
                 result_out        <=  0;
@@ -252,6 +264,7 @@ always@(posedge clk or negedge rst_n)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
                     current_state     <=  state_1_0;
+                    yy                <=  me_y_storage;
                 end
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;

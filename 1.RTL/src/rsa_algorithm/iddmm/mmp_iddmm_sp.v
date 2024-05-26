@@ -96,137 +96,135 @@ always@(posedge clk)begin
 end
 //----------------------------------------------------------------------------------------------------------
 mmp_iddmm_ctrl #(
-        .L1 ( L1 )
-    ,   .L2 ( L2 )
-    ,   .L3 ( L3 )
-    ,   .L4 ( L4 )
-    ,   .D5 ( D5 )
-    ,   .K  ( K  )
-    ,   .N  ( N  )
-)mmp_iddmm_ctrl_0 (
-    .clk                     ( clk              ),
-    .rst_n                   ( rst_n            ),
-    .task_req                ( task_req         ),
-    // TO PE
-    .ctl_carry_clr           ( ctl_carry_clr    ),
-    .ctl_carry_ena           ( ctl_carry_ena    ),
-    .ctl_carry_sel           ( ctl_carry_sel    ),
-    .ctl_c_pre_clr           ( ctl_c_pre_clr    ),
-    .ctl_c_pre_ena           ( ctl_c_pre_ena    ),
-    .ctl_q_ena               ( ctl_q_ena        ),
-    .carry                   ( carry            ),
-    // TO SUB 
-    .comp_req                ( comp_req         ),
-    .comp_end                ( comp_end         ),
-    // REF
-    .ref_an                  ( an               ),
-    .ref_addr_rdx            ( addr_rdx         ),
-    .ref_addr_rdy            ( addr_rdy         ),
-    .ref_addr_rdm            ( addr_rdm         ),
-    .ref_addr_rda            ( addr_rda         ),
-    .ref_wr_n                ( wr_n             ),
-    .ref_wr_a_addr           ( wr_a_addr        ),
-    .ref_wr_a_ena            ( wr_a_ena         )
+        .L1                 ( L1                    )
+    ,   .L2                 ( L2                    )
+    ,   .L3                 ( L3                    )
+    ,   .L4                 ( L4                    )
+    ,   .D5                 ( D5                    )
+    ,   .K                  ( K                     )
+    ,   .N                  ( N                     )
+)mmp_iddmm_ctrl_0 ( 
+        .clk                ( clk                   )
+    ,   .rst_n              ( rst_n                 )
+    ,   .task_req           ( task_req              )
+    // TO PE        
+    ,   .ctl_carry_clr      ( ctl_carry_clr         )
+    ,   .ctl_carry_ena      ( ctl_carry_ena         )
+    ,   .ctl_carry_sel      ( ctl_carry_sel         )
+    ,   .ctl_c_pre_clr      ( ctl_c_pre_clr         )
+    ,   .ctl_c_pre_ena      ( ctl_c_pre_ena         )
+    ,   .ctl_q_ena          ( ctl_q_ena             )
+    ,   .carry              ( carry                 )
+    // TO SUB       
+    ,   .comp_req           ( comp_req              )
+    ,   .comp_end           ( comp_end              )
+    // REF      
+    ,   .ref_an             ( an                    )
+    ,   .ref_addr_rdx       ( addr_rdx              )
+    ,   .ref_addr_rdy       ( addr_rdy              )
+    ,   .ref_addr_rdm       ( addr_rdm              )
+    ,   .ref_addr_rda       ( addr_rda              )
+    ,   .ref_wr_n           ( wr_n                  )
+    ,   .ref_wr_a_addr      ( wr_a_addr             )
+    ,   .ref_wr_a_ena       ( wr_a_ena              )
 );
 mmp_iddmm_pe #(
-        .L1                  ( L1 )
-    ,   .L2                  ( L2 )
-    ,   .L3                  ( L3 )
-    ,   .L4                  ( L4 )
-    ,   .D5                  ( D5 )
-    ,   .MULT_METHOD         (MULT_METHOD)
-    ,   .ADD1_METHOD         (ADD1_METHOD)
-    ,   .ADD2_METHOD         (ADD2_METHOD)
-    ,   .K                   ( K )
-    ,   .N                   ( N )
+        .L1                 ( L1                    )
+    ,   .L2                 ( L2                    )
+    ,   .L3                 ( L3                    )
+    ,   .L4                 ( L4                    )
+    ,   .D5                 ( D5                    )
+    ,   .MULT_METHOD        (MULT_METHOD            )
+    ,   .ADD1_METHOD        (ADD1_METHOD            )
+    ,   .ADD2_METHOD        (ADD2_METHOD            )
+    ,   .K                  ( K                     )
+    ,   .N                  ( N                     )
 )mmp_iddmm_pe_0 (
-    .clk                     ( clk                  ),
-    .rst_n                   ( rst_n                ),
+        .clk                ( clk                   )
+    ,   .rst_n              ( rst_n                 )
     // PE
-    .xj                      ( xj                   ),
-    .yi                      ( yi     [K-1  :0]     ),
-    .mj                      ( (wr_n)?  0   :mj     ),// caution
-    .m1                      ( m1     [K-1  :0]     ),
-    .aj                      ( (wr_n)?  0   :aj     ),// caution
-    .ctl_carry_clr           ( ctl_carry_clr        ),// (j==0 && i==0);
-    .ctl_carry_ena           ( ctl_carry_ena        ),// (j==N);        
-    .ctl_carry_sel           ( ctl_carry_sel        ),        
-    .ctl_c_pre_clr           ( ctl_c_pre_clr        ),// (j==0 && j00); 
-    .ctl_c_pre_ena           ( ctl_c_pre_ena        ),// (jref);will be used if D5==1
-    .ctl_q_ena               ( ctl_q_ena            ),// (j==0 && j00); 
-    .carry                   ( carry                ),
-    .uj                      ( uj     [K-1  :0]     )
+    ,   .xj                 ( xj                    )
+    ,   .yi                 ( yi     [K-1  :0]      )
+    ,   .mj                 ( (wr_n)?  0   :mj      )// caution
+    ,   .m1                 ( m1     [K-1  :0]      )
+    ,   .aj                 ( (wr_n)?  0   :aj      )// caution
+    ,   .ctl_carry_clr      ( ctl_carry_clr         )// (j==0 && i==0);
+    ,   .ctl_carry_ena      ( ctl_carry_ena         )// (j==N);        
+    ,   .ctl_carry_sel      ( ctl_carry_sel         )        
+    ,   .ctl_c_pre_clr      ( ctl_c_pre_clr         )// (j==0 && j00); 
+    ,   .ctl_c_pre_ena      ( ctl_c_pre_ena         )// (jref);will be used if D5==1
+    ,   .ctl_q_ena          ( ctl_q_ena             )// (j==0 && j00); 
+    ,   .carry              ( carry                 )
+    ,   .uj                 ( uj     [K-1  :0]      )
 );
 mm_iddmm_sub #(
     .K ( K ),
     .N ( N )
 )mm_iddmm_sub_0 (
-    .clk                     ( clk                       ),
-    .rst_n                   ( rst_n                     ),
+        .clk                ( clk                   )
+    ,   .rst_n              ( rst_n                 )
     // SUB
-    .task_req                ( comp_req                  ),
-    .task_end                ( comp_end                  ),
-    .res                     ( comp_res                  ),
-    .res_val                 ( comp_val                  ),
+    ,   .task_req           ( comp_req              )
+    ,   .task_end           ( comp_end              )
+    ,   .res                ( comp_res              )
+    ,   .res_val            ( comp_val              )
     // TO MEMORY
-    .clra_mem                ( clra_mem                  ),
-    .clra_wren               ( clra_wren                 ),
-    .clra_addr               ( clra_addr                 ),
-    .aj                      ( aj        [K-1       :0]  ),
-    .an                      ( {{127{1'd0}},an}          ),
-    .mj                      ( mj        [K-1       :0]  ),
-    .addr_a                  ( addr_compa[5-1       :0]  ),
-    .addr_m                  ( addr_compm[5-1       :0]  )
+    ,   .clra_mem           ( clra_mem              )
+    ,   .clra_wren          ( clra_wren             )
+    ,   .clra_addr          ( clra_addr             )
+    ,   .aj                 ( aj        [K-1    :0] )
+    ,   .an                 ( {{127{1'd0}},an}      )
+    ,   .mj                 ( mj        [K-1    :0] )
+    ,   .addr_a             ( addr_compa[5-1    :0] )
+    ,   .addr_m             ( addr_compm[5-1    :0] )
 );
 //----------------------------------------------------------------------------------------------------------
 simple_ram#(
-    .width                   ( K                ),
-    .widthad                 ( ADDR_W+1         ),//0-63,0-32 will be used
-    .filename                ( "E:/github/fpga_project/RSA2048/1.RTL/source/rsa_algorithm/iddmm/x.mem")
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W+1          )//0-63,0-32 will be used
+    // ,   .filename           ( "x.mem"           )
 )simple_ram_x(//caution:>>>>> addr32 must be 0 <<<<<
-    .clk                     ( clk              ),
-    .wraddress               ( {1'd0,wr_addr}   ),//0-31
-    .wren                    ( wr_ena[0]        ),
-    .data                    ( wr_x             ),
-    .rdaddress               ( addr_rdx         ),//0-32 will be read out
-    .q                       ( xj               )
+        .clk                ( clk               )
+    ,   .wraddress          ( {1'd0,wr_addr}    )//0-31
+    ,   .wren               ( wr_ena[0]         )
+    ,   .data               ( wr_x              )
+    ,   .rdaddress          ( addr_rdx          )//0-32 will be read out
+    ,   .q                  ( xj                )
 );
 simple_ram#(
-    .width                   ( K                ),
-    .widthad                 ( ADDR_W           ),
-    .filename                ( "E:/github/fpga_project/RSA2048/1.RTL/source/rsa_algorithm/iddmm/y.mem")
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W            )
+    // ,   .filename           ( "y.mem"           )
 )simple_ram_y(
-    .clk                     ( clk              ),
-    .wraddress               ( wr_addr          ),
-    .wren                    ( wr_ena[1]        ),
-    .data                    ( wr_y             ),
-    .rdaddress               ( addr_rdy         ),
-    .q                       ( yi               )
+        .clk                ( clk               )
+    ,   .wraddress          ( wr_addr           )
+    ,   .wren               ( wr_ena[1]         )
+    ,   .data               ( wr_y              )
+    ,   .rdaddress          ( addr_rdy          )
+    ,   .q                  ( yi                )
 );
 simple_ram#(
-    .width                   ( K                ),
-    .widthad                 ( ADDR_W           ),
-    .filename                ( "E:/github/fpga_project/RSA2048/1.RTL/source/rsa_algorithm/iddmm/m.mem")
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W            )
+    // ,   .filename           ( "m.mem"           )
 )simple_ram_m(
-    .clk                     ( clk              ),
-    .wraddress               ( wr_addr          ),
-    .wren                    ( wr_ena[2]        ),
-    .data                    ( wr_m             ),
-    .rdaddress               ( (comp_req)?addr_compm:addr_rdm),
-    .q                       ( mj               )
+        .clk                ( clk               )
+    ,   .wraddress          ( wr_addr           )
+    ,   .wren               ( wr_ena[2]         )
+    ,   .data               ( wr_m              )
+    ,   .rdaddress          ( (comp_req)?addr_compm:addr_rdm)
+    ,   .q                  ( mj                )
 );
 simple_ram#(
-    .width                   ( K                ),
-    .widthad                 ( ADDR_W           ),
-    .filename                ( "E:/github/fpga_project/RSA2048/1.RTL/source/rsa_algorithm/iddmm/a0.mem")
-    // .filename                ("a0.mem")
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W            )
 )simple_ram_a(//a(0)~a(n-1)
-    .clk                     ( clk                                ),
-    .wraddress               ( (clra_mem)?clra_addr   :wr_a_addr  ),
-    .wren                    ( (clra_mem)?clra_wren   :wr_a_ena   ),
-    .data                    ( (clra_mem)?{K{1'd0}}   :uj         ),
-    .rdaddress               ( (comp_req)?addr_compa  :addr_rda   ),
-    .q                       ( aj                                 )
+        .clk                ( clk                                )
+    ,   .wraddress          ( (clra_mem)?clra_addr   :wr_a_addr  )
+    ,   .wren               ( (clra_mem)?clra_wren   :wr_a_ena   )
+    ,   .data               ( (clra_mem)?{K{1'd0}}   :uj         )
+    ,   .rdaddress          ( (comp_req)?addr_compa  :addr_rda   )
+    ,   .q                  ( aj                                 )
 );
 `ifdef _VIEW_UJ_
 always@(posedge clk)begin

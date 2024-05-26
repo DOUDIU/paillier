@@ -3,16 +3,21 @@
 from paillier.paillier import *
 
 print ("Generating keypair...")
-priv, pub = generate_keypair(512)
+priv, pub = generate_keypair(1024)
 
-x = 321231234
-print ("x =", x)
-print ("Encrypting x...")
-cx = encrypt_optimize(pub, x)
-print ("cx =", cx)
-print ("Decrypting cz...")
-z = decrypt(priv, pub, cx)
-print ("x =", z)
+print ("Public key n: ", pub.n)
+print ("Public key n_sq: ", pub.n_sq)
+print ("Public key g: ", pub.g)
+
+
+# x = 321231234
+# print ("x =", x)
+# print ("Encrypting x...")
+# cx = encrypt_optimize(pub, x)
+# print ("cx =", cx)
+# print ("Decrypting cz...")
+# z = decrypt(priv, pub, cx)
+# print ("x =", z)
 
 # y = 5
 # print ("y =", y)

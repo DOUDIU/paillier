@@ -66,6 +66,9 @@ def encrypt(pub, plain):
         r = primes.generate_prime(int(round(math.log(pub.n, 2))))
         if r > 0 and r < pub.n:
             break
+    # bits = int(round(math.log(pub.n, 2)))
+    # r = (primes.random.randrange(2 ** (bits-1) + 1, 2 ** bits) | 1) + 1
+    print ("r =", r)
     x = pow(r, pub.n, pub.n_sq)
     cipher = (pow(pub.g, plain, pub.n_sq) * x) % pub.n_sq
     return cipher

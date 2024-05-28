@@ -51,7 +51,7 @@ integer seed=1;
 reg   clk                                  = 0 ;
 reg   rst_n                                = 0 ;
 reg   task_req                             = 0 ;
-reg   wr_ena                               = 0 ;
+reg   [2:0]    wr_ena                      = 0 ;
 reg   [$clog2(N)-1:0]  wr_addr             = 0 ;
 wire  [K-1:0]  wr_x;
 wire  [K-1:0]  wr_y;
@@ -140,7 +140,7 @@ always@(posedge clk)begin
         0:begin
             if (start_wr_ram) begin
                 st      <=  st+1;
-                wr_ena  <=  1;
+                wr_ena  <=  3'b111;
                 wr_addr <=  'd0;
                 wr_m1   <=  wr_m1_;
             end

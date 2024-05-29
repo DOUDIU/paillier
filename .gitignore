@@ -1,6 +1,7 @@
 2.model/*
 !2.model/paillier-master
 !2.model/montgomery
+!2.model/python-paillier-master
 
 3.vivado/*
 !3.vivado/*.xpr

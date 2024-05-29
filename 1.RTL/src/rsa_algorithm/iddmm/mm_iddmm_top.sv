@@ -280,29 +280,30 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             STA_MM_Y_ROU:begin
+                wr_x                <=  mm_y_storage[wr_addr*K+:K];
+                wr_y                <=  rou[wr_addr];
+                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
                 else begin
                     wr_addr             <=  0;
                 end
-                wr_x                <=  mm_y_storage[wr_addr*K+:K];
-                wr_y                <=  rou[wr_addr];
-                wr_m                <=  mm_m[wr_addr];
-                if(wr_addr_d1 < N - 1)begin
+                if((wr_addr_d1 < N - 1)&!task_req)begin
                     wr_ena_x            <=  1;
                     wr_ena_y            <=  1;
                     wr_ena_m            <=  1;
                 end 
                 else begin
-                    task_req            <=  1;
                     wr_ena_x            <=  0;
                     wr_ena_y            <=  0;
                     wr_ena_m            <=  0;
                 end
-                if(task_end) begin
+                if((wr_addr_d1 == N - 1))begin
+                    task_req            <=  1;
+                end
+                else if(task_end) begin
                     task_req            <=  0;
-                    wr_addr             <=  0;
                 end
                 if(task_grant) begin
                     wr_cnt                  <=  wr_cnt  +  1;
@@ -310,30 +311,30 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             STA_MM_R1_R2:begin
+                wr_x                <=  result_x_rou[wr_addr];
+                wr_y                <=  result_y_rou[wr_addr];
+                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
                 else begin
                     wr_addr             <=  0;
                 end
-                if(wr_addr_d1 < N - 1)begin
-                    wr_x                <=  result_x_rou[wr_addr];
-                    wr_y                <=  result_y_rou[wr_addr];
-                    wr_m                <=  mm_m[wr_addr];
+                if((wr_addr_d1 < N - 1)&!task_req)begin
                     wr_ena_x            <=  1;
                     wr_ena_y            <=  1;
                     wr_ena_m            <=  1;
                 end 
                 else begin
-                    task_req            <=  1;
-                    // wr_addr             <=  0;
                     wr_ena_x            <=  0;
                     wr_ena_y            <=  0;
                     wr_ena_m            <=  0;
                 end
-                if(task_end) begin
+                if((wr_addr_d1 == N - 1))begin
+                    task_req            <=  1;
+                end
+                else if(task_end) begin
                     task_req            <=  0;
-                    wr_addr             <=  0;
                 end
                 if(task_grant) begin
                     wr_cnt                  <=  wr_cnt  +  1;
@@ -341,33 +342,33 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             STA_MM_R3_1:begin
+                wr_x                <=  result_r1_r2[wr_addr];
+                wr_y                <=  wr_addr == 0 ? 128'h1 : 128'h0;
+                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
                 else begin
                     wr_addr             <=  0;
                 end
-                if(wr_addr_d1 < N - 1)begin
-                    wr_x                <=  result_r1_r2[wr_addr];
-                    wr_y                <=  wr_addr_d1 == 0 ? 128'h1 : 128'h0;
-                    wr_m                <=  mm_m[wr_addr];
+                if((wr_addr_d1 < N - 1)&!task_req)begin
                     wr_ena_x            <=  1;
                     wr_ena_y            <=  1;
                     wr_ena_m            <=  1;
                 end 
                 else begin
-                    task_req            <=  1;
-                    // wr_addr             <=  0;
                     wr_ena_x            <=  0;
                     wr_ena_y            <=  0;
                     wr_ena_m            <=  0;
                 end
-                if(task_end) begin
+                if((wr_addr_d1 == N - 1))begin
+                    task_req            <=  1;
+                end
+                else if(task_end) begin
                     task_req            <=  0;
-                    wr_addr             <=  0;
                 end
                 result_out          <=  task_res;
-                result_valid        <=  task_end;
+                result_valid        <=  task_grant;
             end
             default:begin
             end

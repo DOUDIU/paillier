@@ -248,6 +248,7 @@ initial begin
         PAILLIER_ENC_RESULT      = {enc_out_data,PAILLIER_ENC_RESULT[(K*N-1):K]};
     end
     $display("paillier encoder result: \n0x%x\n",PAILLIER_ENC_RESULT);
+    #100;
     $stop;
 
 end

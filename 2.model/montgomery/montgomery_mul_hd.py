@@ -491,7 +491,7 @@ def main():
 
 if __name__=='__main__':
     # main()
-    montgomery_mul_test()
+    montgomery_mul_test() 
 
 
 # result0              :

@@ -17,6 +17,13 @@ module paillier_top#(
     ,   input       [K-1:0]     enc_n_data
     ,   input                   enc_n_valid
 
+    ,   input       [K-1:0]     dec_c_data
+    ,   input                   dec_c_valid
+    ,   input       [K-1:0]     dec_lambda_data
+    ,   input                   dec_lambda_valid
+    ,   input       [K-1:0]     dec_n_data
+    ,   input                   dec_n_valid
+
     ,   output  reg [K-1:0]     enc_out_data
     ,   output  reg             enc_out_valid
 );
@@ -105,6 +112,14 @@ always@(*) begin
                 state_next  =   STA_ENCRYPTION_MM;
             end
         end
+        STA_DECRYPTION_ME: begin
+            if(me_result_0_cnt == N - 1) begin
+                state_next  =   STA_DECRYPTION_L;
+            end
+        end
+        STA_DECRYPTION_L: begin
+
+        end
         default: begin
             state_next = STA_IDLE;
         end
@@ -192,6 +207,17 @@ always@(posedge clk or negedge rst_n) begin
                 end
                 enc_out_data        <=  mm_result_0;
                 enc_out_valid       <=  mm_valid_0;
+            end
+            STA_DECRYPTION_ME: begin
+                me_start_0          <=      0;
+                me_x_0              <=      dec_c_data;
+                me_x_valid_0        <=      dec_c_valid;
+                me_y_0              <=      dec_lambda_data;
+                me_y_valid_0        <=      dec_lambda_valid;
+                if(me_valid_0) begin
+                    me_result_0_storage[me_result_0_cnt]    <=      me_result_0;
+                    me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                end
             end
             default: begin
             end

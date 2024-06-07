@@ -9,7 +9,7 @@
 `timescale  1ns / 1ps
 // `define _VIEW_WAVEFORM_
 
-`define _RSA2048
+`define _RSA4096
 module mmp_iddmm_sp_tb;
 //---------------------------------------------------------------------------------------------------
 
@@ -73,9 +73,9 @@ begin
     #(PERIOD*2) rst_n  =  1;
 end
 //---------------------------------------------------------------------------------------------------
-parameter MULT_METHOD  = "COMMON";//"TRADITION" ;// | COMMON ? | TRADITION 10| VEDIC8    8|
-parameter ADD1_METHOD  = "COMMON";//"3-2_PIPE1" ;// | COMMON ? | 3-2_PIPE1 1 | 3-2_PIPE2 2|
-parameter ADD2_METHOD  = "COMMON";//"3-2_DELAY2";// | COMMON   | 3-2_DELAY2  |            |
+parameter MULT_METHOD  = "COMMON"   ;// | COMMON | TRADITION 10 | VEDIC8    8 |
+parameter ADD1_METHOD  = "COMMON"   ;// | COMMON | 3-2_PIPE1 1  | 3-2_PIPE2 2 |
+parameter ADD2_METHOD  = "COMMON"   ;// | COMMON | 3-2_DELAY2   |             |
 //---------------------------------------------------------------------------------------------------
 parameter MULT_LATENCY = MULT_METHOD == "COMMON"      ?0 :
                          MULT_METHOD == "TRADITION"   ?10:
@@ -99,13 +99,13 @@ end
 //---------------------------------------------------------------------------------------------------
 
 mmp_iddmm_sp #(
-    .MULT_METHOD  ( MULT_METHOD  ),
-    .ADD1_METHOD  ( ADD1_METHOD  ),
-    .ADD2_METHOD  ( ADD2_METHOD  ),
-    .MULT_LATENCY ( MULT_LATENCY ),        
-    .ADD1_LATENCY ( ADD1_LATENCY ),
-    .K            ( K ),
-    .N            ( N ) 
+    .MULT_METHOD  ( MULT_METHOD     ),
+    .ADD1_METHOD  ( ADD1_METHOD     ),
+    .ADD2_METHOD  ( ADD2_METHOD     ),
+    .MULT_LATENCY ( MULT_LATENCY    ),        
+    .ADD1_LATENCY ( ADD1_LATENCY    ),
+    .K            ( K               ),
+    .N            ( N               ) 
 )mmp_iddmm_sp_0 (
     .clk                     ( clk                        ),
     .rst_n                   ( rst_n                      ),
@@ -309,22 +309,24 @@ task match_test;
         $display("---------------------------------------------");
     end
 endtask 
-initial
-begin
-    $display("---------------------------------------------");
-    `ifdef _VIEW_WAVEFORM_
-    $dumpfile("wave.vcd");      
-    $dumpvars(0,mmp_iddmm_sp_tb);  
-    #(100)
-    run_iddmm;
-    `else
-    while(1)begin
-        match_test;
-    end
-    `endif
-    $display("---------------------------------------------");
-    #(1000)
+
+initial begin
+    match_test;
     $finish;
+    // $display("---------------------------------------------");
+    // `ifdef _VIEW_WAVEFORM_
+    // $dumpfile("wave.vcd");      
+    // $dumpvars(0,mmp_iddmm_sp_tb);  
+    // #(100)
+    // run_iddmm;
+    // `else
+    // while(1)begin
+    //     match_test;
+    // end
+    // `endif
+    // $display("---------------------------------------------");
+    // #(1000)
+    // $finish;
 end
 
 endmodule

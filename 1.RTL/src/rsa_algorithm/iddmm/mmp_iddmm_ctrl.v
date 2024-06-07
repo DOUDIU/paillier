@@ -7,8 +7,7 @@
 *   Author      :helrori2011@gmail.com
 *   Timing      :
 */
-module mmp_iddmm_ctrl
-#(
+module mmp_iddmm_ctrl #(
         parameter L1 = 0    // First mul128 latency
     ,   parameter L2 = 0    // First add latency
     ,   parameter L3 = 0    // m1*s latency
@@ -79,8 +78,7 @@ generate
         mmp_iddmm_shift#(//将j的延时放在ctrl模块内(PE外面)可能会有问题
             .LATENCY ( L1+L2+L3+L4   ),
             .WD      (  6            )
-        )shift_jnot0
-        (
+        )shift_jnot0(
             .clk     ( clk           ),
             .rst_n   ( rst_n         ),
             .a_in    ( j             ),
@@ -89,9 +87,11 @@ generate
         always@(posedge clk or negedge rst_n)begin
             if (!rst_n) begin
                 task_en <= 1'd0;
-            end else if (comp_end) begin
+            end 
+            else if (comp_end) begin
                 task_en <= 1'd0;
-            end else if (task_req) begin
+            end 
+            else if (task_req) begin
                 task_en <= 1'd1;
             end
         end
@@ -103,7 +103,8 @@ generate
                 ref_wr_n        <= 'd0;// +20200723
                 ctl_carry_clr   <= 'd0;// +20200723
                 ctl_c_pre_clr   <= 'd0;// +20200723
-            end else begin
+            end 
+            else begin
                 i   <= _i;
                 j   <= _j;
                 j00 <= _j00;
@@ -120,7 +121,8 @@ generate
                 _j00<= 'd0;
                 ref_an  <= 'd0;
                 comp_req<=1'd0;
-            end else if(task_en)begin
+            end 
+            else if(task_en)begin
                 case (st)
                     0:begin
                         _j00 <= 1'd1;
@@ -135,12 +137,14 @@ generate
                             _j   <=  'd0;
                             _i   <=  'd0;
                             st   <= st  +   1'd1;
-                        end else if (_j==N) begin
+                        end 
+                        else if (_j==N) begin
                             _j   <=  'd0;
                             _i   <= _i + 1'd1;
                             _j00 <= 1'd1;
                             st   <=  'd1;
-                        end else begin
+                        end 
+                        else begin
                             _j   <= _j + 1'd1;
                         end
                     end 
@@ -149,7 +153,8 @@ generate
                             ref_an  <= carry;
                             st      <= st  +   1'd1;
                             comp_req<= 1'd1;                    
-                        end else begin
+                        end 
+                        else begin
                             st  <=  st;
                         end
                     end
@@ -159,7 +164,9 @@ generate
                             st      <= 'd0;
                         end            
                     end
-                    default:st  <= 'd0;
+                    default: begin
+                        st  <= 'd0;
+                    end
                 endcase
             end
         end
@@ -169,7 +176,8 @@ generate
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
-    end else if(D5==1) begin:d5_eq_1
+    end 
+    else if(D5==1) begin:d5_eq_1
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
         //----------------------------------------------------------------------------------------------------------
@@ -208,8 +216,7 @@ generate
         mmp_iddmm_shift#(//将j的延时放在ctrl模块内(PE外面)可能会有问题
             .LATENCY ( L1+L2+L3+L4   ),
             .WD      (  6+1          )
-        )shift_jnot0
-        (
+        )shift_jnot0(
             .clk     ( clk           ),
             .rst_n   ( rst_n         ),
             .a_in    ( {jref ,j }    ),

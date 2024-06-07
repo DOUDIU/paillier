@@ -11,6 +11,7 @@
 *                minimum time cost:2176+1+32=2209 when use 3-2_DELAY2
 *   License     :
 */
+//result = x*y*mod_inv(r,m)%m r is the bitwidth of x
 // `define _VIEW_UJ_;
 module mmp_iddmm_sp#(
         parameter MULT_METHOD  = "TRADITION"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily

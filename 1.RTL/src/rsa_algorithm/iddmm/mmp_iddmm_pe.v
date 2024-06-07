@@ -27,8 +27,7 @@
 *   Author      :helrori2011@gmail.com
 *   Timing      :mmp_review.xlsx
 */
-module mmp_iddmm_pe
-#(
+module mmp_iddmm_pe #(
     parameter L1 = 0     ,// First mul128 latency
     parameter L2 = 0     ,// First add latency
     parameter L3 = 0     ,// m1*s latency
@@ -40,8 +39,7 @@ module mmp_iddmm_pe
     parameter D5 = 0     ,// if ADD2_METHOD=="3-2_DELAY2" D5 should be 1,else 0
     parameter K  = 128   ,// K bits in every group,fixed do not modify!
     parameter N  = 32     // Number of groups,fixed do not modify!
-)
-(
+)(
     input   wire                    clk           ,
     input   wire                    rst_n         ,
 
@@ -87,8 +85,7 @@ wire                    ctl_q_ena_;
 mmp_iddmm_shift#( //这里使用对Aj延时。对Aj延时等效于对j延时
     .LATENCY ( L1            ),
     .WD      ( K             )
-)shift_Aj
-(
+)shift_Aj(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( aj            ),
@@ -97,8 +94,7 @@ mmp_iddmm_shift#( //这里使用对Aj延时。对Aj延时等效于对j延时
 mmp_iddmm_shift#(//这里使用对Mj延时。对Mj延时等效于对j延时
     .LATENCY ( L1+L2+L3      ),
     .WD      ( K             )
-)shift_Mj
-(
+)shift_Mj(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( mj            ),
@@ -108,8 +104,7 @@ mmp_iddmm_shift#(//这里使用对Mj延时。对Mj延时等效于对j延时
 mmp_iddmm_shift#(
     .LATENCY ( L1            ),
     .WD      ( 1             )
-)shift_ctl_carry_sel
-(
+)shift_ctl_carry_sel(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_carry_sel ),
@@ -118,8 +113,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3+L4+D5),
     .WD      ( 1             )
-)shift_ctl_carry_clr
-(
+)shift_ctl_carry_clr(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_carry_clr ),
@@ -128,8 +122,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3+L4+0 ),
     .WD      ( 1             )
-)shift_ctl_carry_ena
-(
+)shift_ctl_carry_ena(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_carry_ena ),
@@ -139,8 +132,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3      ),
     .WD      ( 1             )
-)shift_ctl_q_ena
-(
+)shift_ctl_q_ena(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_q_ena     ),
@@ -150,8 +142,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3+L4   ),
     .WD      ( 1             )
-)shift_ctl_c_pre_clr
-(
+)shift_ctl_c_pre_clr(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_c_pre_clr ),
@@ -160,8 +151,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3+L4   ),
     .WD      ( 1             )
-)shift_ctl_c_pre_ena
-(
+)shift_ctl_c_pre_ena(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
     .a_in    ( ctl_c_pre_ena ),
@@ -172,8 +162,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_mul128#(
     .LATENCY  ( L1             ),
     .METHOD   ( MULT_METHOD    )   
-)mmp_iddmm_mul128xy
-(
+)mmp_iddmm_mul128xy(
     .clk      ( clk            ),
     .rst_n    ( rst_n          ),
     .a_in     ( xj     [127:0] ),//128
@@ -183,8 +172,7 @@ mmp_iddmm_mul128#(
 mmp_iddmm_addfirst #(
     .LATENCY  ( L2             ),
     .METHOD   ( ADD1_METHOD    )
-)mmp_iddmm_addfirst
-(
+)mmp_iddmm_addfirst(
     .clk      ( clk            ),
     .rst_n    ( rst_n          ),
     .a_in     ( xy    [255:0]  ),//256
@@ -196,8 +184,7 @@ wire [127:0]__;
 mmp_iddmm_mul128#(
     .LATENCY  ( L3             ),
     .METHOD   ( MULT_METHOD    )      
-)mmp_iddmm_mul128m1s
-(
+)mmp_iddmm_mul128m1s(
     .clk      ( clk            ),
     .rst_n    ( rst_n          ),
     .a_in     ( m1    [127:0]  ),//128
@@ -207,8 +194,7 @@ mmp_iddmm_mul128#(
 mmp_iddmm_mul128#(
     .LATENCY  ( L4             ),
     .METHOD   ( MULT_METHOD    )      
-)mmp_iddmm_mul128r
-(
+)mmp_iddmm_mul128r(
     .clk      ( clk           ),
     .rst_n    ( rst_n         ),
     .a_in     ( mj_   [127:0] ),//128
@@ -219,8 +205,7 @@ mmp_iddmm_mul128#(
 mmp_iddmm_shift#(
     .LATENCY  ( L3+L4         ),
     .WD       ( 2*K           )
-)shift_S
-(
+)shift_S(
     .clk      ( clk           ),
     .rst_n    ( rst_n         ),
     .a_in     ( s             ),
@@ -229,8 +214,7 @@ mmp_iddmm_shift#(
 mmp_iddmm_addend #(
     .LATENCY  ( D5            ),
     .METHOD   ( ADD2_METHOD   )
-)mmp_iddmm_addend
-(
+)mmp_iddmm_addend(
     .clk      ( clk           ),
     .rst_n    ( rst_n         ),
     .a_in     ( c_pre  [128:0]),//129

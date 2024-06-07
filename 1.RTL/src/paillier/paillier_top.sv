@@ -24,6 +24,16 @@ module paillier_top#(
     ,   input       [K-1:0]     dec_n_data
     ,   input                   dec_n_valid
 
+    ,   input       [K-1:0]     homo_add_c1
+    ,   input                   homo_add_c1_valid
+    ,   input       [K-1:0]     homo_add_c2
+    ,   input                   homo_add_c2_valid
+
+    ,   input       [K-1:0]     scalar_mul_c1
+    ,   input                   scalar_mul_c1_valid
+    ,   input       [K-1:0]     scalar_mul_const
+    ,   input                   scalar_mul_const_valid
+
     ,   output  reg [K-1:0]     enc_out_data
     ,   output  reg             enc_out_valid
 );
@@ -69,7 +79,9 @@ localparam  STA_IDLE                = 0,
             STA_DECRYPTION_ME       = 3,
             STA_DECRYPTION_L        = 4,
             STA_DECRYPTION_MM       = 5,
-            STA_END                 = 7;
+            STA_HOMOMORPHIC_ADD     = 6,
+            STA_SCALAR_MUL          = 7,
+            STA_END                 = 8;
 
 reg         [3:0]        state_now;
 reg         [3:0]        state_next;
@@ -92,6 +104,8 @@ always@(*) begin
                 case(task_cmd)
                     3'b000:     state_next = STA_ENCRYPTION_ME;
                     3'b001:     state_next = STA_DECRYPTION_ME;
+                    3'b010:     state_next = STA_HOMOMORPHIC_ADD;
+                    3'b011:     state_next = STA_SCALAR_MUL;
                     default:    state_next = STA_IDLE;
                 endcase
             end
@@ -119,6 +133,22 @@ always@(*) begin
         end
         STA_DECRYPTION_L: begin
 
+        end
+        STA_HOMOMORPHIC_ADD: begin
+            if(mm_result_0_cnt == N - 1) begin
+                state_next  =   STA_IDLE;
+            end
+            else begin
+                state_next  =   STA_HOMOMORPHIC_ADD;
+            end
+        end
+        STA_SCALAR_MUL: begin
+            if(me_result_0_cnt == N - 1) begin
+                state_next  =   STA_IDLE;
+            end
+            else begin
+                state_next  =   STA_SCALAR_MUL;
+            end
         end
         default: begin
             state_next = STA_IDLE;
@@ -164,6 +194,12 @@ always@(posedge clk or negedge rst_n) begin
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0              <=      1;
                     me_start_1              <=      1;
+                end
+                if((state_next == STA_SCALAR_MUL) | (state_next == STA_DECRYPTION_ME)) begin
+                    me_start_0              <=      1;
+                end
+                if(state_next   ==  STA_HOMOMORPHIC_ADD) begin
+                    mm_start_0      <=  1;
                 end
             end
             STA_ENCRYPTION_ME: begin
@@ -219,13 +255,35 @@ always@(posedge clk or negedge rst_n) begin
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
             end
+            STA_HOMOMORPHIC_ADD: begin
+                mm_start_0          <=  0;
+                mm_x_0              <=  homo_add_c1;
+                mm_y_0              <=  homo_add_c2;
+                mm_x_valid_0        <=  homo_add_c1_valid;
+                mm_y_valid_0        <=  homo_add_c2_valid;
+                if(mm_valid_0) begin
+                    mm_result_0_cnt     <=  mm_result_0_cnt + 1;
+                end
+                enc_out_data        <=  mm_result_0;
+                enc_out_valid       <=  mm_valid_0;
+            end
+            STA_SCALAR_MUL: begin
+                me_start_0          <=      0;
+                me_x_0              <=      scalar_mul_c1;
+                me_x_valid_0        <=      scalar_mul_c1_valid;
+                me_y_0              <=      scalar_mul_const;
+                me_y_valid_0        <=      scalar_mul_const_valid;
+                if(me_valid_0) begin
+                    me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                end
+                enc_out_data        <=  me_valid_0;
+                enc_out_valid       <=  me_result_0;
+            end
             default: begin
             end
         endcase
     end
 end
-
-
 
 
 
@@ -277,51 +335,5 @@ mm_iddmm_top #(
     ,   .mm_result      (mm_result_0    )
     ,   .mm_valid       (mm_valid_0     )
 );
-
-
-
-// mmp_iddmm_sp #(
-//         .MULT_METHOD    ("COMMON"       )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-//                                             // "TRADITION" :MULT_LATENCY=9                
-//                                             // "VEDIC8-8"  :VEDIC MULT, MULT_LATENCY=8 
-//     ,   .ADD1_METHOD    ("COMMON"       )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-//                                             // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-//                                             // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-//                                             // 
-//     ,   .ADD2_METHOD    ("COMMON"       )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-//                                             // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-//                                             // 
-//     ,   .MULT_LATENCY   (0              )
-//     ,   .ADD1_LATENCY   (0              )
-//     ,   .K              (K              )   // K bits in every group
-//     ,   .N              (N              )   // Number of groups
-// )mm_2048_inst(
-//         .clk            (clk            )
-//     ,   .rst_n          (rst_n          )
-
-//     ,   .wr_ena         ()
-//     ,   .wr_addr        ()
-//     ,   .wr_x           ()   //low words first
-//     ,   .wr_y           ()   //low words first
-//     ,   .wr_m           ()   //low words first
-//     ,   .wr_m1          ()
-
-//     ,   .task_req       ()
-//     ,   .task_end       ()
-//     ,   .task_grant     ()
-//     ,   .task_res       ()    
-// );
-
-// single_port_ram#(
-//         .WIDTH_DATA     ( 1         )  
-//     ,   .DEPTH          ( 0         )  
-//     ,   .FILENAME       ( "none"    )
-// )single_port_ram_n(
-//         .clk            ()
-//     ,   .wen            ()
-//     ,   .addr           ()
-//     ,   .wr_data        ()
-//     ,   .rd_data        ()
-// );
 
 endmodule

@@ -64,7 +64,7 @@ def encode_and_encrypt_example():
     print("Checking the decrypted number is what we started with")
     assert abs(2.1 ** 20 - decrypted_but_encoded.decode()) < 1e-12
 
-def encode_fpga_example():
+def encrypt_fpga_example():
     print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
     
     print('Public_key nsquare=0x{:x}\n'.format(public_key.nsquare))
@@ -126,7 +126,32 @@ def homomorphic_addition_example():
     print("Decrypted: {}".format(decrypted_but_encoded.decode()))
     assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15
 
+def scalar_multiplication_example():
+    print("Encoding a large positive number. BASE={}".format(ExampleEncodedNumber.BASE))
+
+    a = 102545 + (64 ** 8)
+    const_scalar = 34+(11**3)
+    r = 123 + (8 ** 20) #ramdom number
+
+    encoded_a = ExampleEncodedNumber.encode(public_key, a)
+
+    print("Checking that decoding gives the same number...")
+    assert a == encoded_a.decode()
+
+    print("Encrypting the encoded number")
+    encrypted_a = public_key.encrypt(encoded_a,None,r)
+
+    print("Multiplying the encrypted number by a scalar")
+    encrypted_b = const_scalar * encrypted_a
+
+    print("Decrypting the one encrypted sum")
+    decrypted_but_encoded = private_key.decrypt_encoded(encrypted_b, ExampleEncodedNumber)
+
+    print("Checking the decrypted number is what we started with")
+    assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
+
+
 if __name__ == "__main__":
     # encode_and_encrypt_example()
 
-    homomorphic_addition_example()
+    scalar_multiplication_example()

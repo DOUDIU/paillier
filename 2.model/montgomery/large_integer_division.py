@@ -25,7 +25,7 @@ def phrnd(x, y):
     print('quotient             :\n0x{:x}\n'.format(quotient))
     print('remainder            :\n0x{:x}\n'.format(remainder))
 
-#algorithm : 基于Knuth大数除法的西电硕士论文： 一种基于verilog的大整数除法器的实现 - 2015 垃圾算法，md，写的有点问题还
+#algorithm : 基于Knuth大数除法的西电硕士论文： 一种基于verilog的大整数除法器的实现 - 2015 写的有点问题还
 def Knuth_division(x, y):
     b = 64
     b_max = 2**b

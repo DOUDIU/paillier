@@ -9,7 +9,7 @@
 `timescale  1ns / 1ps
 // `define _VIEW_WAVEFORM_
 
-`define _RSA4096
+`define _RSA2048
 module mmp_iddmm_sp_tb;
 //---------------------------------------------------------------------------------------------------
 

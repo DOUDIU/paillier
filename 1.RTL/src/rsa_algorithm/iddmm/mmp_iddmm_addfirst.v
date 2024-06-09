@@ -5,14 +5,12 @@
 *   Author      :helrori
 *   Timing      :
 */
-module mmp_iddmm_addfirst
-#(
+module mmp_iddmm_addfirst#(
     parameter LATENCY = 2   ,
     parameter METHOD  = "COMMON"//  COMMON      : use "+"  LATENCY任意
                                 //  3-2_PIPE2   :3-2压缩后使用2 级经典流水线加法器 LATENCY=2
                                 //  3-2_PIPE1   :3-2压缩后使用1 级经典流水线加法器 LATENCY=1
-)
-( 
+)( 
     input   wire             clk           ,
     input   wire             rst_n         ,
 

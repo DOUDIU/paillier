@@ -15,9 +15,9 @@
 //r is the bitwidth of x,y,m
 // `define _VIEW_UJ_;
 module mmp_iddmm_sp#(
-        parameter MULT_METHOD  = "VEDIC8-8"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+        parameter MULT_METHOD  = "VEDIC8"       // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                 // "TRADITION" :MULT_LATENCY=9                
-                                                // "VEDIC8-8"  :VEDIC MULT, MULT_LATENCY=8 
+                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
     ,   parameter ADD1_METHOD  = "3-2_PIPE1"    // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
                                                 // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
                                                 // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
@@ -25,8 +25,6 @@ module mmp_iddmm_sp#(
     ,   parameter ADD2_METHOD  = "3-2_DELAY2"   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
                                                 // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                                 // 
-    ,   parameter MULT_LATENCY = 0                                   
-    ,   parameter ADD1_LATENCY = 0       
 
     ,   parameter K = 128                       // K bits in every group
     ,   parameter N = 32                        // Number of groups
@@ -47,6 +45,13 @@ module mmp_iddmm_sp#(
     output      wire                    task_grant  ,
     output      wire [K-1:0]            task_res         
 );
+localparam MULT_LATENCY =   MULT_METHOD == "COMMON"      ? 0 :
+                            MULT_METHOD == "TRADITION"   ? 10:
+                            MULT_METHOD == "VEDIC8"      ? 8 :'dx;
+localparam ADD1_LATENCY =   ADD1_METHOD == "COMMON"      ? 0 :
+                            ADD1_METHOD == "3-2_PIPE1"   ? 1 : 
+                            ADD1_METHOD == "3-2_PIPE2"   ? 2 :'dx;
+
 localparam L1      = MULT_LATENCY;// xj*yi latency
 localparam L2      = ADD1_LATENCY;// First adder latency
 localparam L3      = MULT_LATENCY;// m1*s  latency

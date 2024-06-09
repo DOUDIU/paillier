@@ -439,18 +439,16 @@ end
 
 
 mmp_iddmm_sp #(
-        .MULT_METHOD    ("COMMON"       )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+        .MULT_METHOD    ("VEDIC8"       )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                             // "TRADITION" :MULT_LATENCY=9                
-                                            // "VEDIC8-8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    ("COMMON"       )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
+    ,   .ADD1_METHOD    ("3-2_PIPE2"    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
                                             // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
                                             // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
                                             // 
-    ,   .ADD2_METHOD    ("COMMON"       )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+    ,   .ADD2_METHOD    ("3-2_DELAY2"   )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
                                             // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                             // 
-    ,   .MULT_LATENCY   (0              )
-    ,   .ADD1_LATENCY   (0              )
     ,   .K              (K              )   // K bits in every group
     ,   .N              (N              )   // Number of groups
 )u_mmp_iddmm_sp(

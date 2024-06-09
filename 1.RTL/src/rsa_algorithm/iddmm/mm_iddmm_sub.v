@@ -13,14 +13,12 @@
 *                           可以直接替换,用来减少减法时的输出周期,但时序可能不再收敛(xc7k325tffg900-3)
 *   Author      :helrori2011@gmail.com
 */
-module mm_iddmm_sub 
-#(
+module mm_iddmm_sub #(
     parameter K  = 128,             //K<=128 and 2**?==K
     parameter N  = 32 ,             //N<=32  and 2**??==N 
     parameter ADDR_W = $clog2(N),
     parameter DEBUG  = 1'b0
-)
-(
+)(
     input       wire                    clk         ,
     input       wire                    rst_n       ,
     // Result
@@ -71,8 +69,7 @@ wire    sub_ena     = (bf1==1'd1&&(~odd));
 // wire    [K:0]adderK = {1'd0,~mj} + {1'd0,aj};//129+129=130->129
 wire    _;
 wire    [K:0]adderK;
-simple_p1adder129 simple_p1adder129_0
-(
+simple_p1adder129 simple_p1adder129_0(
     .clk        ( clk        ),
     .ain        ( {1'd0,~mj} ),// 129
     .bin        ( {1'd0, aj} ),// 129
@@ -82,9 +79,11 @@ simple_p1adder129 simple_p1adder129_0
 always@(posedge clk or negedge rst_n)begin
     if (!rst_n) begin
         odd<=1'd0;
-    end else if(st==OUT_SUB)begin
+    end 
+    else if(st==OUT_SUB)begin
         odd<=~odd; 
-    end else begin
+    end 
+    else begin
         odd<=1'd0;
     end
 end
@@ -97,7 +96,8 @@ always@(posedge clk or negedge rst_n)begin
         bf1         <= 1'd0;
         nop_val     <= 1'd0;
         sub_val     <= 1'd0;
-    end else begin
+    end 
+    else begin
         nop_val     <= st==OUT_NOP;
         bf1         <= st==OUT_SUB;
         sub_val     <= sub_ena;
@@ -114,7 +114,8 @@ always@(posedge clk or negedge rst_n)begin
                 if (an=='d1) begin
                     st      <= COMP_FIN_SUB;
                     addr_a  <= {(ADDR_W){1'd1}};
-                end else begin
+                end 
+                else begin
                     st      <= COMP_PROCESS;
                     addr_a  <= addr_a - 1;
                 end
@@ -125,7 +126,8 @@ always@(posedge clk or negedge rst_n)begin
                                 aj < mj ? COMP_FIN_NOP :
                                 aj ==mj ? COMP_PROCESS2:
                                 IDLE;
-                end else begin
+                end 
+                else begin
                     addr_a  <=  addr_a - 1;
                     st      <=  aj > mj ? COMP_FIN_SUB :
                                 aj < mj ? COMP_FIN_NOP :

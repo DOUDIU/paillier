@@ -5,13 +5,11 @@
 *   Author      :helrori2011@gmail.com
 *   Timing      :
 */
-module mmp_iddmm_addend
-#(
+module mmp_iddmm_addend#(
     parameter LATENCY = 0   ,   //  do not modify!
     parameter METHOD  = "COMMON"//  COMMON      : use "+" LATENCY必须为0
                                 //  3-2_DELAY2  :3-2压缩后使用2周期加法器 LATENCY无效
-)
-(
+)(
     input   wire             clk           ,
     input   wire             rst_n         ,
 
@@ -28,7 +26,8 @@ generate
 
         if (LATENCY==0) begin
             assign d_out=a_in+b_in+c_in;
-        end else if(LATENCY==1)begin
+        end 
+        else if(LATENCY==1)begin
             reg [256:0]lc;
             always@(posedge clk or negedge rst_n)begin
                 if (!rst_n) begin
@@ -38,7 +37,8 @@ generate
                 end
             end
             assign d_out=lc;
-        end else begin
+        end 
+        else begin
             reg [256:0]lc[0:LATENCY-1];
             integer j;
             always@(posedge clk or negedge rst_n)begin
@@ -55,9 +55,9 @@ generate
             end
             assign d_out=lc[LATENCY-1];
         end
-    end else if (METHOD=="3-2_DELAY2")begin// 3-2压缩，使用 + ，2个时钟出结果，输入数据需要保持2个时钟
-        mmp_iddmm_addend_3_2 mmp_iddmm_addend_3_2
-        (
+    end 
+    else if (METHOD=="3-2_DELAY2")begin// 3-2压缩，使用 + ，2个时钟出结果，输入数据需要保持2个时钟
+        mmp_iddmm_addend_3_2 mmp_iddmm_addend_3_2(
             .clk   ( clk                ),
             .a_in  ( {127'd0,a_in}      ),//use low 129bits
             .b_in  ( b_in               ),//256

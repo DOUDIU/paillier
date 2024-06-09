@@ -11,10 +11,11 @@
 *                minimum time cost:2176+1+32=2209 when use 3-2_DELAY2
 *   License     :
 */
-//result = x*y*mod_inv(r,m)%m r is the bitwidth of x
+//result = x*y*mod_inv(r,m)%m 
+//r is the bitwidth of x,y,m
 // `define _VIEW_UJ_;
 module mmp_iddmm_sp#(
-        parameter MULT_METHOD  = "TRADITION"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+        parameter MULT_METHOD  = "VEDIC8-8"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                 // "TRADITION" :MULT_LATENCY=9                
                                                 // "VEDIC8-8"  :VEDIC MULT, MULT_LATENCY=8 
     ,   parameter ADD1_METHOD  = "3-2_PIPE1"    // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
@@ -28,7 +29,7 @@ module mmp_iddmm_sp#(
     ,   parameter ADD1_LATENCY = 0       
 
     ,   parameter K = 128                       // K bits in every group
-    ,   parameter N = 16                        // Number of groups
+    ,   parameter N = 32                        // Number of groups
     ,   parameter ADDR_W = $clog2(N)
 )(
     input       wire                    clk         ,
@@ -159,8 +160,8 @@ mmp_iddmm_pe #(
     ,   .uj                 ( uj     [K-1  :0]      )
 );
 mm_iddmm_sub #(
-    .K                      ( K                     ),
-    .N                      ( N                     )
+        .K                  ( K                     )
+    ,   .N                  ( N                     )
 )mm_iddmm_sub_0 (
         .clk                ( clk                   )
     ,   .rst_n              ( rst_n                 )
@@ -183,7 +184,6 @@ mm_iddmm_sub #(
 simple_ram#(
         .width              ( K                 )
     ,   .widthad            ( ADDR_W+1          )//0-63,0-32 will be used
-    // ,   .filename           ( "x.mem"           )
 )simple_ram_x(//caution:>>>>> addr32 must be 0 <<<<<
         .clk                ( clk               )
     ,   .wraddress          ( {1'd0,wr_addr}    )//0-31
@@ -195,7 +195,6 @@ simple_ram#(
 simple_ram#(
         .width              ( K                 )
     ,   .widthad            ( ADDR_W            )
-    // ,   .filename           ( "y.mem"           )
 )simple_ram_y(
         .clk                ( clk               )
     ,   .wraddress          ( wr_addr           )
@@ -207,7 +206,6 @@ simple_ram#(
 simple_ram#(
         .width              ( K                 )
     ,   .widthad            ( ADDR_W            )
-    // ,   .filename           ( "m.mem"           )
 )simple_ram_m(
         .clk                ( clk               )
     ,   .wraddress          ( wr_addr           )

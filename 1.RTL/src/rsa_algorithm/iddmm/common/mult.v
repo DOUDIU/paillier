@@ -290,14 +290,14 @@ always @(posedge clk) begin
 end
 //round 7 8
 wire _,__;// + 200813 helrori
-simple_p12adder256_3_2 #(.STAGE(2)) 
-simple_p12adder256_3_2
-(
-    .clk             ( clk              ),
-    .ain             ( sum6_0           ),//256
-    .bin             ( sum6_1           ),//256
-    .final_fa_cout_i ( 1'd0             ),
-    .full_sum        ( {_,__,carry,ret} ) //258
+simple_p12adder256_3_2 #(
+    .STAGE              ( 2                 )
+)simple_p12adder256_3_2(
+    .clk                ( clk               ),
+    .ain                ( sum6_0            ),//256
+    .bin                ( sum6_1            ),//256
+    .final_fa_cout_i    ( 1'd0              ),
+    .full_sum           ( {_,__,carry,ret}  ) //258
 );
 // - 200813 helrori
 // always @(posedge clk) begin

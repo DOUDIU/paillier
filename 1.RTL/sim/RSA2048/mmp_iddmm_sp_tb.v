@@ -73,16 +73,16 @@ begin
     #(PERIOD*2) rst_n  =  1;
 end
 //---------------------------------------------------------------------------------------------------
-parameter MULT_METHOD  = "COMMON"   ;// | COMMON | TRADITION 10 | VEDIC8    8 |
+parameter MULT_METHOD  = "VEDIC8"   ;// | COMMON | TRADITION 10 | VEDIC8    8 |
 parameter ADD1_METHOD  = "COMMON"   ;// | COMMON | 3-2_PIPE1 1  | 3-2_PIPE2 2 |
 parameter ADD2_METHOD  = "COMMON"   ;// | COMMON | 3-2_DELAY2   |             |
 //---------------------------------------------------------------------------------------------------
-parameter MULT_LATENCY = MULT_METHOD == "COMMON"      ?0 :
-                         MULT_METHOD == "TRADITION"   ?10:
-                         MULT_METHOD == "VEDIC8"      ?8 :'dx;
-parameter ADD1_LATENCY = ADD1_METHOD == "COMMON"      ?0 :
-                         ADD1_METHOD == "3-2_PIPE1"   ?1 : 
-                         ADD1_METHOD == "3-2_PIPE2"   ?2 :'dx;
+parameter MULT_LATENCY = MULT_METHOD == "COMMON"      ? 0 :
+                         MULT_METHOD == "TRADITION"   ? 10:
+                         MULT_METHOD == "VEDIC8"      ? 8 :'dx;
+parameter ADD1_LATENCY = ADD1_METHOD == "COMMON"      ? 0 :
+                         ADD1_METHOD == "3-2_PIPE1"   ? 1 : 
+                         ADD1_METHOD == "3-2_PIPE2"   ? 2 :'dx;
 initial begin
     if (ADD2_METHOD == "3-2_DELAY2") begin
         if (MULT_LATENCY*3+ADD1_LATENCY>=63) begin
@@ -99,28 +99,28 @@ end
 //---------------------------------------------------------------------------------------------------
 
 mmp_iddmm_sp #(
-    .MULT_METHOD  ( MULT_METHOD     ),
-    .ADD1_METHOD  ( ADD1_METHOD     ),
-    .ADD2_METHOD  ( ADD2_METHOD     ),
-    .MULT_LATENCY ( MULT_LATENCY    ),        
-    .ADD1_LATENCY ( ADD1_LATENCY    ),
-    .K            ( K               ),
-    .N            ( N               ) 
+    .MULT_METHOD            ( MULT_METHOD                   ),
+    .ADD1_METHOD            ( ADD1_METHOD                   ),
+    .ADD2_METHOD            ( ADD2_METHOD                   ),
+    .MULT_LATENCY           ( MULT_LATENCY                  ),        
+    .ADD1_LATENCY           ( ADD1_LATENCY                  ),
+    .K                      ( K                             ),
+    .N                      ( N                             ) 
 )mmp_iddmm_sp_0 (
-    .clk                     ( clk                        ),
-    .rst_n                   ( rst_n                      ),
+    .clk                    ( clk                           ),
+    .rst_n                  ( rst_n                         ),
 
-    .wr_ena                  ( wr_ena                     ),
-    .wr_addr                 ( wr_addr    [$clog2(N)-1:0] ),
-    .wr_x                    ( wr_x       [K-1:0]         ),
-    .wr_y                    ( wr_y       [K-1:0]         ),
-    .wr_m                    ( wr_m       [K-1:0]         ),
-    .wr_m1                   ( wr_m1      [K-1:0]         ),
+    .wr_ena                 ( wr_ena                        ),
+    .wr_addr                ( wr_addr    [$clog2(N)-1:0]    ),
+    .wr_x                   ( wr_x       [K-1:0]            ),
+    .wr_y                   ( wr_y       [K-1:0]            ),
+    .wr_m                   ( wr_m       [K-1:0]            ),
+    .wr_m1                  ( wr_m1      [K-1:0]            ),
 
-    .task_req                ( task_req                   ),
-    .task_end                ( task_end                   ),
-    .task_grant              ( res_val                    ),
-    .task_res                ( res        [K-1:0]         )
+    .task_req               ( task_req                      ),
+    .task_end               ( task_end                      ),
+    .task_grant             ( res_val                       ),
+    .task_res               ( res        [K-1:0]            )
 );
 integer i,j,tick=0,fpx,fpy,fpm,fpa;
 reg [K*N-1:0]result_iddmm = 'd0;
@@ -313,6 +313,7 @@ endtask
 initial begin
     match_test;
     $finish;
+
     // $display("---------------------------------------------");
     // `ifdef _VIEW_WAVEFORM_
     // $dumpfile("wave.vcd");      
@@ -328,5 +329,33 @@ initial begin
     // #(1000)
     // $finish;
 end
+
+wire    [255:0] result_tem;
+reg     [127:0] a_in;
+reg     [127:0] b_in;
+mmp_iddmm_mul128#(
+    .LATENCY  ( MULT_METHOD     ),
+    .METHOD   ( MULT_METHOD     )   
+)mmp_iddmm_mul128xy(
+    .clk      ( clk             ),
+    .rst_n    ( rst_n           ),
+    .a_in     ( a_in            ),//128
+    .b_in     ( b_in            ),//128
+    .c_out    ( result_tem      ) //256
+);
+
+initial begin
+    a_in    =   0;
+    b_in    =   0;
+    #300
+    a_in    =   128'h7c6053749b40c110ad0a6f4fcf590380;
+    b_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
+    for (i = 0;i<3 ;i=i+1 ) begin
+        @(posedge clk);
+    end
+    a_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
+    b_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
+end
+
 
 endmodule

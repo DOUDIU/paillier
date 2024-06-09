@@ -7,8 +7,7 @@
 */
 module simple_vedic_128bit#(
     parameter W=128
-)
-(
+)(
     input   wire               clk ,
     input   wire    [W-1:0]    a   ,
     input   wire    [W-1:0]    b   ,

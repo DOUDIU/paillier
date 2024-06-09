@@ -63,53 +63,34 @@ module mmp_iddmm_pe #(
     output  wire [K-1          :0]  uj  
 );
 //-------------------------------------------------------------------------------
-reg  [K-1  :0] q;
-reg  [K    :0] c_pre;
-wire [K    :0] c;
-wire [2*K-1:0] s,s_;
-wire [2*K-1:0] r;
+reg  [K-1   :0]     q;
+reg  [K     :0]     c_pre;
+wire [K     :0]     c;
+wire [2*K-1 :0]     s,s_;
+wire [2*K-1 :0]     r;
 
-wire [2*K-1:0] xy  ;//x*y
-wire [K-1  :0] m1s;//m1*s%beta
-wire [2*K  :0] u_c;//s+r+c
+wire [2*K-1 :0]     xy  ;//x*y
+wire [K-1   :0]     m1s;//m1*s%beta
+wire [2*K   :0]     u_c;//s+r+c
 //-------------------------------------------------------------------------------
-wire [K-1          :0]  mj_;
-wire [K-1          :0]  aj_;
-wire                    ctl_carry_clr_;
-wire                    ctl_carry_ena_;
-wire                    ctl_carry_sel_;
-wire                    ctl_c_pre_clr_;
-wire                    ctl_c_pre_ena_;
-wire                    ctl_q_ena_;
+wire [K-1   :0]     mj_;
+wire [K-1   :0]     aj_;
+wire                ctl_carry_clr_;
+wire                ctl_carry_ena_;
+wire                ctl_carry_sel_;
+wire                ctl_c_pre_clr_;
+wire                ctl_c_pre_ena_;
+wire                ctl_q_ena_;
+wire [127   :0]     __;
+wire                cena;
 //-------------------------------------------------------------------------------
-mmp_iddmm_shift#( //这里使用对Aj延时。对Aj延时等效于对j延时
-    .LATENCY ( L1            ),
-    .WD      ( K             )
-)shift_Aj(
-    .clk     ( clk           ),
-    .rst_n   ( rst_n         ),
-    .a_in    ( aj            ),
-    .b_out   ( aj_           )      
-);
-mmp_iddmm_shift#(//这里使用对Mj延时。对Mj延时等效于对j延时
-    .LATENCY ( L1+L2+L3      ),
-    .WD      ( K             )
-)shift_Mj(
-    .clk     ( clk           ),
-    .rst_n   ( rst_n         ),
-    .a_in    ( mj            ),
-    .b_out   ( mj_           )      
-);
-//-------------------------------------------------------------------------------
-mmp_iddmm_shift#(
-    .LATENCY ( L1            ),
-    .WD      ( 1             )
-)shift_ctl_carry_sel(
-    .clk     ( clk           ),
-    .rst_n   ( rst_n         ),
-    .a_in    ( ctl_carry_sel ),
-    .b_out   ( ctl_carry_sel_)      
-);
+//pipeline stage 0
+/*
+    s = a[j]+x_[j]*y_[i]
+    s = mm(s,2*k)
+    if j==n:
+        s = s+carry
+*/
 mmp_iddmm_shift#(
     .LATENCY ( L1+L2+L3+L4+D5),
     .WD      ( 1             )
@@ -128,37 +109,35 @@ mmp_iddmm_shift#(
     .a_in    ( ctl_carry_ena ),
     .b_out   ( ctl_carry_ena_)      
 );
-//-------------------------------------------------------------------------------
 mmp_iddmm_shift#(
-    .LATENCY ( L1+L2+L3      ),
+    .LATENCY ( L1            ),
     .WD      ( 1             )
-)shift_ctl_q_ena(
+)shift_ctl_carry_sel(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
-    .a_in    ( ctl_q_ena     ),
-    .b_out   ( ctl_q_ena_    )      
+    .a_in    ( ctl_carry_sel ),
+    .b_out   ( ctl_carry_sel_)      
 );
-//-------------------------------------------------------------------------------
-mmp_iddmm_shift#(
-    .LATENCY ( L1+L2+L3+L4   ),
-    .WD      ( 1             )
-)shift_ctl_c_pre_clr(
+mmp_iddmm_shift#( //这里使用对Aj延时。对Aj延时等效于对j延时
+    .LATENCY ( L1            ),
+    .WD      ( K             )
+)shift_Aj(
     .clk     ( clk           ),
     .rst_n   ( rst_n         ),
-    .a_in    ( ctl_c_pre_clr ),
-    .b_out   ( ctl_c_pre_clr_)
+    .a_in    ( aj            ),
+    .b_out   ( aj_           )      
 );
-mmp_iddmm_shift#(
-    .LATENCY ( L1+L2+L3+L4   ),
-    .WD      ( 1             )
-)shift_ctl_c_pre_ena(
-    .clk     ( clk           ),
-    .rst_n   ( rst_n         ),
-    .a_in    ( ctl_c_pre_ena ),
-    .b_out   ( ctl_c_pre_ena_)
-);
-//-------------------------------------------------------------------------------
-//-------------------------------------------------------------------------------
+always@(posedge clk or negedge rst_n)begin
+    if (!rst_n) begin
+        carry <= 1'd0;
+    end 
+    else if(ctl_carry_clr_)begin
+        carry <= 1'd0;
+    end 
+    else if(ctl_carry_ena_)begin
+        carry <= c[0];
+    end
+end
 mmp_iddmm_mul128#(
     .LATENCY  ( L1             ),
     .METHOD   ( MULT_METHOD    )   
@@ -180,7 +159,12 @@ mmp_iddmm_addfirst #(
     .c_in     ( ctl_carry_sel_?carry:1'd0),//1
     .d_out    ( s     [255:0]  )
 );
-wire [127:0]__;
+//-------------------------------------------------------------------------------
+//pipeline stage 1
+/*
+    if j==0:
+        q = mm(s,k)*mm(p1,k)%beta
+*/
 mmp_iddmm_mul128#(
     .LATENCY  ( L3             ),
     .METHOD   ( MULT_METHOD    )      
@@ -191,6 +175,37 @@ mmp_iddmm_mul128#(
     .b_in     ( s     [127:0]  ),//128
     .c_out    ( {__,m1s}       ) //256 use LSW 128bits
 );
+//-------------------------------------------------------------------------------
+//pipeline stage 2
+/*
+    r   = q*p_[j]
+*/
+mmp_iddmm_shift#(//这里使用对Mj延时。对Mj延时等效于对j延时
+    .LATENCY ( L1+L2+L3      ),
+    .WD      ( K             )
+)shift_Mj(
+    .clk     ( clk           ),
+    .rst_n   ( rst_n         ),
+    .a_in    ( mj            ),
+    .b_out   ( mj_           )      
+);
+mmp_iddmm_shift#(
+    .LATENCY ( L1+L2+L3      ),
+    .WD      ( 1             )
+)shift_ctl_q_ena(
+    .clk     ( clk           ),
+    .rst_n   ( rst_n         ),
+    .a_in    ( ctl_q_ena     ),
+    .b_out   ( ctl_q_ena_    )      
+);
+always@(posedge clk or negedge rst_n)begin
+    if (!rst_n) begin
+        q <= {(K){1'd0}};
+    end 
+    else if(ctl_q_ena_)begin
+        q <= m1s;
+    end
+end
 mmp_iddmm_mul128#(
     .LATENCY  ( L4             ),
     .METHOD   ( MULT_METHOD    )      
@@ -201,7 +216,45 @@ mmp_iddmm_mul128#(
     .b_in     ( q     [127:0] ),//128
     .c_out    ( r     [255:0] ) //256
 );
-
+//-------------------------------------------------------------------------------
+//pipeline stage 3
+/*
+    buf0= s+r+c            
+    u   =  mm(buf0,k)
+    c   = (buf0>>k)
+*/
+mmp_iddmm_shift#(
+    .LATENCY ( L1+L2+L3+L4   ),
+    .WD      ( 1             )
+)shift_ctl_c_pre_ena(
+    .clk     ( clk           ),
+    .rst_n   ( rst_n         ),
+    .a_in    ( ctl_c_pre_ena ),
+    .b_out   ( ctl_c_pre_ena_)
+);
+assign cena=(D5==0)?1'd1          :
+          (D5==1)?ctl_c_pre_ena_:
+          1'd1;
+mmp_iddmm_shift#(
+    .LATENCY ( L1+L2+L3+L4   ),
+    .WD      ( 1             )
+)shift_ctl_c_pre_clr(
+    .clk     ( clk           ),
+    .rst_n   ( rst_n         ),
+    .a_in    ( ctl_c_pre_clr ),
+    .b_out   ( ctl_c_pre_clr_)
+);
+always@(posedge clk or negedge rst_n)begin
+    if (!rst_n) begin
+        c_pre <= {(K+1){1'd0}};
+    end 
+    else if(ctl_c_pre_clr_)begin
+        c_pre <= {(K+1){1'd0}};
+    end 
+    else if(cena)begin
+        c_pre <= c;
+    end
+end
 mmp_iddmm_shift#(
     .LATENCY  ( L3+L4         ),
     .WD       ( 2*K           )
@@ -224,32 +277,5 @@ mmp_iddmm_addend #(
 );
 assign  c  = u_c[2*K+1-1:K];
 assign  uj = u_c[K-1    :0];
-always@(posedge clk or negedge rst_n)begin
-    if (!rst_n) begin
-        carry <= 1'd0;
-    end else if(ctl_carry_clr_)begin
-        carry <= 1'd0;
-    end else if(ctl_carry_ena_)begin
-        carry <= c[0];
-    end
-end
-always@(posedge clk or negedge rst_n)begin
-    if (!rst_n) begin
-        q <= {(K){1'd0}};
-    end else if(ctl_q_ena_)begin
-        q <= m1s;
-    end
-end
-wire cena=(D5==0)?1'd1          :
-          (D5==1)?ctl_c_pre_ena_:
-          1'd1;
-always@(posedge clk or negedge rst_n)begin
-    if (!rst_n) begin
-        c_pre <= {(K+1){1'd0}};
-    end else if(ctl_c_pre_clr_)begin
-        c_pre <= {(K+1){1'd0}};
-    end else if(cena)begin
-        c_pre <= c;
-    end
-end
+
 endmodule

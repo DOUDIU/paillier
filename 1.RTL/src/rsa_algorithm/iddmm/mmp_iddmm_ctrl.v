@@ -56,7 +56,7 @@ generate
         reg   [5-1 :0] i = 0 ;
         reg   [5   :0] j = 0 ;
         reg   _j00       = 0 ;
-        reg   j00        = 0 ;
+        // reg   j00        = 0 ;
 
         reg          task_en;
         reg   [2  :0]st;
@@ -99,7 +99,7 @@ generate
             if (!rst_n) begin
                 i   <= 'd0;
                 j   <= 'd0;
-                j00 <= 'd0;
+                // j00 <= 'd0;
                 ref_wr_n        <= 'd0;// +20200723
                 ctl_carry_clr   <= 'd0;// +20200723
                 ctl_c_pre_clr   <= 'd0;// +20200723
@@ -107,7 +107,7 @@ generate
             else begin
                 i   <= _i;
                 j   <= _j;
-                j00 <= _j00;
+                // j00 <= _j00;
                 ref_wr_n        <= (_j==N);     // +20200723
                 ctl_carry_clr   <= (_j==0 && _i==0);// +20200723
                 ctl_c_pre_clr   <= (_j==0 && _j00); // +20200723

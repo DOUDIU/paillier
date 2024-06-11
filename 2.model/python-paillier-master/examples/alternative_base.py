@@ -64,6 +64,7 @@ def encode_and_encrypt_example():
     print("Checking the decrypted number is what we started with")
     assert abs(2.1 ** 20 - decrypted_but_encoded.decode()) < 1e-12
 
+#(g**m * r**n) mod n**2
 def encrypt_fpga_example():
     print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
     
@@ -90,6 +91,36 @@ def encrypt_fpga_example():
     print('ciphertext_confirm: 0x{:x}\n'.format(ciphertext_confirm))
     print('\ng**m: 0x{:x}\n'.format(paillier.powmod(public_key.g, a, public_key.nsquare)))
     print('\nr**n: 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
+
+    decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
+    print("Decrypted: {}".format(decrypted_but_encoded.decode()))
+    assert a == decrypted_but_encoded.decode()
+
+#((1+m*n) * r**n) mod n**2
+def encrypt_fpga_v1_example():
+    print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
+    
+    print('Public_key nsquare=0x{:x}\n'.format(public_key.nsquare))
+
+    a = 102545 + (64 ** 8)
+    r = 123 + (8 ** 20)#ramdom number
+
+    RESULT_LOG = open("result_log.txt",'w').close()
+    data_seperate_printf(public_key.nsquare,128, 4096//128,1)
+    data_seperate_printf(public_key.n,128, 4096//128,1)
+    data_seperate_printf(a,128, 4096//128,1)
+    data_seperate_printf(r,128, 4096//128,1)
+
+    encoded_a = ExampleEncodedNumber.encode(public_key, a)
+
+    print("Checking that decoding gives the same number...")
+    assert a == encoded_a.decode()
+    print("Encrypting the encoded numbers")
+    encrypted_ciphertext = paillier.mulmod(paillier.mulmod(public_key.n, a, public_key.nsquare) + 1 , paillier.powmod(r, public_key.n, public_key.nsquare) , public_key.nsquare)
+    print('ciphertext_confirm: 0x{:x}\n'.format(encrypted_ciphertext))
+    print('\n1+m*n: 0x{:x}\n'.format(paillier.mulmod(public_key.n, a, public_key.nsquare)+1))
+    print('\nr**n : 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
+    encrypted_a = paillier.EncryptedNumber(public_key, encrypted_ciphertext)
 
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
     print("Decrypted: {}".format(decrypted_but_encoded.decode()))
@@ -152,4 +183,4 @@ def scalar_multiplication_example():
 
 
 if __name__ == "__main__":
-    encrypt_fpga_example()
+    encrypt_fpga_v1_example()

@@ -258,7 +258,7 @@ task paillier_encrypt_task;
         @(posedge clk)
         PAILLIER_ENC_RESULT      = {enc_out_data,PAILLIER_ENC_RESULT[(K*N-1):K]};
     end
-    $display("paillier encoder result: \n0x%x\n",PAILLIER_ENC_RESULT);
+    $display("paillier encrypt result: \n0x%x\n",PAILLIER_ENC_RESULT);
     #100;
     $stop;
 endtask

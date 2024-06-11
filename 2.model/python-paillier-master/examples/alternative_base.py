@@ -157,7 +157,7 @@ def homomorphic_addition_example():
     print("Decrypted: {}".format(decrypted_but_encoded.decode()))
     assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15
 
-def scalar_multiplication_example():
+def scalar_postive_multiplication_example():
     print("Encoding a large positive number. BASE={}".format(ExampleEncodedNumber.BASE))
 
     a = 102545 + (64 ** 8)
@@ -181,6 +181,34 @@ def scalar_multiplication_example():
     print("Checking the decrypted number is what we started with")
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
 
+# (inv(c, n^2) ** (-const_scalar)) mod n^2
+def scalar_negative_multiplication_example():
+    print("Encoding a large positive number. BASE={}".format(ExampleEncodedNumber.BASE))
+
+    a = 102545 + (64 ** 8)
+    const_scalar = -(34+(11**3))
+    r = 123 + (8 ** 20) #ramdom number
+
+    encoded_a = ExampleEncodedNumber.encode(public_key, a)
+
+    print("Checking that decoding gives the same number...")
+    assert a == encoded_a.decode()
+
+    print("Encrypting the encoded number")
+    encrypted_a = public_key.encrypt(encoded_a,None,r)
+
+    print("Multiplying the encrypted number by a scalar")
+    ciphertext_a = encrypted_a.ciphertext(False)
+    ciphertext_a_inv = paillier.invert(ciphertext_a, public_key.nsquare)
+    scalar_negative_multiplication = paillier.powmod(ciphertext_a_inv , -const_scalar, public_key.nsquare)
+    print("Homomorphic multiplication: 0x{:x}\n".format(scalar_negative_multiplication))
+    
+    print("Decrypting the one encrypted sum")
+    encrypted_a = paillier.EncryptedNumber(public_key, scalar_negative_multiplication)
+    decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
+
+    print("Checking the decrypted number is what we started with")
+    assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
 
 if __name__ == "__main__":
-    encrypt_fpga_v1_example()
+    scalar_negative_multiplication_example()

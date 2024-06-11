@@ -156,6 +156,7 @@ assign  PAILLIER_R          =       {
     128'h100000000000007b
 };
 
+//some problem here, if overflow, the result will be wrong.
 generate
     for(genvar i = 1; i < N; i = i + 1) begin
         assign PAILLIER_G[i] = PAILLIER_N[i];

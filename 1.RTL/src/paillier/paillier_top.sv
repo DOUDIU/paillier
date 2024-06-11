@@ -258,6 +258,7 @@ always@(posedge clk or negedge rst_n) begin
                 end    
                 if(mm_valid_0) begin
                     mm_result_0_cnt                         <=      mm_result_0_cnt + 1;
+                    //some problem here, if overflow, the result will be wrong.
                     mm_result_0_storage[mm_result_0_cnt]    <=      mm_result_0_cnt == 0 ? (mm_result_0 + 1) : mm_result_0;
                 end
 
@@ -327,12 +328,6 @@ always@(posedge clk or negedge rst_n) begin
         endcase
     end
 end
-
-
-
-
-
-
 
 me_iddmm_top #(
         .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily

@@ -44,7 +44,7 @@ module simple_ram#(
 );
 integer i;
 localparam f=(deep==0)?(2**widthad):deep;
-(* ram_style = "distributed" *) reg [width-1:0] mem [0:f-1];
+(* ram_style = "block" *) reg [width-1:0] mem [0:f-1];
 // Xilinx feature,force LUT RAMs
 // (* ram_style = "distributed" *) reg [width-1:0] mem [0:(2**widthad)-1];
 

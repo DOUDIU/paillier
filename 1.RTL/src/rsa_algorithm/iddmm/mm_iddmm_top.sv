@@ -1,7 +1,16 @@
 module mm_iddmm_top#(
-        parameter K       = 128
-    ,   parameter N       = 16
-    ,   parameter ADDR_W  = $clog2(N)
+        parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                // "TRADITION" :MULT_LATENCY=9                
+                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
+    ,   parameter ADD1_METHOD   = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
+                                                // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
+                                                // 
+    ,   parameter ADD2_METHOD   = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                // 
+    ,   parameter K             = 128
+    ,   parameter N             = 16
 )(
         input                   clk         
     ,   input                   rst_n       
@@ -17,6 +26,7 @@ module mm_iddmm_top#(
     ,   output      [K-1:0]     mm_result   
     ,   output                  mm_valid
 );
+localparam ADDR_W   =   $clog2(N);
 
 reg     [K*N-1  : 0]    mm_y_storage             = 0;
 wire    [K-1    : 0]    mm_m            [N-1:0]     ;
@@ -378,14 +388,14 @@ end
 
 
 mmp_iddmm_sp #(
-        .MULT_METHOD    ("VEDIC8"       )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+        .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                             // "TRADITION" :MULT_LATENCY=9                
                                             // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    ("3-2_PIPE2"    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+    ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
                                             // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
                                             // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
                                             // 
-    ,   .ADD2_METHOD    ("3-2_DELAY2"   )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+    ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
                                             // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                             // 
     ,   .K              (K              )   // K bits in every group

@@ -15,7 +15,7 @@
 //r is the bitwidth of x,y,m
 // `define _VIEW_UJ_;
 module mmp_iddmm_sp#(
-        parameter MULT_METHOD  = "VEDIC8"       // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+        parameter MULT_METHOD  = "TRADITION"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                 // "TRADITION" :MULT_LATENCY=9                
                                                 // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
     ,   parameter ADD1_METHOD  = "3-2_PIPE1"    // "COMMON"    :use + ,ADD1_LATENCY arbitrarily

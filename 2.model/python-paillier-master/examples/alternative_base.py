@@ -152,6 +152,4 @@ def scalar_multiplication_example():
 
 
 if __name__ == "__main__":
-    # encode_and_encrypt_example()
-
-    scalar_multiplication_example()
+    encrypt_fpga_example()

@@ -1,3 +1,4 @@
+`timescale 1ns / 1ps
 module paillier_top_tb();
 
 
@@ -186,7 +187,17 @@ wire                enc_out_valid   ;
 reg     [K*N-1  :   0]     PAILLIER_ENC_RESULT;
 
 paillier_top #(
-        .K                  (128                )
+        .MULT_METHOD        ("COMMON"           )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                    // "TRADITION" :MULT_LATENCY=9                
+                                                    // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
+    ,   .ADD1_METHOD        ("COMMON"           )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                    // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
+                                                    // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
+                                                    // 
+    ,   .ADD2_METHOD        ("COMMON"           )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                    // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                    // 
+    ,   .K                  (128                )
     ,   .N                  (32                 )
 )paillier_top_inst(
         .clk                (clk                )
@@ -207,7 +218,7 @@ paillier_top #(
 
 
 
-initial begin
+task paillier_encrypt_task;
     task_cmd    <=  3'b000;
     task_req    <=  0;
     enc_g_data  <=  0;
@@ -250,13 +261,14 @@ initial begin
     $display("paillier encoder result: \n0x%x\n",PAILLIER_ENC_RESULT);
     #100;
     $stop;
+endtask
 
+
+
+
+initial begin
+    paillier_encrypt_task;
 end
-
-
-
-
-
 
 
 

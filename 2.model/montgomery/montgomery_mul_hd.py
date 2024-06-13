@@ -524,11 +524,11 @@ def iddmm_test():
     assert  mont_iddmm_result == mont_iddmm_result_verified
 
 if __name__=='__main__':
-    rsa_test()
+    # rsa_test()
     # montgomery_mul_test()
     # iddmm_test()
     
-    # r   =0x7c6053749b40c110ad0a6f4fcf590380
-    # buf0=0x521a7d1da2e1be1e587881feef5a37a5
-    # result = r * buf0#27e3b94d425e884687ab5812a90932e6a1c6479c6b49751ca35bdc8c7f1fc180
-    # print('result={:x}'.format(result))
+    a = 0x123456
+    p = 0xefee431
+    result_inverse=mod_inv(a,p)
+    print('result_inverse:\n0x{:x}\n'.format(result_inverse))

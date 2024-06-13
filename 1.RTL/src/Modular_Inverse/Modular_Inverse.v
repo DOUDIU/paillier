@@ -21,24 +21,23 @@
 
 
 module Modular_Inverse#(
-	parameter Data_Width = 256
+	parameter Data_Width = 4096
 )(
 
-	input							   clk,rst_n,
-	input		[Data_Width - 1 : 0]   a,
-	input		[Data_Width - 1 : 0]   p,
-	input                              valid_in,
+	input									clk,rst_n,
+	input		[Data_Width - 1 : 0]		a,
+	input		[Data_Width - 1 : 0]		p,
+	input									valid_in,
 
-	output	   reg	[Data_Width - 1 : 0] R,
-	output     reg                         valid_out,
-	output     reg   					   busy
-
+	output	reg	[Data_Width - 1 : 0]		R,
+	output	reg								valid_out,
+	output	reg								busy
 );
 
-parameter   Init         =0,   																
-             Work1        =1,
-             Work2        =2,															
-             Output       =3;   															
+parameter   Init  		=	0,   																
+       		Work1 		=	1,
+       		Work2 		=	2,															
+       		Output		=	3;   															
 	
     reg     [1 : 0]                 state_c,state_n;
     reg     [Data_Width - 1 : 0]    u, v, x, y;
@@ -52,7 +51,8 @@ parameter   Init         =0,
 	always @(posedge clk ) begin
 		if (!rst_n) begin
 			state_c	<=	Init;
-		end else begin
+		end 
+		else begin
 			state_c	<=	state_n;
 		end
 	end
@@ -80,10 +80,8 @@ parameter   Init         =0,
 		endcase
 	end
 
-	always @(posedge clk ) 
-	begin
-		if(!rst_n) 									
-		begin    													
+	always @(posedge clk ) begin
+		if(!rst_n) begin    													
 			busy 	<= 1'b0 ;
 			u 	   	<= 0	;
 			v 	   	<= 0	;
@@ -92,8 +90,7 @@ parameter   Init         =0,
 			R   		<= 	0;	
 			valid_out	<=	0;
 		end 
-		else 
-		begin
+		else begin
 			if(valid_in)begin
 			    busy	<= 1'b1   ;
 				u 	   	<= a    ;
@@ -102,13 +99,11 @@ parameter   Init         =0,
 				y 	   	<= 256'd0 ;
 			end 
 			case(state_c)
-			    Init:
-				begin    										
+			    Init:begin    										
 //					R   		<= 	0;	
 					valid_out	<=	0;
 			    end 
-			    Work1:
-				begin		
+			    Work1:begin		
 					busy	<= 	1;							
 				    if(u[0] == 1'b0) 
 				    begin
@@ -121,8 +116,7 @@ parameter   Init         =0,
 				       	y <= (y[0])? y_pls_p_reg[Data_Width:1] : {1'b0,y[Data_Width - 1:1]} ;			
 				    end 
 				end
-				Work2:
-				begin
+				Work2:begin
 				    if((u[0])&&(v[0])) 
 				    begin
 				       	if (u_v_reg[Data_Width]) 
@@ -137,8 +131,7 @@ parameter   Init         =0,
 				    	end
 				    end	
 				end 
-				Output:
-				begin			
+				Output:begin			
 				   	R   		<= 	(u == 'd1)? x:y ;	
 				   	busy 		<= 	0;
 					valid_out	<=	1;	

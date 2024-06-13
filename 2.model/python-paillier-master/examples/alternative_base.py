@@ -206,6 +206,7 @@ def scalar_negative_multiplication_example():
     print("Decrypting the one encrypted sum")
     encrypted_a = paillier.EncryptedNumber(public_key, scalar_negative_multiplication)
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
+    print("Decrypted: 0x{:x}".format(decrypted_but_encoded.encoding))
 
     print("Checking the decrypted number is what we started with")
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15

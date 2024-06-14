@@ -1,10 +1,3 @@
-#
-#   Name        :mm hardware verify
-#   Description :Montgomery快速模乘，硬件模型验证算法
-#   Orirgin     :20200622
-#               :20200817
-#   Author      :helrori2011@gmail.com
-#
 import math
 def print_list(l2d):
     for l in l2d:
@@ -526,9 +519,4 @@ def iddmm_test():
 if __name__=='__main__':
     # rsa_test()
     # montgomery_mul_test()
-    # iddmm_test()
-    
-    a = 0x123456
-    p = 0xefee431
-    result_inverse=mod_inv(a,p)
-    print('result_inverse:\n0x{:x}\n'.format(result_inverse))
+    iddmm_test()

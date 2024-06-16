@@ -19,6 +19,115 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+//return  r = a^-1 mod p
+module modular_inverse_optimize#(
+		parameter	K 	= 	128
+	,	parameter	N 	= 	32
+)(
+		input					clk
+	,	input					rst_n
+	,	input					mi_start
+	,	input	[ K - 1 : 0]	a
+	,	input	[ K - 1 : 0]	p
+	,	input					valid_in
+	,	output	[ K - 1 : 0]	r
+	,	output					valid_out
+);
+localparam	ADDR_W	=	$clog2(N);
+
+localparam		STA_IDLE 	= 	0,
+				STA_SHIFT 	=	1,
+				STA_LOOP 	=	2;
+
+
+
+
+reg 	[3:0]		state_now;
+reg		[3:0]		state_next;
+
+
+
+
+always@(posedge clk or negedge rst_n) begin
+	if(!rst_n) begin
+		state_now	<=	STA_IDLE;
+	end
+	else begin
+		state_now	<=	state_next;
+	end
+end
+
+always@(*) begin
+	state_next	=	STA_IDLE;
+	case(state_now)
+		STA_IDLE:begin
+			if(mi_start) begin
+				state_next	=	STA_SHIFT;
+			end
+		end
+		STA_SHIFT:begin
+			state_next	=	STA_LOOP;
+		end
+		STA_LOOP:begin
+			state_next	=	STA_IDLE;
+		end
+		default: begin 
+			state_next	=	STA_IDLE;
+		end
+	endcase
+end
+
+
+
+always@(posedge clk or negedge rst_n) begin
+	if(!rst_n) begin
+	end
+	else begin
+		case(state_now)
+			STA_IDLE:begin
+			end
+			STA_SHIFT:begin
+			end
+			STA_LOOP:begin
+			end
+			default:begin
+			end
+		endcase
+	end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+endmodule
+
+
+
+
+
+
+
+
+
 
 module Modular_Inverse#(
 	parameter Data_Width = 4096

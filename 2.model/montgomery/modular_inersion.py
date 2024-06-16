@@ -156,11 +156,11 @@ def Dual_field_extended_Euclidean_modular_inversion_algorithm(x,y):
 def stein_improve(a,p):
     x = a
     y = p
-    g = 1
+    # g = 1
     while (x&1==0) and (y&1==0) : 
         x = x>>1
         y = y>>1
-        g = g<<1
+        # g = g<<1
     if x&1==0 :
         u = y
         v = x
@@ -212,3 +212,4 @@ if __name__=='__main__':
     # print('result_inverse:\n0x{:x}\n'.format(result_inverse))
     stein_improve(a,p)
     print('result_inverse:\n0x{:x}\n'.format(result_inverse))
+ 

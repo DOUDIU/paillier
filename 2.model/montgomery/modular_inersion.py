@@ -154,6 +154,11 @@ def Dual_field_extended_Euclidean_modular_inversion_algorithm(x,y):
 
 #[1]胡锦,李勇彬.一种改进的模逆算法与硬件实现[J].湖南大学学报:自然科学版, 2022, 49(2):5.
 def stein_improve(a,p):
+    #clear the text
+    RESULT_LOG = open("modular_inversion_log.txt",'w').close()
+    #open the text
+    RESULT_LOG = open("modular_inversion_log.txt",'a',encoding="utf-8")
+    print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     x = a
     y = p
     # g = 1
@@ -161,20 +166,31 @@ def stein_improve(a,p):
         x = x>>1
         y = y>>1
         # g = g<<1
+    print('x:{:x}\n'.format(x),file=RESULT_LOG)
+    print('y:{:x}\n'.format(y),file=RESULT_LOG)
+    print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     if x&1==0 :
         u = y
         v = x
         A = 0
-        C = 1
         B = 1
+        C = 1
         D = 0
     else :
         u = x
         v = y
         A = 1
-        C = 0
         B = 0
+        C = 0
         D = 1
+    print('--------------------------------------------------',end='\n',file=RESULT_LOG)
+    print('u:{:x}\n'.format(u),file=RESULT_LOG)
+    print('v:{:x}\n'.format(v),file=RESULT_LOG)
+    print('A:{:x}\n'.format(A),file=RESULT_LOG)
+    print('B:{:x}\n'.format(B),file=RESULT_LOG)
+    print('C:{:x}\n'.format(C),file=RESULT_LOG)
+    print('D:{:x}\n'.format(D),file=RESULT_LOG)
+    print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     while u!=0 :
         if v&1==0 :
             v = v>>1

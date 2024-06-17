@@ -35,15 +35,40 @@ module modular_inverse_optimize#(
 );
 localparam	ADDR_W	=	$clog2(N);
 
-localparam		STA_IDLE 	= 	0,
-				STA_SHIFT 	=	1,
-				STA_LOOP 	=	2;
+localparam		STA_IDLE 		=	0,
+				STA_STORAGE		=	1,
+				STA_SHIFT 		=	2,
+				STA_INITIAL 	=	3,
+				STA_LOOP_STEP1	=	4,
+				STA_LOOP_STEP2	=	5,
+				STA_END			=	6;
+
+reg		[K*N-1		:	0]		u, v, x, y, A, B, C, D;
+
+reg 	[3			:	0]		state_now;
+reg		[3			:	0]		state_next;
+
+reg		[ADDR_W - 1	:	0]		wr_cnt;
+
+reg		[K - 1 		: 	0]		result_data;
+reg								result_valid;
+
+assign	r			=			result_data;
+assign	valid_out	=			result_valid;
 
 
 
+reg								shift_req_v			;
+reg								shift_req_C			;
+reg								shift_req_D			;
 
-reg 	[3:0]		state_now;
-reg		[3:0]		state_next;
+reg								shift_start			;
+reg								shift_end			;
+reg		[ADDR_W - 1	:	0]		shift_rd_addr		;
+reg		[K - 1 		: 	0]		shift_rd_data		;
+reg		[ADDR_W - 1	:	0]		shift_wr_addr		;
+reg		[K - 1 		: 	0]		shift_wr_data		;
+reg								shift_wr_en			;
 
 
 
@@ -62,14 +87,50 @@ always@(*) begin
 	case(state_now)
 		STA_IDLE:begin
 			if(mi_start) begin
+				state_next	=	STA_STORAGE;
+			end
+			else begin
+				state_next	=	STA_IDLE;
+			end
+		end
+		STA_STORAGE:begin
+			if(wr_cnt == N-1) begin
 				state_next	=	STA_SHIFT;
+			end
+			else begin
+				state_next	=	STA_STORAGE;
 			end
 		end
 		STA_SHIFT:begin
-			state_next	=	STA_LOOP;
+			if(x[0] | y[0]) begin
+				state_next	=	STA_INITIAL;
+			end
+			else begin
+				state_next	=	STA_SHIFT;
+			end
 		end
-		STA_LOOP:begin
+		STA_INITIAL:begin
+			// state_next	=	STA_LOOP_STEP1;
 			state_next	=	STA_IDLE;
+		end
+		STA_LOOP_STEP1:begin
+			state_next	=	STA_LOOP_STEP2;
+		end
+		STA_LOOP_STEP2:begin
+			if(u!=0) begin
+				state_next	=	STA_LOOP_STEP1;
+			end
+			else begin
+				state_next	=	STA_END;
+			end
+		end
+		STA_END:begin
+			if(wr_cnt == N-1) begin
+				state_next	=	STA_IDLE;
+			end
+			else begin
+				state_next	=	STA_END;
+			end
 		end
 		default: begin 
 			state_next	=	STA_IDLE;
@@ -81,14 +142,85 @@ end
 
 always@(posedge clk or negedge rst_n) begin
 	if(!rst_n) begin
+		result_data		<=	0;
+		result_valid	<=	0;
+		u				<=	0;
+		v				<=	0;
+		x				<=	0;
+		y				<=	0;
+		A				<=	0;
+		B				<=	0;
+		C				<=	0;
+		D				<=	0;
 	end
 	else begin
 		case(state_now)
 			STA_IDLE:begin
+				wr_cnt	<=	0;
+			end
+			STA_STORAGE:begin
+				if(valid_in) begin
+					wr_cnt			<=	wr_cnt + 1;
+					x[wr_cnt*K+:K]	<=	a;
+					y[wr_cnt*K+:K]	<=	p;
+				end
 			end
 			STA_SHIFT:begin
+				if(!(x[0] | y[0])) begin
+					x	<=	x >> 1;
+					y	<=	y >> 1;
+				end
 			end
-			STA_LOOP:begin
+			STA_INITIAL:begin
+				if(!x[0]) begin
+					u	<=	y;
+					v	<=	x;
+					A	<=	0;
+					B	<=	1;
+					C	<=	1;
+					D	<=	0;
+				end
+				else begin
+					u	<=	x;
+					v	<=	y;
+					A	<=	1;
+					B	<=	0;
+					C	<=	0;
+					D	<=	1;
+				end
+			end
+			STA_LOOP_STEP1:begin
+				if(!v[0]) begin
+					v 	<=	v >> 1;
+					if(!C[0] & !D[0]) begin
+						C	<=	C >> 1;
+						D	<=	D >> 1;
+					end
+					else begin
+						C	<=	(C + y) >> 1;
+						D	<=	(D - x) >> 1;
+					end
+				end
+			end
+			STA_LOOP_STEP2:begin
+				if(u > v) begin
+					u	<=	v;
+					v 	<=	u - v;
+					A 	<=	C;
+					C 	<=	A - C;
+					B	<=	D;
+					D	<=	B - D;
+				end
+				else begin
+					v	<=	v - u;
+					C	<=	C - A;
+					D	<=	D - B;
+				end
+			end
+			STA_END: begin
+				wr_cnt			<=	wr_cnt + 1;
+				result_data		<=	A[wr_cnt*K+:K];
+				result_valid	<=	1;
 			end
 			default:begin
 			end
@@ -96,23 +228,46 @@ always@(posedge clk or negedge rst_n) begin
 	end
 end
 
+simple_ram#(
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W+1          )//0-63,0-32 will be used
+)simple_ram_u(//caution:>>>>> addr32 must be 0 <<<<<
+        .clk                (clk				)
+    ,   .wraddress          (wr_cnt				)//0-31
+    ,   .wren               (valid_in			)
+    ,   .data               (a					)
+    ,   .rdaddress          ()//0-32 will be read out
+    ,   .q                  ()
+);
+
+simple_ram#(
+        .width              ( K                 )
+    ,   .widthad            ( ADDR_W+1          )//0-63,0-32 will be used
+)simple_ram_v(//caution:>>>>> addr32 must be 0 <<<<<
+        .clk                (clk				)
+    ,   .wraddress          (wr_cnt				)//0-31
+    ,   .wren               (valid_in			)
+    ,   .data               (p					)
+    ,   .rdaddress          ()//0-32 will be read out
+    ,   .q                  ()
+);
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+right_shift_operation#(
+		.K 					(K				)
+	,	.N 					(N				)
+)right_shift_operation_inst(
+		.clk				(clk			)
+	,	.rst_n				(rst_n			)
+	,	.shift_start		(shift_start	)
+	,	.shift_end			(shift_end		)
+	,	.shift_rd_addr		(shift_rd_addr	)
+	,	.shift_rd_data		(shift_rd_data	)
+	,	.shift_wr_addr		(shift_wr_addr	)
+	,	.shift_wr_data		(shift_wr_data	)
+	,	.shift_wr_en		(shift_wr_en	)
+);
 
 
 
@@ -122,8 +277,115 @@ endmodule
 
 
 
+module right_shift_operation#(
+		parameter	K 		= 	128
+	,	parameter	N 		= 	32
+	,	parameter	ADDR_W	=	$clog2(N)
+)(
+		input					clk
+	,	input					rst_n
+	,	input					shift_start
+	,	output	reg				shift_end
+	,	output	[ADDR_W-1: 	0]	shift_rd_addr
+	,	input	[K - 1 	: 	0]	shift_rd_data
+	,	output	[ADDR_W-1: 	0]	shift_wr_addr
+	,	output	[K - 1 	: 	0]	shift_wr_data
+	,	output					shift_wr_en
+);
+
+localparam 	STA_IDLE	=	0,
+			STA_START	=	1,
+			STA_END		=	2;
+
+reg		[3:0]			state_now;
+reg		[3:0]			state_next;
+
+reg						shift_keep		;
+reg		[ADDR_W-1: 	0]	rd_addr			;
+reg		[ADDR_W-1: 	0]	wr_addr			;
+reg		[K - 1 	 :	0]	wr_data			;
+reg						wr_en			;
 
 
+assign		shift_rd_addr		=		rd_addr		;
+assign		shift_wr_addr		=		wr_addr		;
+assign		shift_wr_data		=		wr_data		;
+assign		shift_wr_en			=		wr_en		;
+
+always@(posedge clk or negedge rst_n) begin
+	if(!rst_n) begin
+		state_now	<=	STA_IDLE;
+	end
+	else begin
+		state_now	<=	state_next;
+	end
+end
+
+always@(*) begin
+	state_next		<=		STA_IDLE;
+	case(state_now)
+		STA_IDLE: begin
+			if(shift_start) begin
+				state_next		<=	STA_START;
+			end
+			else begin
+				state_next		<=	STA_IDLE;
+			end
+		end
+		STA_START: begin
+			if(shift_wr_addr == N - 1) begin
+				state_next		<=	STA_END;
+			end
+			else begin
+				state_next		<=	STA_START;
+			end
+		end
+		STA_END: begin
+			state_next		<=		STA_IDLE;
+		end
+	endcase
+end
+
+always@(posedge clk or negedge rst_n) begin
+	if(!rst_n) begin
+		shift_keep	<=	0;
+		rd_addr		<=	0;
+		wr_addr		<=	0;
+		wr_data		<=	0;
+		wr_en		<=	0;
+		shift_end	<=	0;
+	end
+	else begin
+		case(state_now)
+			STA_IDLE: begin
+				shift_keep	<=	0;
+				rd_addr		<=	N - 1;
+				wr_addr		<=	0;
+				wr_data		<=	0;
+				wr_en		<=	0;
+				shift_end	<=	0;
+			end
+			STA_START: begin
+				rd_addr		<=	rd_addr - 1;
+				shift_keep	<=	shift_rd_data[0];
+				wr_addr		<=	rd_addr;
+				wr_data		<=	{shift_keep,shift_rd_data[1+:K-1]};
+				wr_en		<=	1;
+			end
+			STA_END: begin
+				shift_end	<=	1;
+				shift_keep	<=	0;
+				rd_addr		<=	N - 1;
+				wr_addr		<=	0;
+				wr_data		<=	0;
+				wr_en		<=	0;
+			end
+		endcase
+	end
+end
+
+
+endmodule
 
 
 
@@ -132,7 +394,6 @@ endmodule
 module Modular_Inverse#(
 	parameter Data_Width = 4096
 )(
-
 	input									clk,rst_n,
 	input		[Data_Width - 1 : 0]		a,
 	input		[Data_Width - 1 : 0]		p,

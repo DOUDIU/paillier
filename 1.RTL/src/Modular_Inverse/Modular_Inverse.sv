@@ -42,11 +42,13 @@ localparam		STA_IDLE 		=	0,
 				STA_LOOP_STEP1	=	4,
 				STA_LOOP_STEP2	=	5,
 				STA_END			=	6;
-reg 	[3			:	0]		state_now;
-reg		[3			:	0]		state_next;
+reg 	[3			:	0]		state_now			;
+reg		[3			:	0]		state_next			;
 
-reg		[K-1		:	0]		x_low_128;
-reg		[K-1		:	0]		y_low_128;
+reg		[K-1		:	0]		x_low_128			;
+reg		[K-1		:	0]		y_low_128			;
+reg		[K-1		:	0]		C_low_128			;
+reg		[K-1		:	0]		D_low_128			;
 
 
 reg		[ADDR_W - 1	:	0]		wr_cnt				;

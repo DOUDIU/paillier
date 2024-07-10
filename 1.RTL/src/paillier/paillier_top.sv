@@ -17,6 +17,7 @@ module paillier_top#(
 
     ,   input       [2  :0]     task_cmd
     ,   input                   task_req
+    ,   output                  task_end            //unused signal
 
     ,   input       [K-1:0]     enc_g_data
     ,   input                   enc_g_valid

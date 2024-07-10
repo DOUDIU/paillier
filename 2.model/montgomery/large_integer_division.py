@@ -23,7 +23,7 @@ def phrnd(x, y):
     quotient = q 
     remainder = R
     print('quotient             :\n0x{:x}\n'.format(quotient))
-    print('remainder            :\n0x{:x}\n'.format(remainder))
+    # print('remainder            :\n0x{:x}\n'.format(remainder))
 
 #algorithm : 基于Knuth大数除法的西电硕士论文： 一种基于verilog的大整数除法器的实现 - 2015 写的有点问题还
 def Knuth_division(x, y):
@@ -107,10 +107,10 @@ def modular_division():
     quotient = x // y 
     remainder = x % y
     print('quotient             :\n0x{:x}\n'.format(quotient))
-    print('remainder            :\n0x{:x}\n'.format(remainder))
+    # print('remainder            :\n0x{:x}\n'.format(remainder))
 
-    # phrnd(x,y)
-    phrnd_optimize_division(x, y)
+    phrnd(x,y)
+    # phrnd_optimize_division(x, y)
 
 
 

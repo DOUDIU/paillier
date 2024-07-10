@@ -1,18 +1,16 @@
 module paillier_axi_top#(
         // Users to add parameters here
         parameter BLOCK_COUNT = 4
+
+	// 	// AXI4Stream sink: Data Width
+    // ,   parameter AXIS_DATA_WIDTH = 32
+    //     // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
+    // ,   parameter FRAME_MAX = 4
+
         //the max depth of the fifo: 2^FIFO_AW
     ,   parameter FIFO_AW = 10
-		// AXI4Stream sink: Data Width
-    ,   parameter AXIS_DATA_WIDTH = 32
-		// AXI4 sink: Data Width as same as the data depth of the fifo
+        // AXI4 sink: Data Width as same as the data depth of the fifo
     ,   parameter AXI4_DATA_WIDTH = 128
-        // Horizontal resolution
-    ,   parameter PIXELS_H = 1280
-        // Vertical resolution
-    ,   parameter PIXELS_V = 1024
-        // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
-    ,   parameter FRAME_MAX = 4
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -23,7 +21,7 @@ module paillier_axi_top#(
 		// Width of Address Bus
 	,   parameter integer C_M_AXI_ADDR_WIDTH	= 32
 		// Width of Data Bus
-	,   parameter integer C_M_AXI_DATA_WIDTH	= AXI4_DATA_WIDTH
+	,   parameter integer C_M_AXI_DATA_WIDTH	= 128
 		// Width of User Write Address Bus
 	,   parameter integer C_M_AXI_AWUSER_WIDTH	= 0
 		// Width of User Read Address Bus
@@ -35,7 +33,6 @@ module paillier_axi_top#(
 		// Width of User Response Bus
 	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
 
-    
 		// Width of S_AXI data bus
 	,   parameter integer C_S_AXI_DATA_WIDTH	= 32
 		// Width of S_AXI address bus
@@ -230,30 +227,34 @@ module paillier_axi_top#(
     ,   output wire  M_AXI_RREADY
 );
 
+genvar o;
+
 //----------------------------------------------------
 // wire definition
+    wire 		                        paillier_start      ;
+    wire [1:0]	                        paillier_mode       ;
+    wire 			                    paillier_finished   ;
 
-    wire                                fwr_rdy     ;
-    wire                                fwr_vld     ;
-    wire [AXI4_DATA_WIDTH-1:0]          fwr_dat     ;
-    wire                                fwr_full    ;
-    wire [FIFO_AW:0]                    fwr_cnt     ;
 
-    wire                                frd_rdy     ;
-    wire                                frd_vld     ;
-    wire [AXI4_DATA_WIDTH-1:0]          frd_din     ;
-    wire                                frd_empty   ;
-    wire [FIFO_AW:0]                    frd_cnt     ;
+    wire                                fwr_rdy             ;
+    wire                                fwr_vld             ;
+    wire [AXI4_DATA_WIDTH-1:0]          fwr_dat             ;
+    wire                                fwr_full            ;
+    wire [FIFO_AW:0]                    fwr_cnt             ;
 
-    wire [clogb2(FRAME_MAX-1)-1:0]      frame_cnt   ;
+    wire                                frd_rdy             ;
+    wire                                frd_vld             ;
+    wire [AXI4_DATA_WIDTH-1:0]          frd_din             ;
+    wire                                frd_empty           ;
+    wire [FIFO_AW:0]                    frd_cnt             ;
 
 //---------------------------------------------------
 // AXI STREAM to FORWARD FIFO
 axis2fifo #(
-        .FAW                (FIFO_AW            )
-    ,   .AXIS_DATA_WIDTH    (AXIS_DATA_WIDTH    )
-    ,   .AXI4_DATA_WIDTH    (AXI4_DATA_WIDTH    )
-    ,   .FRAME_DELAY        (FRAME_MAX          )
+        .FAW                ()
+    ,   .AXIS_DATA_WIDTH    ()
+    ,   .AXI4_DATA_WIDTH    ()
+    ,   .FRAME_DELAY        ()
 )u_axis_salve2fifo(
 //----------------------------------------------------
 // AXIS slave port
@@ -276,7 +277,7 @@ axis2fifo #(
 
 //----------------------------------------------------
 // USER INTERFACE
-    ,   .frame_cnt          (frame_cnt          )
+    ,   .frame_cnt          ()
 );
 
 
@@ -284,8 +285,8 @@ axis2fifo #(
 //---------------------------------------------------
 // FORWARD FIFO STORAGE
 fifo #(
-        .FDW                (AXI4_DATA_WIDTH    )
-    ,   .FAW                (FIFO_AW            )
+        .FDW                ()
+    ,   .FAW                ()
 )u_forwardfifo(
         .rst                (~S_AXIS_ARESETN    )
     ,   .clr                (1'b0               )
@@ -310,11 +311,9 @@ fifo #(
 axi_full_core #(
     //----------------------------------------------------
     // FIFO parameters
-        .FDW                            (AXI4_DATA_WIDTH            )
-    ,   .FAW                            (FIFO_AW                    )
-    ,   .FRAME_DELAY                    (FRAME_MAX                  )
-    ,   .PIXELS_HORIZONTAL              (PIXELS_H                   )
-    ,   .PIXELS_VERTICAL                (PIXELS_V                   )
+        .FDW                            ()
+    ,   .FAW                            ()
+    ,   .FRAME_DELAY                    ()
 
     //----------------------------------------------------
     // AXI-FULL parameters
@@ -329,10 +328,15 @@ axi_full_core #(
 	,   .C_M_AXI_RUSER_WIDTH	        (C_M_AXI_RUSER_WIDTH	    )   
 	,   .C_M_AXI_BUSER_WIDTH	        (C_M_AXI_BUSER_WIDTH	    )   
 )u_axi_full_core(
+//----------------------------------------------------
+// paillier control interface
+        .paillier_start     (paillier_start     )
+    ,   .paillier_mode      (paillier_mode      )
+    ,   .paillier_finished  (paillier_finished  )
 
 //----------------------------------------------------
 // forward FIFO read interface
-        .frd_rdy            (frd_rdy            )
+    ,   .frd_rdy            (frd_rdy            )
     ,   .frd_vld            (frd_vld            )
     ,   .frd_din            (frd_din            )
     ,   .frd_empty          (frd_empty          )
@@ -405,48 +409,36 @@ saxi_lite_core #(
         .C_S_AXI_DATA_WIDTH	    ( C_S_AXI_DATA_WIDTH    )
     // Width of S_AXI address bus
     ,   .C_S_AXI_ADDR_WIDTH	    ( C_S_AXI_ADDR_WIDTH    )
-
-    ,   .FRAME_DELAY            (FRAME_MAX              )
 )u_saxi_lite_core(
     // Users to add ports here
-        .frame_cnt          (frame_cnt          )
+        .paillier_start         (paillier_start         )
+    ,   .paillier_mode          (paillier_mode          )
+    ,   .paillier_finished      (paillier_finished      )
 
     // User ports ends
     // Do not modify the ports beyond this line
-    ,   .S_AXI_ACLK         (S_AXI_ACLK         )
-    ,   .S_AXI_ARESETN      (S_AXI_ARESETN      )
-    ,   .S_AXI_AWADDR       (S_AXI_AWADDR       )
-    ,   .S_AXI_AWPROT       (S_AXI_AWPROT       )
-    ,   .S_AXI_AWVALID      (S_AXI_AWVALID      )
-    ,   .S_AXI_AWREADY      (S_AXI_AWREADY      )
-    ,   .S_AXI_WDATA        (S_AXI_WDATA        )
-    ,   .S_AXI_WSTRB        (S_AXI_WSTRB        )
-    ,   .S_AXI_WVALID       (S_AXI_WVALID       )
-    ,   .S_AXI_WREADY       (S_AXI_WREADY       )
-    ,   .S_AXI_BRESP        (S_AXI_BRESP        )
-    ,   .S_AXI_BVALID       (S_AXI_BVALID       )
-    ,   .S_AXI_BREADY       (S_AXI_BREADY       )
-    ,   .S_AXI_ARADDR       (S_AXI_ARADDR       )
-    ,   .S_AXI_ARPROT       (S_AXI_ARPROT       )
-    ,   .S_AXI_ARVALID      (S_AXI_ARVALID      )
-    ,   .S_AXI_ARREADY      (S_AXI_ARREADY      )
-    ,   .S_AXI_RDATA        (S_AXI_RDATA        )
-    ,   .S_AXI_RRESP        (S_AXI_RRESP        )
-    ,   .S_AXI_RVALID       (S_AXI_RVALID       )
-    ,   .S_AXI_RREADY       (S_AXI_RREADY       )
+    ,   .S_AXI_ACLK             (S_AXI_ACLK             )
+    ,   .S_AXI_ARESETN          (S_AXI_ARESETN          )
+    ,   .S_AXI_AWADDR           (S_AXI_AWADDR           )
+    ,   .S_AXI_AWPROT           (S_AXI_AWPROT           )
+    ,   .S_AXI_AWVALID          (S_AXI_AWVALID          )
+    ,   .S_AXI_AWREADY          (S_AXI_AWREADY          )
+    ,   .S_AXI_WDATA            (S_AXI_WDATA            )
+    ,   .S_AXI_WSTRB            (S_AXI_WSTRB            )
+    ,   .S_AXI_WVALID           (S_AXI_WVALID           )
+    ,   .S_AXI_WREADY           (S_AXI_WREADY           )
+    ,   .S_AXI_BRESP            (S_AXI_BRESP            )
+    ,   .S_AXI_BVALID           (S_AXI_BVALID           )
+    ,   .S_AXI_BREADY           (S_AXI_BREADY           )
+    ,   .S_AXI_ARADDR           (S_AXI_ARADDR           )
+    ,   .S_AXI_ARPROT           (S_AXI_ARPROT           )
+    ,   .S_AXI_ARVALID          (S_AXI_ARVALID          )
+    ,   .S_AXI_ARREADY          (S_AXI_ARREADY          )
+    ,   .S_AXI_RDATA            (S_AXI_RDATA            )
+    ,   .S_AXI_RRESP            (S_AXI_RRESP            )
+    ,   .S_AXI_RVALID           (S_AXI_RVALID           )
+    ,   .S_AXI_RREADY           (S_AXI_RREADY           )
 );
-
-// function called clogb2 that returns an integer which has the 
-// value of the ceiling of the log base 2.                      
-function integer clogb2 (input integer bit_depth);              
-begin                                                           
-for(clogb2=0; bit_depth>0; clogb2=clogb2+1)                   
-    bit_depth = bit_depth >> 1;                                 
-end                                                           
-endfunction
-
-
-genvar o;
 
 generate 
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin

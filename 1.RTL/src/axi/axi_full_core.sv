@@ -217,6 +217,7 @@ module axi_full_core#(
 
 	// Add user definition here
 	reg		[$clog2(TEST_TIMES) - 1 : 0]	loop_counter;
+	reg		[1:0]							current_loop_mode;
 	// user definition ends
 
 
@@ -244,7 +245,7 @@ module axi_full_core#(
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
-	parameter [3:0] IDLE_W = 4'b0000, // This state initiates AXI4Lite transaction 
+	parameter [3:0] IDLE_WAIT = 4'b0000, // This state initiates AXI4Lite transaction 
 			// after the state machine changes state to INIT_WRITE 
 			// when there is 0 to 1 transition on INIT_AXI_TXN
 		INIT_WRITE   = 4'b0001, // This state initializes write transaction,
@@ -259,7 +260,8 @@ module axi_full_core#(
 		STA_HOMOMORPHIC_ADD	=	4'b0110,
 		STA_SCALAR_MUL		=	4'b1111;
 
-	 reg [3:0] mst_exec_state;
+	reg [3:0] state_now;
+	reg [3:0] state_next;
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
@@ -747,41 +749,95 @@ module axi_full_core#(
 	end
 
 
-	//implement master command interface state machine                                                        
+	//implement master command interface state machine
+
+	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+		if(!M_AXI_ARESETN) begin
+			state_next 	<= IDLE_WAIT;
+		end
+		else begin
+			state_next	<= state_now;
+		end
+	end
+
+	always@(*) begin
+		case (state_now)	
+			IDLE_WAIT: begin
+				// This state is responsible to wait for user defined C_M_START_COUNT                           
+				// number of clock cycles.
+				if (paillier_start) begin                 
+					case (paillier_mode)                                                                               
+						2'b00: state_next <= STA_ENCRYPTION;
+						2'b01: state_next <= STA_DECRYPTION;
+						2'b10: state_next <= STA_HOMOMORPHIC_ADD;
+						2'b11: state_next <= STA_SCALAR_MUL;
+						default: state_next <= IDLE_WAIT;
+					endcase
+				end                                                                                           
+				else begin
+					state_next  <=	IDLE_WAIT;
+				end
+			end
+			INIT_WRITE: begin
+				if (writes_done) begin
+					state_now	<=	current_loop_mode;
+				end
+				else begin
+					state_now  	<=	INIT_WRITE;
+				end
+			end
+			INIT_READ: begin
+				if (reads_done) begin                                                                                         
+					state_next 	<=	current_loop_mode;                                                             
+				end                                                                                           
+				else begin                                                                                         
+					state_next	<=	INIT_READ;                                                                                   
+				end
+			end
+			STA_ENCRYPTION: begin
+				
+			end
+			STA_DECRYPTION: begin
+				
+			end
+			STA_HOMOMORPHIC_ADD: begin
+				
+			end
+			STA_SCALAR_MUL: begin
+				
+			end
+			// IDLE_RW: begin
+				
+			// end
+			default: begin
+				state_next  <= IDLE_WAIT;
+			end
+		endcase
+	end
 
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
-			// All the signals are assigned default values under reset condition                                
-			mst_exec_state      <= IDLE_W;                                                                
+			// All the signals are assigned default values under reset condition               
 			start_single_burst_write <= 1'b0;                                                                   
 			start_single_burst_read  <= 1'b0;
 
-			loop_counter	<=	0;
+			loop_counter		<=	0;
+			current_loop_mode	<=	IDLE_WAIT;
 		end
-		else begin                                                                                                 
-																												
+		else begin
 			// state transition                                                                                 
-			case (mst_exec_state)                                                                               
-																												
-				IDLE_W: begin
-					// This state is responsible to wait for user defined C_M_START_COUNT                           
-					// number of clock cycles.
+			case (state_now)
+				IDLE_WAIT : begin
 					loop_counter	<=	0;
-					if (paillier_start) begin                 
-						case (paillier_mode)                                                                               
-							2'b00: mst_exec_state <= STA_ENCRYPTION;
-							2'b01: mst_exec_state <= STA_DECRYPTION;
-							2'b10: mst_exec_state <= STA_HOMOMORPHIC_ADD;
-							2'b11: mst_exec_state <= STA_SCALAR_MUL;
-							default: mst_exec_state <= IDLE_W;
-						endcase
-					end                                                                                           
-					else begin                                                                                         
-						mst_exec_state  <= IDLE_W;                                                            
+					if(state_next != IDLE_WAIT) begin
+						current_loop_mode	<=	state_next;
+					end
+					else begin
+						current_loop_mode	<=	IDLE_WAIT;
 					end
 				end
-
+				
 				STA_ENCRYPTION: begin
 					
 				end
@@ -790,12 +846,8 @@ module axi_full_core#(
 					// This state is responsible to issue start_single_write pulse to                               
 					// initiate a write transaction. Write transactions will be                                     
 					// issued until burst_write_active signal is asserted.                                          
-					// write controller                                                                             
-					if (writes_done) begin                                                                                         
-						mst_exec_state <= IDLE_W;                                                              
-					end
-					else begin
-						mst_exec_state  <= INIT_WRITE;
+					// write controller
+					if (!writes_done) begin
 						if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
 							start_single_burst_write <= 1'b1;
 						end
@@ -809,13 +861,8 @@ module axi_full_core#(
 					// This state is responsible to issue start_single_read pulse to                                
 					// initiate a read transaction. Read transactions will be                                       
 					// issued until burst_read_active signal is asserted.                                           
-					// read controller                                                                              
-					if (reads_done) begin                                                                                         
-						mst_exec_state <= IDLE_RW;                                                             
-					end                                                                                           
-					else begin                                                                                         
-						mst_exec_state  <= INIT_READ;                                                               
-																													
+					// read controller
+					if (!reads_done) begin
 						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
 							start_single_burst_read <= 1'b1;                                                        
 						end                                                                                       
@@ -823,9 +870,11 @@ module axi_full_core#(
 							start_single_burst_read <= 1'b0; //Negate to generate a pulse                            
 						end                                                                                        
 					end
+					if(state_next != INIT_READ) begin
+						loop_counter	<=	loop_counter + 1;
+					end
 				end                                                                                       
-				default: begin                                                                                           
-					mst_exec_state  <= IDLE_RW;                                                              
+				default: begin
 				end                                                                                             
 			endcase                                                                                             
 		end                                                                                                   

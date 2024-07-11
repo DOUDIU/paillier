@@ -1,10 +1,12 @@
 module paillier_axi_top#(
-        // Users to add parameters here
+// Users to add parameters here
         parameter BLOCK_COUNT = 4
 	,	parameter K = 128
-
+    ,   parameter N = 32
+//----------------------------------------------------
+// parameter of AXI-FULL slave port
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h0_0000_0000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
@@ -23,7 +25,8 @@ module paillier_axi_top#(
 	,   parameter integer C_M_AXI_RUSER_WIDTH	= 0
 		// Width of User Response Bus
 	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
-
+//----------------------------------------------------
+// parameter of AXI-LITE slave port
 		// Width of S_AXI data bus
 	,   parameter integer C_S_AXI_DATA_WIDTH	= 32
 		// Width of S_AXI address bus
@@ -254,30 +257,6 @@ module paillier_axi_top#(
     wire                                enc_out_valid           [0 : BLOCK_COUNT - 1]   ;
 
 //---------------------------------------------------
-// FORWARD FIFO STORAGE
-// fifo #(
-//         .FDW                ()
-//     ,   .FAW                ()
-// )u_forwardfifo(
-//         .rst                (~S_AXIS_ARESETN    )
-//     ,   .clr                (1'b0               )
-//     ,   .clk                (S_AXIS_ACLK        )
-//     ,   .wr_rdy             (fwr_rdy            )
-//     ,   .wr_vld             (fwr_vld            )
-//     ,   .wr_din             (fwr_dat            )
-//     ,   .rd_rdy             (frd_rdy            )
-//     ,   .rd_vld             (frd_vld            )
-//     ,   .rd_dout            (frd_din            )
-//     ,   .empty              (frd_empty          )
-//     ,   .full               (fwr_full           )
-//     ,   .fullN              ()
-//     ,   .emptyN             ()
-//     ,   .rd_cnt             (frd_cnt            )
-//     ,   .wr_cnt             (fwr_cnt            )
-// );
-
-
-//---------------------------------------------------
 // FIFO TO AXI FULL
 axi_full_core #(
     //----------------------------------------------------
@@ -306,9 +285,6 @@ axi_full_core #(
 
 //----------------------------------------------------
 // AXI-FULL master port
-    ,   .INIT_AXI_TXN       (INIT_AXI_TXN       )
-    ,   .TXN_DONE           (TXN_DONE           )
-    ,   .ERROR              ()
     ,   .M_AXI_ACLK         (M_AXI_ACLK         )
     ,   .M_AXI_ARESETN      (M_AXI_ARESETN      )
 

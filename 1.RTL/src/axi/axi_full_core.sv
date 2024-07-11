@@ -22,11 +22,13 @@
 
 module axi_full_core#(
     	parameter FDW = 32
-    ,	parameter FAW = 8
 
     ,   parameter FRAME_DELAY = 2 //max 1024
     ,   parameter PIXELS_HORIZONTAL = 1280
     ,   parameter PIXELS_VERTICAL = 1024
+
+	,	parameter BLOCK_COUNT = 4
+	,	parameter K = 128
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h40000000
@@ -49,7 +51,6 @@ module axi_full_core#(
 		// Width of User Response Bus
 	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
 )(
-
 //----------------------------------------------------
 // AXI-FULL master port
     // Initiate AXI transactions
@@ -180,22 +181,47 @@ module axi_full_core#(
     // Read ready. This signal indicates that the master can
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
+	
+//----------------------------------------------------
+// paillier control interface
+	,	input 					paillier_start
+	,	input 		[1	:0]		paillier_mode
+	,	output					paillier_finished
 
 //----------------------------------------------------
-// forward FIFO read interface
-    ,   output  wire           	frd_rdy  
-    ,   input   wire           	frd_vld  
-    ,   input   wire [FDW-1:0] 	frd_din  
-    ,   input   wire           	frd_empty
-    ,   input   wire [FAW:0] 	frd_cnt  
+// paillier accelerator interface
+    ,   output      [2  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
+    ,   output                  task_req					[0 : BLOCK_COUNT - 1]
+    ,   input                   task_end					[0 : BLOCK_COUNT - 1]
 
-// //----------------------------------------------------
-// // backward FIFO write interface
-//     ,   input   wire           	bwr_rdy  
-//     ,   output  reg           	bwr_vld  
-//     ,   output  reg  [FDW-1:0] 	bwr_dat  
-//     ,   input   wire           	bwr_full
-//     ,   input   wire [FAW:0] 	brd_cnt  
+    ,   output    	[K-1:0]     enc_g_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            enc_g_valid					[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            enc_m_valid					[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            enc_r_valid					[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            enc_n_valid					[0 : BLOCK_COUNT - 1]
+
+    ,   output    	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            dec_c_valid					[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
+    ,   output    	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
+    ,   output    	            dec_n_valid					[0 : BLOCK_COUNT - 1]
+
+    ,   output    	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
+    ,   output    	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
+    ,   output    	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
+
+    ,   output    	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
+    ,   output    	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output    	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
+    ,   output    	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
+
+    ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
+    ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
 );
 
 
@@ -389,7 +415,7 @@ module axi_full_core#(
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
-			axi_awaddr <= (axi_awaddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL * FRAME_DELAY - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : (axi_awaddr + burst_size_bytes);                   
+			axi_awaddr <= (axi_awaddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : (axi_awaddr + burst_size_bytes);                   
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -496,10 +522,10 @@ module axi_full_core#(
 		//else if (wnext && axi_wlast)                                                  
 		//  axi_wdata <= 'b0;      
 		else if (M_AXI_AWREADY && axi_awvalid) begin
-			axi_wdata <= frd_din;
+			// axi_wdata <= frd_din;
 		end                                                     
 		else if (wnext) begin                                                                 
-			axi_wdata <= frd_din;
+			// axi_wdata <= frd_din;
 		end                                                   
 		else begin                                                                           
 			axi_wdata <= axi_wdata;
@@ -584,7 +610,7 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-	    	axi_araddr <= (axi_araddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL * FRAME_DELAY - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : axi_araddr + burst_size_bytes;
+	    	axi_araddr <= (axi_araddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : axi_araddr + burst_size_bytes;
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -786,8 +812,7 @@ module axi_full_core#(
 				IDLE_W:                                                                                     
 				// This state is responsible to wait for user defined C_M_START_COUNT                           
 				// number of clock cycles.                                                                      
-				//if ( init_txn_pulse == 1'b1) begin         
-				if(frd_cnt >= (PIXELS_HORIZONTAL*8)/FDW) begin                                                            
+				if ( init_txn_pulse == 1'b1) begin                                                               
 					mst_exec_state  <= INIT_WRITE;                                                              
 					ERROR <= 1'b0;
 					compare_done <= 1'b0;

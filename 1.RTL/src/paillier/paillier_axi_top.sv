@@ -1,16 +1,7 @@
 module paillier_axi_top#(
         // Users to add parameters here
         parameter BLOCK_COUNT = 4
-
-	// 	// AXI4Stream sink: Data Width
-    // ,   parameter AXIS_DATA_WIDTH = 32
-    //     // Delay number of the frame, the max value is 1024(constrained by the bits of the counter)
-    // ,   parameter FRAME_MAX = 4
-
-        //the max depth of the fifo: 2^FIFO_AW
-    ,   parameter FIFO_AW = 10
-        // AXI4 sink: Data Width as same as the data depth of the fifo
-    ,   parameter AXI4_DATA_WIDTH = 128
+	,	parameter K = 128
 
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h10000000
@@ -226,84 +217,64 @@ module paillier_axi_top#(
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
 );
-
-genvar o;
+    genvar o;
 
 //----------------------------------------------------
 // wire definition
-    wire 		                        paillier_start      ;
-    wire [1:0]	                        paillier_mode       ;
-    wire 			                    paillier_finished   ;
+    wire    		                    paillier_start      ;
+    wire    [1:0]	                    paillier_mode       ;
+    wire    			                paillier_finished   ;
 
-
-    wire                                fwr_rdy             ;
-    wire                                fwr_vld             ;
-    wire [AXI4_DATA_WIDTH-1:0]          fwr_dat             ;
-    wire                                fwr_full            ;
-    wire [FIFO_AW:0]                    fwr_cnt             ;
-
-    wire                                frd_rdy             ;
-    wire                                frd_vld             ;
-    wire [AXI4_DATA_WIDTH-1:0]          frd_din             ;
-    wire                                frd_empty           ;
-    wire [FIFO_AW:0]                    frd_cnt             ;
-
-//---------------------------------------------------
-// AXI STREAM to FORWARD FIFO
-axis2fifo #(
-        .FAW                ()
-    ,   .AXIS_DATA_WIDTH    ()
-    ,   .AXI4_DATA_WIDTH    ()
-    ,   .FRAME_DELAY        ()
-)u_axis_salve2fifo(
-//----------------------------------------------------
-// AXIS slave port
-        .S_AXIS_ACLK        (S_AXIS_ACLK        )
-    ,   .S_AXIS_ARESETN     (S_AXIS_ARESETN     )
-    ,   .S_AXIS_TREADY      (S_AXIS_TREADY      )
-    ,   .S_AXIS_TDATA       (S_AXIS_TDATA       )
-    ,   .S_AXIS_TSTRB       (S_AXIS_TSTRB       )
-    ,   .S_AXIS_TLAST       (S_AXIS_TLAST       )
-    ,   .S_AXIS_TVALID      (S_AXIS_TVALID      )
-    ,   .S_AXIS_USER        (S_AXIS_TUSER       )
-
-//----------------------------------------------------
-// FIFO write interface
-    ,   .fwr_rdy            (fwr_rdy            )
-    ,   .fwr_vld            (fwr_vld            )
-    ,   .fwr_dat            (fwr_dat            )
-    ,   .fwr_full           (fwr_full           )
-    ,   .fwr_cnt            (fwr_cnt            )
-
-//----------------------------------------------------
-// USER INTERFACE
-    ,   .frame_cnt          ()
-);
-
-
+    wire    [2  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
+    wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
+    wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     enc_g_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                enc_g_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     enc_m_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     enc_r_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                enc_r_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     enc_n_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                enc_n_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     dec_c_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                dec_c_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     dec_lambda_data         [0 : BLOCK_COUNT - 1]   ;
+    wire                                dec_lambda_valid        [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     dec_n_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                                dec_n_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     homo_add_c1             [0 : BLOCK_COUNT - 1]   ;
+    wire                                homo_add_c1_valid       [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     homo_add_c2             [0 : BLOCK_COUNT - 1]   ;
+    wire                                homo_add_c2_valid       [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     scalar_mul_c1           [0 : BLOCK_COUNT - 1]   ;
+    wire                                scalar_mul_c1_valid     [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     scalar_mul_const        [0 : BLOCK_COUNT - 1]   ;
+    wire                                scalar_mul_const_valid  [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     enc_out_data            [0 : BLOCK_COUNT - 1]   ;
+    wire                                enc_out_valid           [0 : BLOCK_COUNT - 1]   ;
 
 //---------------------------------------------------
 // FORWARD FIFO STORAGE
-fifo #(
-        .FDW                ()
-    ,   .FAW                ()
-)u_forwardfifo(
-        .rst                (~S_AXIS_ARESETN    )
-    ,   .clr                (1'b0               )
-    ,   .clk                (S_AXIS_ACLK        )
-    ,   .wr_rdy             (fwr_rdy            )
-    ,   .wr_vld             (fwr_vld            )
-    ,   .wr_din             (fwr_dat            )
-    ,   .rd_rdy             (frd_rdy            )
-    ,   .rd_vld             (frd_vld            )
-    ,   .rd_dout            (frd_din            )
-    ,   .empty              (frd_empty          )
-    ,   .full               (fwr_full           )
-    ,   .fullN              ()
-    ,   .emptyN             ()
-    ,   .rd_cnt             (frd_cnt            )
-    ,   .wr_cnt             (fwr_cnt            )
-);
+// fifo #(
+//         .FDW                ()
+//     ,   .FAW                ()
+// )u_forwardfifo(
+//         .rst                (~S_AXIS_ARESETN    )
+//     ,   .clr                (1'b0               )
+//     ,   .clk                (S_AXIS_ACLK        )
+//     ,   .wr_rdy             (fwr_rdy            )
+//     ,   .wr_vld             (fwr_vld            )
+//     ,   .wr_din             (fwr_dat            )
+//     ,   .rd_rdy             (frd_rdy            )
+//     ,   .rd_vld             (frd_vld            )
+//     ,   .rd_dout            (frd_din            )
+//     ,   .empty              (frd_empty          )
+//     ,   .full               (fwr_full           )
+//     ,   .fullN              ()
+//     ,   .emptyN             ()
+//     ,   .rd_cnt             (frd_cnt            )
+//     ,   .wr_cnt             (fwr_cnt            )
+// );
 
 
 //---------------------------------------------------
@@ -311,9 +282,8 @@ fifo #(
 axi_full_core #(
     //----------------------------------------------------
     // FIFO parameters
-        .FDW                            ()
-    ,   .FAW                            ()
-    ,   .FRAME_DELAY                    ()
+	 	.BLOCK_COUNT                    (BLOCK_COUNT                )
+	,	.K                              (K                          )
 
     //----------------------------------------------------
     // AXI-FULL parameters
@@ -333,14 +303,6 @@ axi_full_core #(
         .paillier_start     (paillier_start     )
     ,   .paillier_mode      (paillier_mode      )
     ,   .paillier_finished  (paillier_finished  )
-
-//----------------------------------------------------
-// forward FIFO read interface
-    ,   .frd_rdy            (frd_rdy            )
-    ,   .frd_vld            (frd_vld            )
-    ,   .frd_din            (frd_din            )
-    ,   .frd_empty          (frd_empty          )
-    ,   .frd_cnt            (frd_cnt            )   
 
 //----------------------------------------------------
 // AXI-FULL master port
@@ -443,41 +405,41 @@ saxi_lite_core #(
 generate 
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
             paillier_top paillier_top_inst(
-                .clk                        ()
-            ,   .rst_n                      ()
-            
-            ,   .task_cmd                   ()
-            ,   .task_req                   ()
-            ,   .task_end                   () 
-            
-            ,   .enc_g_data                 ()
-            ,   .enc_g_valid                ()
-            ,   .enc_m_data                 ()
-            ,   .enc_m_valid                ()
-            ,   .enc_r_data                 ()
-            ,   .enc_r_valid                ()
-            ,   .enc_n_data                 ()
-            ,   .enc_n_valid                ()
-            
-            ,   .dec_c_data                 ()
-            ,   .dec_c_valid                ()
-            ,   .dec_lambda_data            ()
-            ,   .dec_lambda_valid           ()
-            ,   .dec_n_data                 ()
-            ,   .dec_n_valid                ()
-            
-            ,   .homo_add_c1                ()
-            ,   .homo_add_c1_valid          ()
-            ,   .homo_add_c2                ()
-            ,   .homo_add_c2_valid          ()
-            
-            ,   .scalar_mul_c1              ()
-            ,   .scalar_mul_c1_valid        () 
-            ,   .scalar_mul_const           ()
-            ,   .scalar_mul_const_valid     () 
+                .clk                        (M_AXI_ACLK                 )
+            ,   .rst_n                      (M_AXI_ARESETN              )
 
-            ,   .enc_out_data               ()
-            ,   .enc_out_valid              ()
+            ,   .task_cmd                   (task_cmd               [o] )
+            ,   .task_req                   (task_req               [o] )
+            ,   .task_end                   (task_end               [o] ) 
+
+            ,   .enc_g_data                 (enc_g_data             [o] )
+            ,   .enc_g_valid                (enc_g_valid            [o] )
+            ,   .enc_m_data                 (enc_m_data             [o] )
+            ,   .enc_m_valid                (enc_m_valid            [o] )
+            ,   .enc_r_data                 (enc_r_data             [o] )
+            ,   .enc_r_valid                (enc_r_valid            [o] )
+            ,   .enc_n_data                 (enc_n_data             [o] )
+            ,   .enc_n_valid                (enc_n_valid            [o] )
+
+            ,   .dec_c_data                 (dec_c_data             [o] )
+            ,   .dec_c_valid                (dec_c_valid            [o] )
+            ,   .dec_lambda_data            (dec_lambda_data        [o] )
+            ,   .dec_lambda_valid           (dec_lambda_valid       [o] )
+            ,   .dec_n_data                 (dec_n_data             [o] )
+            ,   .dec_n_valid                (dec_n_valid            [o] )
+
+            ,   .homo_add_c1                (homo_add_c1            [o] )
+            ,   .homo_add_c1_valid          (homo_add_c1_valid      [o] )
+            ,   .homo_add_c2                (homo_add_c2            [o] )
+            ,   .homo_add_c2_valid          (homo_add_c2_valid      [o] )
+
+            ,   .scalar_mul_c1              (scalar_mul_c1          [o] )
+            ,   .scalar_mul_c1_valid        (scalar_mul_c1_valid    [o] ) 
+            ,   .scalar_mul_const           (scalar_mul_const       [o] )
+            ,   .scalar_mul_const_valid     (scalar_mul_const_valid [o] ) 
+
+            ,   .enc_out_data               (enc_out_data           [o] )
+            ,   .enc_out_valid              (enc_out_valid          [o] )
         );
     end
 endgenerate

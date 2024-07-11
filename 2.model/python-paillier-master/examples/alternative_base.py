@@ -143,6 +143,9 @@ def homomorphic_addition_example():
     print("Encrypting the encoded numbers")
     encrypted_a = public_key.encrypt(encoded_a,None,r)
     encrypted_b = public_key.encrypt(encoded_b,None,r)
+    # RESULT_LOG = open("result_log.txt",'w').close()
+    # data_seperate_printf(encrypted_a.ciphertext(False),128, 4096//128,1)
+    # data_seperate_printf(encrypted_b.ciphertext(False),128, 4096//128,1)
 
     print("Adding the encrypted numbers")
     encrypted_c = encrypted_a + encrypted_b #EncryptedNumber: E(a + b), calculated by taking the product of E(a) and E(b) modulo n` ** 2
@@ -162,6 +165,8 @@ def scalar_postive_multiplication_example():
 
     a = 102545 + (64 ** 8)
     const_scalar = 34+(11**3)
+    # RESULT_LOG = open("result_log.txt",'w').close()
+    # data_seperate_printf(const_scalar,128, 4096//128,1)
     r = 123 + (8 ** 20) #ramdom number
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
@@ -173,7 +178,10 @@ def scalar_postive_multiplication_example():
     encrypted_a = public_key.encrypt(encoded_a,None,r)
 
     print("Multiplying the encrypted number by a scalar")
-    encrypted_b = const_scalar * encrypted_a
+    encrypted_b = const_scalar * encrypted_a #EncryptedNumber: E(a * scalar), calculated by taking the power exponent of E(a) and scalar modulo n` ** 2
+
+    print('encrypted_b: 0x{:x}\n'.format(encrypted_b.ciphertext(False)))
+    print('encrypted_b_verification: 0x{:x}\n'.format(paillier.powmod(encrypted_a.ciphertext(False), const_scalar, public_key.nsquare)))
 
     print("Decrypting the one encrypted sum")
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_b, ExampleEncodedNumber)
@@ -212,4 +220,4 @@ def scalar_negative_multiplication_example():
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
 
 if __name__ == "__main__":
-    scalar_negative_multiplication_example()
+    scalar_postive_multiplication_example()

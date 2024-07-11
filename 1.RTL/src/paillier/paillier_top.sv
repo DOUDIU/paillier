@@ -15,9 +15,9 @@ module paillier_top#(
         input                   clk
     ,   input                   rst_n   
 
-    ,   input       [2  :0]     task_cmd
+    ,   input       [1  :0]     task_cmd
     ,   input                   task_req
-    ,   output                  task_end            //unused signal
+    ,   output  reg             task_end
 
     ,   input       [K-1:0]     enc_g_data
     ,   input                   enc_g_valid
@@ -84,16 +84,16 @@ assign  PAILLIER_N          =       {
     128'hd2c5de79b62fb1a1a8e12114c110a8bf
 };
 
-reg                     me_start_0      ;
-reg     [K-1    : 0]    me_x_0          ;
-reg                     me_x_valid_0    ;
-reg     [K-1    : 0]    me_y_0          ;
-reg                     me_y_valid_0    ;
-wire    [K-1    : 0]    me_result_0     ;
-wire                    me_valid_0      ;
+reg                             me_start_0              ;
+reg     [K-1            : 0]    me_x_0                  ;
+reg                             me_x_valid_0            ;
+reg     [K-1            : 0]    me_y_0                  ;
+reg                             me_y_valid_0            ;
+wire    [K-1            : 0]    me_result_0             ;
+wire                            me_valid_0              ;
 
 reg     [K-1            : 0]    me_result_0_storage     [N-1:0] ;
-reg     [$clog2(N)-1    : 0]    me_result_0_cnt         =   0;
+reg     [$clog2(N)-1    : 0]    me_result_0_cnt     =   0;
 
 
 reg                             mm_start_0              ;
@@ -107,7 +107,7 @@ wire    [K-1            : 0]    mm_result_0             ;
 wire                            mm_valid_0              ;
 
 reg     [K-1            : 0]    mm_result_0_storage     [N-1:0] ;
-reg     [$clog2(N)-1    : 0]    mm_result_0_cnt         =   0;
+reg     [$clog2(N)-1    : 0]    mm_result_0_cnt     =   0;
 
 
 localparam  STA_IDLE                = 0,
@@ -139,10 +139,10 @@ always@(*) begin
         STA_IDLE: begin
             if(task_req) begin
                 case(task_cmd)
-                    3'b000:     state_next = STA_ENCRYPTION_ME;
-                    3'b001:     state_next = STA_DECRYPTION_ME;
-                    3'b010:     state_next = STA_HOMOMORPHIC_ADD;
-                    3'b011:     state_next = STA_SCALAR_MUL;
+                    2'b00:     state_next = STA_ENCRYPTION_ME;
+                    2'b01:     state_next = STA_DECRYPTION_ME;
+                    2'b10:     state_next = STA_HOMOMORPHIC_ADD;
+                    2'b11:     state_next = STA_SCALAR_MUL;
                     default:    state_next = STA_IDLE;
                 endcase
             end
@@ -213,6 +213,8 @@ always@(posedge clk or negedge rst_n) begin
 
         enc_out_data        <=  0;
         enc_out_valid       <=  0;
+
+        task_end            <=  0;
     end
     else begin
         mm_addr_d1          <=  mm_addr; 
@@ -222,6 +224,7 @@ always@(posedge clk or negedge rst_n) begin
                 mm_result_0_cnt     <=      0;
                 enc_out_data        <=      0;
                 enc_out_valid       <=      0;
+                task_end            <=      0;
                 mm_addr             <=      0;
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0          <=      1;
@@ -288,6 +291,9 @@ always@(posedge clk or negedge rst_n) begin
                 end
                 enc_out_data        <=  mm_result_0;
                 enc_out_valid       <=  mm_valid_0;
+                if(mm_result_0_cnt == N - 1) begin
+                    task_end        <=  1;
+                end
             end
             STA_DECRYPTION_ME: begin
                 me_start_0          <=      0;
@@ -311,6 +317,9 @@ always@(posedge clk or negedge rst_n) begin
                 end
                 enc_out_data        <=  mm_result_0;
                 enc_out_valid       <=  mm_valid_0;
+                if(mm_result_0_cnt == N - 1) begin
+                    task_end        <=  1;
+                end
             end
             STA_SCALAR_MUL: begin
                 me_start_0          <=      0;
@@ -319,10 +328,13 @@ always@(posedge clk or negedge rst_n) begin
                 me_y_0              <=      scalar_mul_const;
                 me_y_valid_0        <=      scalar_mul_const_valid;
                 if(me_valid_0) begin
-                    me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                    me_result_0_cnt     <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
-                enc_out_data        <=  me_valid_0;
-                enc_out_valid       <=  me_result_0;
+                enc_out_data        <=  me_result_0;
+                enc_out_valid       <=  me_valid_0;
+                if(me_result_0_cnt == N - 1) begin
+                    task_end        <=  1;
+                end
             end
             default: begin
             end

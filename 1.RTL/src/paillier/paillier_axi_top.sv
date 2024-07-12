@@ -231,26 +231,29 @@ module paillier_axi_top#(
     wire    [2  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
+    
     wire    [K-1:0]                     enc_m_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     enc_r_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                enc_r_valid             [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     enc_n_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                enc_n_valid             [0 : BLOCK_COUNT - 1]   ;
+
     wire    [K-1:0]                     dec_c_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                dec_c_valid             [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     dec_lambda_data         [0 : BLOCK_COUNT - 1]   ;
     wire                                dec_lambda_valid        [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     dec_n_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                dec_n_valid             [0 : BLOCK_COUNT - 1]   ;
+
     wire    [K-1:0]                     homo_add_c1             [0 : BLOCK_COUNT - 1]   ;
     wire                                homo_add_c1_valid       [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     homo_add_c2             [0 : BLOCK_COUNT - 1]   ;
     wire                                homo_add_c2_valid       [0 : BLOCK_COUNT - 1]   ;
+
     wire    [K-1:0]                     scalar_mul_c1           [0 : BLOCK_COUNT - 1]   ;
     wire                                scalar_mul_c1_valid     [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     scalar_mul_const        [0 : BLOCK_COUNT - 1]   ;
     wire                                scalar_mul_const_valid  [0 : BLOCK_COUNT - 1]   ;
+
     wire    [K-1:0]                     enc_out_data            [0 : BLOCK_COUNT - 1]   ;
     wire                                enc_out_valid           [0 : BLOCK_COUNT - 1]   ;
 
@@ -390,8 +393,6 @@ generate
             ,   .enc_m_valid                (enc_m_valid            [o] )
             ,   .enc_r_data                 (enc_r_data             [o] )
             ,   .enc_r_valid                (enc_r_valid            [o] )
-            ,   .enc_n_data                 (enc_n_data             [o] )
-            ,   .enc_n_valid                (enc_n_valid            [o] )
 
             ,   .dec_c_data                 (dec_c_data             [o] )
             ,   .dec_c_valid                (dec_c_valid            [o] )

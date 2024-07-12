@@ -23,8 +23,6 @@ module paillier_top#(
     ,   input                   enc_m_valid
     ,   input       [K-1:0]     enc_r_data
     ,   input                   enc_r_valid
-    ,   input       [K-1:0]     enc_n_data
-    ,   input                   enc_n_valid
 
     ,   input       [K-1:0]     dec_c_data
     ,   input                   dec_c_valid
@@ -83,6 +81,8 @@ assign  PAILLIER_N          =       {
 };
 
 reg                             me_start_0              ;
+reg     [$clog2(N)-1    : 0]    me_addr                 ;
+reg     [$clog2(N)-1    : 0]    me_addr_d1              ;
 reg     [K-1            : 0]    me_x_0                  ;
 reg                             me_x_valid_0            ;
 reg     [K-1            : 0]    me_y_0                  ;
@@ -193,6 +193,8 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
+        me_addr             <=  0;
+        me_addr_d1          <=  0;
         me_start_0          <=  0;
         me_x_0              <=  0;
         me_x_valid_0        <=  0;
@@ -216,6 +218,7 @@ always@(posedge clk or negedge rst_n) begin
     end
     else begin
         mm_addr_d1          <=  mm_addr; 
+        me_addr_d1          <=  me_addr;
         case(state_now)
             STA_IDLE: begin
                 me_result_0_cnt     <=      0;
@@ -224,6 +227,7 @@ always@(posedge clk or negedge rst_n) begin
                 enc_out_valid       <=      0;
                 task_end            <=      0;
                 mm_addr             <=      0;
+                me_addr             <=      0;
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0          <=      1;
                     mm_start_0          <=      1;
@@ -237,10 +241,17 @@ always@(posedge clk or negedge rst_n) begin
             end
             STA_ENCRYPTION_ME: begin
                 me_start_0          <=      0;
+                me_addr             <=      me_addr < N - 1 ? me_addr + 1 : me_addr;
                 me_x_0              <=      enc_r_data;
                 me_x_valid_0        <=      enc_r_valid;
-                me_y_0              <=      enc_n_data;
-                me_y_valid_0        <=      enc_n_valid;
+                if(me_addr_d1 < N - 1) begin
+                    me_y_0              <=  PAILLIER_N[me_addr];
+                    me_y_valid_0        <=  1;
+                end
+                else begin
+                    me_y_0              <=  0;
+                    me_y_valid_0        <=  0;
+                end
                 if(me_valid_0) begin
                     me_result_0_storage[me_result_0_cnt]    <=      me_result_0;
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;

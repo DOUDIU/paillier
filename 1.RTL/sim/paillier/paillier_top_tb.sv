@@ -293,8 +293,6 @@ reg     [K-1:0]     enc_m_data              ;
 reg                 enc_m_valid             ;
 reg     [K-1:0]     enc_r_data              ;
 reg                 enc_r_valid             ;
-reg     [K-1:0]     enc_n_data              ;
-reg                 enc_n_valid             ;
 
 reg     [K-1:0]     dec_c_data              ;
 reg                 dec_c_valid             ;
@@ -341,8 +339,6 @@ paillier_top #(
     ,   .enc_m_valid                (enc_m_valid                )
     ,   .enc_r_data                 (enc_r_data                 )
     ,   .enc_r_valid                (enc_r_valid                )
-    ,   .enc_n_data                 (enc_n_data                 )
-    ,   .enc_n_valid                (enc_n_valid                )
 
     ,   .dec_c_data                 (dec_c_data                 )
     ,   .dec_c_valid                (dec_c_valid                )
@@ -372,10 +368,8 @@ task paillier_encrypt_task;
     task_req    <=  0;
     enc_m_data  <=  0;
     enc_r_data  <=  0;
-    enc_n_data  <=  0;
     enc_m_valid <=  0;
     enc_r_valid <=  0;
-    enc_n_valid <=  0;
 
     @(posedge rst_n);
     #40
@@ -389,15 +383,12 @@ task paillier_encrypt_task;
         @(posedge clk);
         enc_m_data  <=  PAILLIER_M[i];
         enc_r_data  <=  PAILLIER_R[i];
-        enc_n_data  <=  PAILLIER_N[i];
         enc_m_valid <=  1;
         enc_r_valid <=  1;
-        enc_n_valid <=  1;
     end
     @(posedge clk);
     enc_m_valid <=  0;
     enc_r_valid <=  0;
-    enc_n_valid <=  0;
     wait(enc_out_valid);
     PAILLIER_ENC_RESULT      = {PAILLIER_ENC_RESULT[(K*N-K-1):0],enc_out_data};
     for (integer i = 0; i <= N-1; i = i + 1) begin

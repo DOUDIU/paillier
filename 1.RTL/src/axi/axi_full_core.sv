@@ -188,8 +188,6 @@ module axi_full_core#(
     ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
     ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
     ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            enc_n_valid					[0 : BLOCK_COUNT - 1]
 
     ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
     ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
@@ -815,16 +813,12 @@ module axi_full_core#(
 	end
     // ,   output	reg	[1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	            task_req					[0 : BLOCK_COUNT - 1]
-    // ,   input                   task_end					[0 : BLOCK_COUNT - 1]
+    // ,   input                    task_end					[0 : BLOCK_COUNT - 1]
 
-    // ,   output	reg	[K-1:0]     enc_g_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            enc_g_valid					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            enc_n_valid					[0 : BLOCK_COUNT - 1]
 
     // ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
     // ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
@@ -864,22 +858,20 @@ module axi_full_core#(
 				enc_m_valid	[j]	<=	0;
 				enc_r_data	[j]	<=	0;
 				enc_r_valid	[j]	<=	0;
-				enc_n_data	[j]	<=	0;
-				enc_n_valid	[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
-				dec_c_data				[j]	<=	0;
-				dec_c_valid				[j]	<=	0;
-				dec_lambda_data			[j]	<=	0;
-				dec_lambda_valid		[j]	<=	0;
-				dec_n_data				[j]	<=	0;
-				dec_n_valid				[j]	<=	0;
+				dec_c_data			[j]	<=	0;
+				dec_c_valid			[j]	<=	0;
+				dec_lambda_data		[j]	<=	0;
+				dec_lambda_valid	[j]	<=	0;
+				dec_n_data			[j]	<=	0;
+				dec_n_valid			[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
-				homo_add_c1				[j]	<=	0;
-				homo_add_c1_valid		[j]	<=	0;
-				homo_add_c2				[j]	<=	0;
-				homo_add_c2_valid		[j]	<=	0;
+				homo_add_c1			[j]	<=	0;
+				homo_add_c1_valid	[j]	<=	0;
+				homo_add_c2			[j]	<=	0;
+				homo_add_c2_valid	[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				scalar_mul_c1			[j]	<=	0;

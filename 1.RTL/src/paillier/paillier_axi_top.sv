@@ -231,8 +231,6 @@ module paillier_axi_top#(
     wire    [2  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     enc_g_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                enc_g_valid             [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     enc_m_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     enc_r_data              [0 : BLOCK_COUNT - 1]   ;
@@ -388,8 +386,6 @@ generate
             ,   .task_req                   (task_req               [o] )
             ,   .task_end                   (task_end               [o] ) 
 
-            ,   .enc_g_data                 (enc_g_data             [o] )
-            ,   .enc_g_valid                (enc_g_valid            [o] )
             ,   .enc_m_data                 (enc_m_data             [o] )
             ,   .enc_m_valid                (enc_m_valid            [o] )
             ,   .enc_r_data                 (enc_r_data             [o] )

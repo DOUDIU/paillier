@@ -15,7 +15,6 @@ initial #100 rst_n = 1;
 
 wire    [K-1    :   0]      PAILLIER_N              [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_N_SQUARE       [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_G              [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_M              [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_R              [N-1:0] ;
 
@@ -280,13 +279,6 @@ assign PAILLIER_HOMOMORPHIC_ADD_RESULT_CONFIRM =
 assign PAILLIER_POSTIVE_SCALAR_MUL_RESULT_CONFIRM = 
     4096'h8ae38ca70b6322b2b552b35e545efa4c9b4e82c402598dd8a8e7c47d2f87da6e43e68d9cf70ba51cd82bb8c71f3d7cf012e6c107c10174658aee26b50af8a44021c9a21b8090d3252d36af98b56622d220a29eb9afd9edb9e8a0cf58d29eaea148094e85c3ddc54561f4758503b32efa4253f7d8c418598f4609515315d1216ee34b8833608707b7afe6bf7e209200857f7baa06dcec92de158db58b738840f42ea573c75c949fccf675a4c5e92512ba84363446ad240406c90c458e141d975f6807027ad4269b4b8cef188a9e150f9d3b8e9681146e96db313eb896814490ad95a95918ac63ef3a95c11b51945d2827fe1db44c19cde01d17f6a3ccf29bef7bb5125c044ac23aef94fc8f636a3e5703728331103e31d119b709b460bd651945a0aa7a62407886ac970751fffa6edfaff3a3c9fc3d50f1bfc942f80ba898f1e23f8409bfbc72f2ea866774236b7528d5de76524a584ef74ea20c072461d260eacc3e73ed548e29f154c9bce54eddb13e70db47601a291a4238c3e3b04901ae6e98cbdfc047197d37a6ce7018493698e81a98e3364ed3e73117687e64984531dc7d048682b9cf46129f1da43d51fb82f1e497639fcbc6d1ff901f796145ace2d44e1dc59cc0f66cc222d333d1fa7213f342db41e599e4998cceb5f64126761a18aee1c876e93062a6feb965cd915739409fdbd55130d07a8658cee1fb0156c3f8;
 
-//some problem here, if overflow, the result will be wrong.
-generate
-    for(genvar i = 1; i < N; i = i + 1) begin
-        assign PAILLIER_G[i] = PAILLIER_N[i];
-    end
-endgenerate
-assign PAILLIER_G[0] = PAILLIER_N[0] + 1; 
 
 
 
@@ -297,8 +289,6 @@ assign PAILLIER_G[0] = PAILLIER_N[0] + 1;
 reg     [1  :0]     task_cmd                ;
 reg                 task_req                ;
 
-reg     [K-1:0]     enc_g_data              ;
-reg                 enc_g_valid             ;
 reg     [K-1:0]     enc_m_data              ;
 reg                 enc_m_valid             ;
 reg     [K-1:0]     enc_r_data              ;
@@ -347,8 +337,6 @@ paillier_top #(
     ,   .task_cmd                   (task_cmd                   )
     ,   .task_req                   (task_req                   )
 
-    ,   .enc_g_data                 (enc_g_data                 )
-    ,   .enc_g_valid                (enc_g_valid                )
     ,   .enc_m_data                 (enc_m_data                 )
     ,   .enc_m_valid                (enc_m_valid                )
     ,   .enc_r_data                 (enc_r_data                 )
@@ -382,11 +370,9 @@ paillier_top #(
 task paillier_encrypt_task;
     task_cmd    <=  2'b00;
     task_req    <=  0;
-    enc_g_data  <=  0;
     enc_m_data  <=  0;
     enc_r_data  <=  0;
     enc_n_data  <=  0;
-    enc_g_valid <=  0;
     enc_m_valid <=  0;
     enc_r_valid <=  0;
     enc_n_valid <=  0;
@@ -401,17 +387,14 @@ task paillier_encrypt_task;
     task_cmd    <=  0;
     for(integer i = 0; i < 32; i = i + 1) begin
         @(posedge clk);
-        enc_g_data  <=  PAILLIER_G[i];
         enc_m_data  <=  PAILLIER_M[i];
         enc_r_data  <=  PAILLIER_R[i];
         enc_n_data  <=  PAILLIER_N[i];
-        enc_g_valid <=  1;
         enc_m_valid <=  1;
         enc_r_valid <=  1;
         enc_n_valid <=  1;
     end
     @(posedge clk);
-    enc_g_valid <=  0;
     enc_m_valid <=  0;
     enc_r_valid <=  0;
     enc_n_valid <=  0;
@@ -514,8 +497,7 @@ task paillier_postive_scalar_multiplication_task;
 endtask
 
 initial begin
-    // paillier_encrypt_task;
-    paillier_postive_scalar_multiplication_task;
+    paillier_encrypt_task;
 end
 
 

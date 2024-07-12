@@ -19,8 +19,6 @@ module paillier_top#(
     ,   input                   task_req
     ,   output  reg             task_end
 
-    ,   input       [K-1:0]     enc_g_data
-    ,   input                   enc_g_valid
     ,   input       [K-1:0]     enc_m_data
     ,   input                   enc_m_valid
     ,   input       [K-1:0]     enc_r_data

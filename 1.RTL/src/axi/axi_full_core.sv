@@ -176,44 +176,43 @@ module axi_full_core#(
 // paillier control interface
 	,	input 					paillier_start
 	,	input 		[1	:0]		paillier_mode
-	,	output					paillier_finished
+	,	output	reg				paillier_finished
 
 //----------------------------------------------------
 // paillier accelerator interface
-    ,   output      [1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
-    ,   output                  task_req					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            task_req					[0 : BLOCK_COUNT - 1]
     ,   input                   task_end					[0 : BLOCK_COUNT - 1]
 
-    ,   output    	[K-1:0]     enc_g_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            enc_g_valid					[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            enc_m_valid					[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            enc_r_valid					[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            enc_n_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            enc_n_valid					[0 : BLOCK_COUNT - 1]
 
-    ,   output    	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            dec_c_valid					[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
-    ,   output    	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
-    ,   output    	            dec_n_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            dec_n_valid					[0 : BLOCK_COUNT - 1]
 
-    ,   output    	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
-    ,   output    	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
-    ,   output    	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
 
-    ,   output    	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
-    ,   output    	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
-    ,   output    	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
-    ,   output    	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
+    ,   output	reg	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
 
     ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
     ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
 );
-
+	integer		i,j,k;
+	genvar		o,p,q;
 
 	// Add user definition here
 	reg		[$clog2(TEST_TIMES) - 1 : 0]	loop_counter;
@@ -814,7 +813,38 @@ module axi_full_core#(
 			end
 		endcase
 	end
+    // ,   output	reg	[1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            task_req					[0 : BLOCK_COUNT - 1]
+    // ,   input                   task_end					[0 : BLOCK_COUNT - 1]
 
+    // ,   output	reg	[K-1:0]     enc_g_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            enc_g_valid					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     enc_n_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            enc_n_valid					[0 : BLOCK_COUNT - 1]
+
+    // ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            dec_n_valid					[0 : BLOCK_COUNT - 1]
+
+    // ,   output	reg	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
+
+    // ,   output	reg	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
+    // ,   output	reg	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
+
+    // ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
+    // ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
@@ -824,6 +854,40 @@ module axi_full_core#(
 
 			loop_counter		<=	0;
 			current_loop_mode	<=	IDLE_WAIT;
+
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				task_req	[j]	<=	0;
+				task_cmd	[j]	<=	0;
+			end
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				enc_m_data	[j]	<=	0;
+				enc_m_valid	[j]	<=	0;
+				enc_r_data	[j]	<=	0;
+				enc_r_valid	[j]	<=	0;
+				enc_n_data	[j]	<=	0;
+				enc_n_valid	[j]	<=	0;
+			end
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				dec_c_data				[j]	<=	0;
+				dec_c_valid				[j]	<=	0;
+				dec_lambda_data			[j]	<=	0;
+				dec_lambda_valid		[j]	<=	0;
+				dec_n_data				[j]	<=	0;
+				dec_n_valid				[j]	<=	0;
+			end
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				homo_add_c1				[j]	<=	0;
+				homo_add_c1_valid		[j]	<=	0;
+				homo_add_c2				[j]	<=	0;
+				homo_add_c2_valid		[j]	<=	0;
+			end
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				scalar_mul_c1			[j]	<=	0;
+				scalar_mul_c1_valid		[j]	<=	0;
+				scalar_mul_const		[j]	<=	0;
+				scalar_mul_const_valid	[j]	<=	0;
+			end
+
 		end
 		else begin
 			// state transition                                                                                 

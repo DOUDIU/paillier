@@ -27,7 +27,7 @@ module axi_full_core#(
 	,	parameter TEST_TIMES 	=	100000
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h40000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h00000000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
@@ -171,52 +171,80 @@ module axi_full_core#(
     // Read ready. This signal indicates that the master can
     // accept the read data and response information.
     ,   output wire  M_AXI_RREADY
-	
+
 //----------------------------------------------------
 // paillier control interface
-	,	input 					paillier_start
-	,	input 		[1	:0]		paillier_mode
-	,	output	reg				paillier_finished
+	,	input 							paillier_start
+	,	input 			[1	:0]			paillier_mode
+	,	output	reg						paillier_finished
 
 //----------------------------------------------------
 // paillier accelerator interface
-    ,   output	reg	[1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            task_req					[0 : BLOCK_COUNT - 1]
-    ,   input                   task_end					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[1  :0]			task_cmd					[0 : BLOCK_COUNT - 1]
+    ,   output	reg						task_req					[0 : BLOCK_COUNT - 1]
+    ,   input							task_end					[0 : BLOCK_COUNT - 1]
 
-    ,   output	reg	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			enc_m_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg						enc_m_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			enc_r_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			enc_r_valid					[0 : BLOCK_COUNT - 1]
 
-    ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            dec_n_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			dec_c_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			dec_c_valid					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			dec_lambda_data				[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			dec_lambda_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			dec_n_data					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			dec_n_valid					[0 : BLOCK_COUNT - 1]
 
-    ,   output	reg	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			homo_add_c1					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			homo_add_c2					[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
 
-    ,   output	reg	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
-    ,   output	reg	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
-    ,   output	reg	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			scalar_mul_c1				[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
+    ,   output	reg		[K-1:0]			scalar_mul_const			[0 : BLOCK_COUNT - 1]
+    ,   output	reg		       			scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
 
-    ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
-    ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
+    ,   input			[K-1:0]			enc_out_data				[0 : BLOCK_COUNT - 1]
+    ,   input			       			enc_out_valid				[0 : BLOCK_COUNT - 1]
+
+//----------------------------------------------------
+// backward fifo read interface
+    ,	output 	reg              		rd_rdy                  	[0 : BLOCK_COUNT - 1]
+    ,	input			[K-1:0]       	rd_dout                 	[0 : BLOCK_COUNT - 1]
+    ,	input			[$clog2(N):0] 	rd_cnt                  	[0 : BLOCK_COUNT - 1]
 );
 	integer		i,j,k;
 	genvar		o,p,q;
 
 	// Add user definition here
-	reg		[$clog2(TEST_TIMES) - 1 : 0]	loop_counter;
-	reg		[1:0]							current_loop_mode;
-	// user definition ends
+	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter;// tha max value = TEST_TIMES * 4
 
+	reg		[BLOCK_COUNT - 1 : 0]			block_is_busy;
+	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	block_is_busy_next;
+	reg		[$clog2(TEST_TIMES) + 1  : 0]	block_targert_addr_cnt	[0:BLOCK_COUNT-1];
+	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
+	wire									all_block_is_busy;
+
+	wire	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
+	wire									all_fifo_is_empty;
+	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
+
+
+	reg		[1 : 0]							single_task_read_cnt;
+
+	// user definition ends
+	assign 	all_block_is_busy = &block_is_busy;
+	assign 	block_lowest_zero_bit = find_lowest_zero_bit(block_is_busy);
+
+	generate 
+		for(o = 0; o < BLOCK_COUNT; o = o + 1) begin : block
+			assign	fifo_is_full[o] = rd_cnt[o] >= N - 1;
+		end
+	endgenerate
+	assign 	all_fifo_is_empty = &(~fifo_is_full);
+	assign	fifo_lowest_zero_bit = find_lowest_zero_bit(~fifo_is_full);
 
 	// function called clogb2 that returns an integer which has the
 	//value of the ceiling of the log base 2
@@ -255,7 +283,9 @@ module axi_full_core#(
 		STA_ENCRYPTION		=	4'b0100,
 		STA_DECRYPTION		=	4'b0101,
 		STA_HOMOMORPHIC_ADD	=	4'b0110,
-		STA_SCALAR_MUL		=	4'b1111;
+		STA_SCALAR_MUL		=	4'b0111,
+		STA_ENCRYPTION_RD	=	4'b1000,
+		STA_ENCRYPTION_WR 	=	4'b1001;
 
 	reg [3:0] state_now;
 	reg [3:0] state_next;
@@ -387,8 +417,8 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                            
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
-		else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
-			// axi_awaddr <= (axi_awaddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : (axi_awaddr + burst_size_bytes);                   
+		else if (M_AXI_AWREADY && axi_awvalid) begin
+			// axi_awaddr	<=	axi_awaddr + burst_size_bytes;
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -580,7 +610,7 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-	    	// axi_araddr <= (axi_araddr >= (PIXELS_VERTICAL * PIXELS_HORIZONTAL - C_M_AXI_BURST_LEN * (C_M_AXI_DATA_WIDTH / 8)) - 1) ? 0 : axi_araddr + burst_size_bytes;
+			axi_araddr <= (loop_counter + single_task_read_cnt) << 11;
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -632,55 +662,22 @@ module axi_full_core#(
 		end
 	    // retain the previous value                 
 	end                                            
-	                                                                        
-	//Check received read data against data generator                       
-	always @(posedge M_AXI_ACLK) begin                                                                 
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
-	        read_mismatch <= 1'b0;                                          
-		end
-	    //Only check data when RVALID is active                             
-	    else if (rnext && (M_AXI_RDATA != expected_rdata)) begin                                                             
-	        read_mismatch <= 1'b1;                                          
-		end
-	    else begin
-	      	read_mismatch <= 1'b0;             
-		end
-	end                                                                   
-	                                                                        
+                                                                      
 	//Flag any read response errors                                         
 	assign read_resp_error = axi_rready & M_AXI_RVALID & M_AXI_RRESP[1];  
-
-
-	//----------------------------------------
-	//Example design read check data generator
-	//-----------------------------------------
-
-	//Generate expected read data to check against actual read data
-
-	always @(posedge M_AXI_ACLK) begin                                                  
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin// || M_AXI_RLAST)             
-			expected_rdata <= 'b1;                            
-		end
-		else if (M_AXI_RVALID && axi_rready) begin 
-			expected_rdata <= expected_rdata + 1; 
-		end            
-		else begin                                                  
-			expected_rdata <= expected_rdata;      
-		end           
-	end                                                    
 
 
 	//----------------------------------
 	//Example design error register
 	//----------------------------------
 
-	//Register and hold any data mismatches, or read/write interface errors 
+	//Register and hold any read/write interface errors
 
 	always @(posedge M_AXI_ACLK) begin                                                              
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
 			error_reg <= 1'b0;                                           
 		end                                                            
-		else if (read_mismatch || write_resp_error || read_resp_error) begin                                                          
+		else if (write_resp_error || read_resp_error) begin                                                          
 			error_reg <= 1'b1;                                           
 		end                                                            
 		else begin                                                            
@@ -719,10 +716,8 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                                                 
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
-		else if (M_AXI_AWREADY && axi_awvalid) begin                                                                                                 
-			// if (write_burst_counter <= (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)) begin                                                         
-			// 	write_burst_counter <= write_burst_counter + 1'b1;        
-			// end                                  
+		else if (M_AXI_AWREADY && axi_awvalid) begin
+			write_burst_counter <= write_burst_counter + 1'b1;
 		end
 		else if(writes_done)begin                                                                                                  
 			write_burst_counter <= 0;         
@@ -735,10 +730,8 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                                                                 
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
-		else if (M_AXI_ARREADY && axi_arvalid) begin                                                                                                 
-			// if (read_burst_counter <= (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)) begin
-			// 	read_burst_counter <= read_burst_counter + 1'b1;
-			// end                                                                                               
+		else if (M_AXI_ARREADY && axi_arvalid) begin                                    
+			read_burst_counter <= read_burst_counter + 1'b1;
 		end                                                                                                   
 		else if(reads_done)begin                                                                                                  
 			read_burst_counter <= 0;     
@@ -764,36 +757,59 @@ module axi_full_core#(
 				// number of clock cycles.
 				if (paillier_start) begin                 
 					case (paillier_mode)                                                                               
-						2'b00: state_next <= STA_ENCRYPTION;
-						2'b01: state_next <= STA_DECRYPTION;
-						2'b10: state_next <= STA_HOMOMORPHIC_ADD;
-						2'b11: state_next <= STA_SCALAR_MUL;
-						default: state_next <= IDLE_WAIT;
+						2'b00: state_next	= STA_ENCRYPTION;
+						2'b01: state_next	= STA_DECRYPTION;
+						2'b10: state_next	= STA_HOMOMORPHIC_ADD;
+						2'b11: state_next	= STA_SCALAR_MUL;
+						default: state_next	= IDLE_WAIT;
 					endcase
 				end                                                                                           
 				else begin
-					state_next  <=	IDLE_WAIT;
+					state_next	=	IDLE_WAIT;
 				end
 			end
-			INIT_WRITE: begin
-				if (writes_done) begin
-					state_now	<=	current_loop_mode;
+			// INIT_WRITE: begin
+			// 	if (writes_done) begin
+			// 		state_now	=	current_loop_mode;
+			// 	end
+			// 	else begin
+			// 		state_now	=	INIT_WRITE;
+			// 	end
+			// end
+			// INIT_READ: begin
+			// 	if (reads_done) begin                                                                                         
+			// 		state_next	=	current_loop_mode;                                                             
+			// 	end           	                                                                             
+			// 	else begin    	                                                                                  
+			// 		state_next	=	INIT_READ;                                                                                   
+			// 	end
+			// end
+			STA_ENCRYPTION: begin
+				if (!all_block_is_busy) begin
+					state_next	=	STA_ENCRYPTION_RD;
+				end
+				else if (!all_fifo_is_empty) begin
+					state_next	=	STA_ENCRYPTION_WR;
+				end
+				else if (loop_counter == TEST_TIMES - 1) begin
+					state_next	=	IDLE_WAIT;
 				end
 				else begin
-					state_now  	<=	INIT_WRITE;
+					state_next	=	STA_ENCRYPTION;
 				end
 			end
-			INIT_READ: begin
-				if (reads_done) begin                                                                                         
-					state_next 	<=	current_loop_mode;                                                             
-				end                                                                                           
-				else begin                                                                                         
-					state_next	<=	INIT_READ;                                                                                   
+			STA_ENCRYPTION_RD: begin
+				if (reads_done) begin
+					state_next	=	STA_ENCRYPTION;
+				end
+				else begin
+					state_next	=	STA_ENCRYPTION_RD;
 				end
 			end
-			STA_ENCRYPTION: begin
-				
+			STA_ENCRYPTION_WR: begin
+
 			end
+
 			STA_DECRYPTION: begin
 				
 			end
@@ -801,42 +817,13 @@ module axi_full_core#(
 				
 			end
 			STA_SCALAR_MUL: begin
-				
+
 			end
-			// IDLE_RW: begin
-				
-			// end
 			default: begin
-				state_next  <= IDLE_WAIT;
+				state_next	= IDLE_WAIT;
 			end
 		endcase
 	end
-    // ,   output	reg	[1  :0]     task_cmd					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            task_req					[0 : BLOCK_COUNT - 1]
-    // ,   input                    task_end					[0 : BLOCK_COUNT - 1]
-
-    // ,   output	reg	[K-1:0]     enc_m_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            enc_m_valid					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     enc_r_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            enc_r_valid					[0 : BLOCK_COUNT - 1]
-
-    // ,   output	reg	[K-1:0]     dec_c_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            dec_c_valid					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     dec_lambda_data				[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            dec_lambda_valid			[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     dec_n_data					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            dec_n_valid					[0 : BLOCK_COUNT - 1]
-
-    // ,   output	reg	[K-1:0]     homo_add_c1					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     homo_add_c2					[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            homo_add_c2_valid			[0 : BLOCK_COUNT - 1]
-
-    // ,   output	reg	[K-1:0]     scalar_mul_c1				[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            scalar_mul_c1_valid			[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	[K-1:0]     scalar_mul_const			[0 : BLOCK_COUNT - 1]
-    // ,   output	reg	            scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
-
     // ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
     // ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
@@ -846,9 +833,12 @@ module axi_full_core#(
 			start_single_burst_write <= 1'b0;                                                                   
 			start_single_burst_read  <= 1'b0;
 
-			loop_counter		<=	0;
-			current_loop_mode	<=	IDLE_WAIT;
+			loop_counter			<=	0;
 
+			block_is_busy			<=	0;
+			block_is_busy_next		<=	0;
+
+			single_task_read_cnt	<=	0;
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				task_req	[j]	<=	0;
 				task_cmd	[j]	<=	0;
@@ -880,56 +870,96 @@ module axi_full_core#(
 				scalar_mul_const_valid	[j]	<=	0;
 			end
 
+			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
+				block_targert_addr_cnt[i]	<=	0;
+			end
 		end
 		else begin
 			// state transition                                                                                 
 			case (state_now)
 				IDLE_WAIT : begin
 					loop_counter	<=	0;
-					if(state_next != IDLE_WAIT) begin
-						current_loop_mode	<=	state_next;
+				end
+
+				STA_ENCRYPTION: begin
+					if(state_next == STA_ENCRYPTION_RD) begin
+						task_cmd[block_lowest_zero_bit]					<=	single_task_read_cnt == 0 ? STA_ENCRYPTION[1:0] : 0;
+						task_req[block_lowest_zero_bit]					<=	single_task_read_cnt == 0 ? 1 : 0;
+						single_task_read_cnt							<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
+						block_is_busy_next 								<=	block_lowest_zero_bit;
+						block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 11;
 					end
-					else begin
-						current_loop_mode	<=	IDLE_WAIT;
+
+					if(state_next == STA_ENCRYPTION_WR) begin
+						
 					end
 				end
-				
-				STA_ENCRYPTION: begin
+
+				STA_ENCRYPTION_RD: begin
+					task_cmd[block_lowest_zero_bit]			<=	0;
+					task_req[block_lowest_zero_bit]			<=	0;
+					if(M_AXI_RVALID && axi_rready) begin
+						enc_m_data	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0;
+						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
+						enc_r_data	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0;
+						enc_r_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
+					end
+					else begin
+						enc_m_data	[block_is_busy_next]	<=	0;
+						enc_m_valid	[block_is_busy_next]	<=	0;
+						enc_r_data	[block_is_busy_next]	<=	0;
+						enc_r_valid	[block_is_busy_next]	<=	0;
+					end
+					if (!reads_done) begin
+						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin
+							start_single_burst_read <= 1'b1;
+						end
+						else begin
+							start_single_burst_read <= 1'b0; //Negate to generate a pulse
+						end
+					end
+					if(state_next == STA_ENCRYPTION) begin
+						loop_counter	<=	loop_counter + (single_task_read_cnt == 0);// Carry after the last data is read.
+						block_is_busy 	<= 	block_is_busy | (1 << block_is_busy_next);
+					end
+				end
+
+				STA_ENCRYPTION_WR: begin
 					
 				end
 
-				INIT_WRITE: begin
-					// This state is responsible to issue start_single_write pulse to                               
-					// initiate a write transaction. Write transactions will be                                     
-					// issued until burst_write_active signal is asserted.                                          
-					// write controller
-					if (!writes_done) begin
-						if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
-							start_single_burst_write <= 1'b1;
-						end
-						else begin
-							start_single_burst_write <= 1'b0; //Negate to generate a pulse
-						end
-					end
-				end
+				// INIT_WRITE: begin
+				// 	// This state is responsible to issue start_single_write pulse to                               
+				// 	// initiate a write transaction. Write transactions will be                                     
+				// 	// issued until burst_write_active signal is asserted.                                          
+				// 	// write controller
+				// 	if (!writes_done) begin
+				// 		if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
+				// 			start_single_burst_write <= 1'b1;
+				// 		end
+				// 		else begin
+				// 			start_single_burst_write <= 1'b0; //Negate to generate a pulse
+				// 		end
+				// 	end
+				// end
 
-				INIT_READ: begin
-					// This state is responsible to issue start_single_read pulse to                                
-					// initiate a read transaction. Read transactions will be                                       
-					// issued until burst_read_active signal is asserted.                                           
-					// read controller
-					if (!reads_done) begin
-						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
-							start_single_burst_read <= 1'b1;                                                        
-						end                                                                                       
-						else begin                                                                                      
-							start_single_burst_read <= 1'b0; //Negate to generate a pulse                            
-						end                                                                                        
-					end
-					if(state_next != INIT_READ) begin
-						loop_counter	<=	loop_counter + 1;
-					end
-				end                                                                                       
+				// INIT_READ: begin
+				// 	// This state is responsible to issue start_single_read pulse to                                
+				// 	// initiate a read transaction. Read transactions will be                                       
+				// 	// issued until burst_read_active signal is asserted.                                           
+				// 	// read controller
+				// 	if (!reads_done) begin
+				// 		if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
+				// 			start_single_burst_read <= 1'b1;                                                        
+				// 		end                                                                                       
+				// 		else begin                                                                                      
+				// 			start_single_burst_read <= 1'b0; //Negate to generate a pulse                            
+				// 		end                                                                                        
+				// 	end
+				// 	if(state_next != INIT_READ) begin
+				// 		loop_counter	<=	loop_counter + 1;
+				// 	end
+				// end                                                                                       
 				default: begin
 				end                                                                                             
 			endcase                                                                                             
@@ -959,10 +989,9 @@ module axi_full_core#(
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			writes_done <= 1'b0;
-		//The writes_done should be associated with a bready response                                           
-		//else if (M_AXI_BVALID && axi_bready && (write_burst_counter == {(C_NO_BURSTS_REQ-1){1}}) && axi_wlast)
-		// else if (M_AXI_BVALID && (write_burst_counter == (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)) && axi_bready)                          
-		// 	writes_done <= 1'b1;                                                                                  
+		//The writes_done should be associated with a bready response
+		else if (M_AXI_BVALID && (write_burst_counter == 1) && axi_bready)
+			writes_done <= 1'b1;
 		else                                                                                                    
 			writes_done <= 0;                                                                           
 	end                                                                                                     
@@ -991,16 +1020,24 @@ module axi_full_core#(
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			reads_done <= 1'b0;
-		//The reads_done should be associated with a rready response                                            
-		//else if (M_AXI_BVALID && axi_bready && (write_burst_counter == {(C_NO_BURSTS_REQ-1){1}}) && axi_wlast)
-		// else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter == (PIXELS_HORIZONTAL*8)/(FDW*C_M_AXI_BURST_LEN)))
-		// 	reads_done <= 1'b1;                                                                                   
+		//The reads_done should be associated with a rready response
+		else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter == 1))
+			reads_done <= 1'b1;                                                                                   
 		else                                                                                                    
 			reads_done <= 0;                                                                             
 	end                                                                                                     
 
 	// Add user logic here
-
+	function logic [$clog2(BLOCK_COUNT)-1:0] find_lowest_zero_bit(logic [BLOCK_COUNT-1:0] data);
+		logic [$clog2(BLOCK_COUNT)-1:0] index;
+		for(int i = 0; i < BLOCK_COUNT; i++) begin
+			if(!data[i]) begin
+				index = i;
+				break;
+			end
+		end
+		return index;
+	endfunction
 	// User logic ends
 
 	endmodule

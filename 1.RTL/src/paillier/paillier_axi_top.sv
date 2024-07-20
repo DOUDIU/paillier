@@ -224,14 +224,19 @@ module paillier_axi_top#(
 
 //----------------------------------------------------
 // wire definition
-    wire    		                    paillier_start      ;
-    wire    [1:0]	                    paillier_mode       ;
-    wire    			                paillier_finished   ;
+
+    wire                                rd_rdy                  [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]                     rd_dout                 [0 : BLOCK_COUNT - 1]   ;
+    wire    [$clog2(N):0]               rd_cnt                  [0 : BLOCK_COUNT - 1]   ;
+
+    wire    		                    paillier_start                                  ;
+    wire    [1:0]	                    paillier_mode                                   ;
+    wire    			                paillier_finished                               ;
 
     wire    [2  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
-    
+
     wire    [K-1:0]                     enc_m_data              [0 : BLOCK_COUNT - 1]   ;
     wire                                enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
     wire    [K-1:0]                     enc_r_data              [0 : BLOCK_COUNT - 1]   ;
@@ -280,66 +285,103 @@ axi_full_core #(
 )u_axi_full_core(
 //----------------------------------------------------
 // paillier control interface
-        .paillier_start     (paillier_start     )
-    ,   .paillier_mode      (paillier_mode      )
-    ,   .paillier_finished  (paillier_finished  )
+        .paillier_start         (paillier_start         )
+    ,   .paillier_mode          (paillier_mode          )
+    ,   .paillier_finished      (paillier_finished      )
 
 //----------------------------------------------------
-// AXI-FULL master port
-    ,   .M_AXI_ACLK         (M_AXI_ACLK         )
-    ,   .M_AXI_ARESETN      (M_AXI_ARESETN      )
+// backward fifo read interface
+    ,   .rd_rdy                 (rd_rdy                 )
+    ,   .rd_dout                (rd_dout                )
+    ,   .rd_cnt                 (rd_cnt                 )
 
-    //----------------Write Address Channel----------------//
-    ,   .M_AXI_AWID         (M_AXI_AWID         )
-    ,   .M_AXI_AWADDR       (M_AXI_AWADDR       )
-    ,   .M_AXI_AWLEN        (M_AXI_AWLEN        )
-    ,   .M_AXI_AWSIZE       (M_AXI_AWSIZE       )
-    ,   .M_AXI_AWBURST      (M_AXI_AWBURST      )
-    ,   .M_AXI_AWLOCK       (M_AXI_AWLOCK       )
-    ,   .M_AXI_AWCACHE      (M_AXI_AWCACHE      )
-    ,   .M_AXI_AWPROT       (M_AXI_AWPROT       )
-    ,   .M_AXI_AWQOS        (M_AXI_AWQOS        )
-    ,   .M_AXI_AWUSER       (M_AXI_AWUSER       )
-    ,   .M_AXI_AWVALID      (M_AXI_AWVALID      )
-    ,   .M_AXI_AWREADY      (M_AXI_AWREADY      )
+//----------------------------------------------------
+// paillier accelerator interface
+    ,   .task_cmd				(task_cmd               )
+    ,   .task_req				(task_req               )
+    ,   .task_end				(task_end               )
+
+    ,   .enc_m_data				(enc_m_data             )
+    ,   .enc_m_valid			(enc_m_valid            )
+    ,   .enc_r_data				(enc_r_data             )
+    ,   .enc_r_valid			(enc_r_valid            )
+
+    ,   .dec_c_data				(dec_c_data             )
+    ,   .dec_c_valid			(dec_c_valid            )
+    ,   .dec_lambda_data		(dec_lambda_data        )
+    ,   .dec_lambda_valid		(dec_lambda_valid       )
+    ,   .dec_n_data				(dec_n_data             )
+    ,   .dec_n_valid			(dec_n_valid            )
+
+    ,   .homo_add_c1			(homo_add_c1            )
+    ,   .homo_add_c1_valid		(homo_add_c1_valid      )
+    ,   .homo_add_c2			(homo_add_c2            )
+    ,   .homo_add_c2_valid		(homo_add_c2_valid      )
+
+    ,   .scalar_mul_c1			(scalar_mul_c1          )
+    ,   .scalar_mul_c1_valid	(scalar_mul_c1_valid    )
+    ,   .scalar_mul_const		(scalar_mul_const       )
+    ,   .scalar_mul_const_valid	(scalar_mul_const_valid )
+
+    ,   .enc_out_data	        (enc_out_data           )
+    ,   .enc_out_valid	        (enc_out_valid          )
+    
+//----------------------------------------------------
+// AXI-FULL master port
+    ,   .M_AXI_ACLK             (M_AXI_ACLK             )
+    ,   .M_AXI_ARESETN          (M_AXI_ARESETN          )
+
+    //----------------Write Address Channel-------------//
+    ,   .M_AXI_AWID             (M_AXI_AWID             )
+    ,   .M_AXI_AWADDR           (M_AXI_AWADDR           )
+    ,   .M_AXI_AWLEN            (M_AXI_AWLEN            )
+    ,   .M_AXI_AWSIZE           (M_AXI_AWSIZE           )
+    ,   .M_AXI_AWBURST          (M_AXI_AWBURST          )
+    ,   .M_AXI_AWLOCK           (M_AXI_AWLOCK           )
+    ,   .M_AXI_AWCACHE          (M_AXI_AWCACHE          )
+    ,   .M_AXI_AWPROT           (M_AXI_AWPROT           )
+    ,   .M_AXI_AWQOS            (M_AXI_AWQOS            )
+    ,   .M_AXI_AWUSER           (M_AXI_AWUSER           )
+    ,   .M_AXI_AWVALID          (M_AXI_AWVALID          )
+    ,   .M_AXI_AWREADY          (M_AXI_AWREADY          )
 
     //----------------Write Data Channel----------------//
-    ,   .M_AXI_WDATA        (M_AXI_WDATA        )
-    ,   .M_AXI_WSTRB        (M_AXI_WSTRB        )
-    ,   .M_AXI_WLAST        (M_AXI_WLAST        )
-    ,   .M_AXI_WUSER        (M_AXI_WUSER        )
-    ,   .M_AXI_WVALID       (M_AXI_WVALID       )
-    ,   .M_AXI_WREADY       (M_AXI_WREADY       )
+    ,   .M_AXI_WDATA            (M_AXI_WDATA            )
+    ,   .M_AXI_WSTRB            (M_AXI_WSTRB            )
+    ,   .M_AXI_WLAST            (M_AXI_WLAST            )
+    ,   .M_AXI_WUSER            (M_AXI_WUSER            )
+    ,   .M_AXI_WVALID           (M_AXI_WVALID           )
+    ,   .M_AXI_WREADY           (M_AXI_WREADY           )
 
-    //----------------Write Response Channel----------------//
-    ,   .M_AXI_BID          (M_AXI_BID          )
-    ,   .M_AXI_BRESP        (M_AXI_BRESP        )
-    ,   .M_AXI_BUSER        (M_AXI_BUSER        )
-    ,   .M_AXI_BVALID       (M_AXI_BVALID       )
-    ,   .M_AXI_BREADY       (M_AXI_BREADY       )
+    //----------------Write Response Channel------------//
+    ,   .M_AXI_BID              (M_AXI_BID              )
+    ,   .M_AXI_BRESP            (M_AXI_BRESP            )
+    ,   .M_AXI_BUSER            (M_AXI_BUSER            )
+    ,   .M_AXI_BVALID           (M_AXI_BVALID           )
+    ,   .M_AXI_BREADY           (M_AXI_BREADY           )
 
-    //----------------Read Address Channel----------------//
-    ,   .M_AXI_ARID         (M_AXI_ARID         )
-    ,   .M_AXI_ARADDR       (M_AXI_ARADDR       )
-    ,   .M_AXI_ARLEN        (M_AXI_ARLEN        )
-    ,   .M_AXI_ARSIZE       (M_AXI_ARSIZE       )
-    ,   .M_AXI_ARBURST      (M_AXI_ARBURST      )
-    ,   .M_AXI_ARLOCK       (M_AXI_ARLOCK       )
-    ,   .M_AXI_ARCACHE      (M_AXI_ARCACHE      )
-    ,   .M_AXI_ARPROT       (M_AXI_ARPROT       )
-    ,   .M_AXI_ARQOS        (M_AXI_ARQOS        )
-    ,   .M_AXI_ARUSER       (M_AXI_ARUSER       )
-    ,   .M_AXI_ARVALID      (M_AXI_ARVALID      )
-    ,   .M_AXI_ARREADY      (M_AXI_ARREADY      )
+    //----------------Read Address Channel--------------//
+    ,   .M_AXI_ARID             (M_AXI_ARID             )
+    ,   .M_AXI_ARADDR           (M_AXI_ARADDR           )
+    ,   .M_AXI_ARLEN            (M_AXI_ARLEN            )
+    ,   .M_AXI_ARSIZE           (M_AXI_ARSIZE           )
+    ,   .M_AXI_ARBURST          (M_AXI_ARBURST          )
+    ,   .M_AXI_ARLOCK           (M_AXI_ARLOCK           )
+    ,   .M_AXI_ARCACHE          (M_AXI_ARCACHE          )
+    ,   .M_AXI_ARPROT           (M_AXI_ARPROT           )
+    ,   .M_AXI_ARQOS            (M_AXI_ARQOS            )
+    ,   .M_AXI_ARUSER           (M_AXI_ARUSER           )
+    ,   .M_AXI_ARVALID          (M_AXI_ARVALID          )
+    ,   .M_AXI_ARREADY          (M_AXI_ARREADY          )
 
-    //----------------Read Data Channel----------------//
-    ,   .M_AXI_RID          (M_AXI_RID          )
-    ,   .M_AXI_RDATA        (M_AXI_RDATA        )
-    ,   .M_AXI_RRESP        (M_AXI_RRESP        )
-    ,   .M_AXI_RLAST        (M_AXI_RLAST        )
-    ,   .M_AXI_RUSER        (M_AXI_RUSER        )
-    ,   .M_AXI_RVALID       (M_AXI_RVALID       )
-    ,   .M_AXI_RREADY       (M_AXI_RREADY       )
+    //----------------Read Data Channel-----------------//
+    ,   .M_AXI_RID              (M_AXI_RID              )
+    ,   .M_AXI_RDATA            (M_AXI_RDATA            )
+    ,   .M_AXI_RRESP            (M_AXI_RRESP            )
+    ,   .M_AXI_RLAST            (M_AXI_RLAST            )
+    ,   .M_AXI_RUSER            (M_AXI_RUSER            )
+    ,   .M_AXI_RVALID           (M_AXI_RVALID           )
+    ,   .M_AXI_RREADY           (M_AXI_RREADY           )
 );
 
 
@@ -349,13 +391,14 @@ saxi_lite_core #(
     // Width of S_AXI address bus
     ,   .C_S_AXI_ADDR_WIDTH	    ( C_S_AXI_ADDR_WIDTH    )
 )u_saxi_lite_core(
-    // Users to add ports here
+//----------------------------------------------------
+// paillier control interface
         .paillier_start         (paillier_start         )
     ,   .paillier_mode          (paillier_mode          )
     ,   .paillier_finished      (paillier_finished      )
 
-    // User ports ends
-    // Do not modify the ports beyond this line
+//----------------------------------------------------
+// AXI-LITE slave port
     ,   .S_AXI_ACLK             (S_AXI_ACLK             )
     ,   .S_AXI_ARESETN          (S_AXI_ARESETN          )
     ,   .S_AXI_AWADDR           (S_AXI_AWADDR           )
@@ -418,5 +461,30 @@ generate
 endgenerate
 
 
+generate 
+    for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
+        fifo #(
+                .FDW            (K                          )// data width
+            ,   .FAW            ($clog2(N)                  )// The FIFO depth is twice the value of the output data.
+            ,   .ULN            ()// lookahead-full
+        )fifo_inst(
+                .clk            (M_AXI_ACLK                 )
+            ,   .rst            (!M_AXI_ARESETN             )// asynchronous reset (active high)
+            ,   .clr            ()// synchronous reset (active high)
+            ,   .wr_rdy         ()
+            ,   .wr_vld         (enc_out_valid          [o] )
+            ,   .wr_din         (enc_out_data           [o] )
+            ,   .rd_rdy         (rd_rdy                 [o] )
+            ,   .rd_vld         ()
+            ,   .rd_dout        (rd_dout                [o] )
+            ,   .full           ()
+            ,   .empty          ()
+            ,   .fullN          ()// lookahead full: there are only N rooms in the FIFO
+            ,   .emptyN         ()// lookahead empty: there are only N items in the FIFO
+            ,   .rd_cnt         (rd_cnt                 [o] )// num of elements in the FIFO to be read
+            ,   .wr_cnt         ()// num of rooms in the FIFO to be written
+        );
+    end
+endgenerate
 
 endmodule

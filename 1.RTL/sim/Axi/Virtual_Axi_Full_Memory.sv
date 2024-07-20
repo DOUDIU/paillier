@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module saxi_full_v1_0_S00_AXI #(
+	module Virtual_Axi_Full_Memory #(
 		// Users to add parameters here
 
 		// User parameters ends
@@ -565,7 +565,9 @@
 	      begin:BYTE_BRAM_GEN
 	        wire [8-1:0] data_in ;
 	        wire [8-1:0] data_out;
-	        reg  [8-1:0] byte_ram [0 : 1655359];
+	        reg  [8-1:0] byte_ram [0 : 655359];
+	        //each frame is 10Mb = 1280 * 1024 * 8 bits
+			//128bits * 655360 = 80Mb = 10Mb * 8 frames
 
 			integer  j;
 	     
@@ -595,8 +597,7 @@
 	//Output register or memory read data
 
 	// always @( mem_data_out, axi_rvalid)
-	always @(*)
-	begin
+	always @(*)	begin
 	  if (axi_rvalid) 
 	    begin
 	      // Read address mux

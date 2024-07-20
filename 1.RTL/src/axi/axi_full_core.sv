@@ -743,10 +743,10 @@ module axi_full_core#(
 
 	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 		if(!M_AXI_ARESETN) begin
-			state_next 	<= IDLE_WAIT;
+			state_now 	<= IDLE_WAIT;
 		end
 		else begin
-			state_next	<= state_now;
+			state_now	<= state_next;
 		end
 	end
 
@@ -757,10 +757,10 @@ module axi_full_core#(
 				// number of clock cycles.
 				if (paillier_start) begin                 
 					case (paillier_mode)                                                                               
-						2'b00: state_next	= STA_ENCRYPTION;
-						2'b01: state_next	= STA_DECRYPTION;
-						2'b10: state_next	= STA_HOMOMORPHIC_ADD;
-						2'b11: state_next	= STA_SCALAR_MUL;
+						2'b00: 	 state_next	= STA_ENCRYPTION;
+						2'b01: 	 state_next	= STA_DECRYPTION;
+						2'b10: 	 state_next	= STA_HOMOMORPHIC_ADD;
+						2'b11: 	 state_next	= STA_SCALAR_MUL;
 						default: state_next	= IDLE_WAIT;
 					endcase
 				end                                                                                           
@@ -785,7 +785,7 @@ module axi_full_core#(
 			// 	end
 			// end
 			STA_ENCRYPTION: begin
-				if (!all_block_is_busy) begin
+				if ((!all_block_is_busy) | (single_task_read_cnt != 0)) begin
 					state_next	=	STA_ENCRYPTION_RD;
 				end
 				else if (!all_fifo_is_empty) begin
@@ -883,11 +883,12 @@ module axi_full_core#(
 
 				STA_ENCRYPTION: begin
 					if(state_next == STA_ENCRYPTION_RD) begin
-						task_cmd[block_lowest_zero_bit]					<=	single_task_read_cnt == 0 ? STA_ENCRYPTION[1:0] : 0;
-						task_req[block_lowest_zero_bit]					<=	single_task_read_cnt == 0 ? 1 : 0;
-						single_task_read_cnt							<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
-						block_is_busy_next 								<=	block_lowest_zero_bit;
-						block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 11;
+						if(single_task_read_cnt == 0) begin
+							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
+							task_req[block_lowest_zero_bit]					<=	1;
+							block_is_busy_next 								<=	block_lowest_zero_bit;
+							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 11;
+						end
 					end
 
 					if(state_next == STA_ENCRYPTION_WR) begin
@@ -910,7 +911,7 @@ module axi_full_core#(
 						enc_r_data	[block_is_busy_next]	<=	0;
 						enc_r_valid	[block_is_busy_next]	<=	0;
 					end
-					if (!reads_done) begin
+					if(!reads_done) begin
 						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin
 							start_single_burst_read <= 1'b1;
 						end
@@ -919,8 +920,9 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_ENCRYPTION) begin
-						loop_counter	<=	loop_counter + (single_task_read_cnt == 0);// Carry after the last data is read.
-						block_is_busy 	<= 	block_is_busy | (1 << block_is_busy_next);
+						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
+						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end
 

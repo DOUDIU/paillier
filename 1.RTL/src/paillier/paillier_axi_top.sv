@@ -233,7 +233,7 @@ module paillier_axi_top#(
     wire    [1:0]	                    paillier_mode                                   ;
     wire    			                paillier_finished                               ;
 
-    wire    [2  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
+    wire    [1  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
     wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
 

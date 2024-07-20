@@ -128,7 +128,7 @@
 
 	// Add user logic here
 	assign paillier_start = slv_reg0[0];
-	assign paillier_mode = slv_reg0[1:0];
+	assign paillier_mode = slv_reg0[2:1];
 
 	reg	paillier_finished_d1;
 	reg paillier_finished_d2;

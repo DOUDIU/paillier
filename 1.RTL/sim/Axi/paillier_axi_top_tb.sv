@@ -5,7 +5,7 @@ module paillier_axi_top_tb();
 //AXI-FULL parameter definition
     parameter integer AXI_ID_WIDTH	        = 1     ;
     parameter integer AXI_DATA_WIDTH	    = 128   ;
-    parameter integer AXI_ADDR_WIDTH	    = 32    ;
+    parameter integer AXI_ADDR_WIDTH	    = 64    ;
     parameter integer AXI_AWUSER_WIDTH	    = 0     ;
     parameter integer AXI_ARUSER_WIDTH	    = 0     ;
     parameter integer AXI_WUSER_WIDTH	    = 0     ;
@@ -131,7 +131,7 @@ paillier_axi_top#(
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
         // Base address of targeted slave
-	,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
+	// ,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   .C_M_AXI_BURST_LEN	        ( 16 )
 		// Thread ID Width
@@ -298,13 +298,13 @@ Virtual_Axi_Full_Memory # (
 );
 
 
-Virtual_Axi_Little_Stimulation #(
+Virtual_Axi_Lite_Stimulation #(
         .C_M_START_DATA_VALUE       (3'b001                 )
     ,   .C_M_TARGET_SLAVE_BASE_ADDR (32'h00000000           )
     ,   .C_M_AXI_ADDR_WIDTH         (C_S_AXI_ADDR_WIDTH     )
     ,   .C_M_AXI_DATA_WIDTH         (C_S_AXI_DATA_WIDTH     )
     ,   .C_M_TRANSACTIONS_NUM       (1)
-)Virtual_Axi_Little_Stimulation_inst(
+)Virtual_Axi_Lite_Stimulation_inst(
         .INIT_AXI_TXN               (INIT_AXI_TXN           )
     ,   .ERROR                      ()
     ,   .TXN_DONE                   ()

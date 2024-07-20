@@ -6,13 +6,14 @@ module paillier_axi_top#(
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h0_0000_0000
+	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 64'h0_0000_0000
+	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 64'h1_0000_0000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
-	,   parameter integer C_M_AXI_ADDR_WIDTH	= 32
+	,   parameter integer C_M_AXI_ADDR_WIDTH	= 64
 		// Width of Data Bus
 	,   parameter integer C_M_AXI_DATA_WIDTH	= 128
 		// Width of User Write Address Bus
@@ -267,21 +268,22 @@ module paillier_axi_top#(
 axi_full_core #(
     //----------------------------------------------------
     // FIFO parameters
-	 	.BLOCK_COUNT                    (BLOCK_COUNT                )
-	,	.K                              (K                          )
+	 	.BLOCK_COUNT                    (BLOCK_COUNT                    )
+	,	.K                              (K                              )
 
     //----------------------------------------------------
     // AXI-FULL parameters
-	,   .C_M_TARGET_SLAVE_BASE_ADDR	    (C_M_TARGET_SLAVE_BASE_ADDR )   
-	,   .C_M_AXI_BURST_LEN	            (C_M_AXI_BURST_LEN	        )   
-	,   .C_M_AXI_ID_WIDTH	            (C_M_AXI_ID_WIDTH	        )   
-	,   .C_M_AXI_ADDR_WIDTH	            (C_M_AXI_ADDR_WIDTH	        )   
-	,   .C_M_AXI_DATA_WIDTH	            (C_M_AXI_DATA_WIDTH	        )   
-	,   .C_M_AXI_AWUSER_WIDTH	        (C_M_AXI_AWUSER_WIDTH	    )   
-	,   .C_M_AXI_ARUSER_WIDTH	        (C_M_AXI_ARUSER_WIDTH	    )   
-	,   .C_M_AXI_WUSER_WIDTH	        (C_M_AXI_WUSER_WIDTH	    )   
-	,   .C_M_AXI_RUSER_WIDTH	        (C_M_AXI_RUSER_WIDTH	    )   
-	,   .C_M_AXI_BUSER_WIDTH	        (C_M_AXI_BUSER_WIDTH	    )   
+	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (C_M_TARGET_SLAVE_BASE_WR_ADDR  )   
+	,   .C_M_TARGET_SLAVE_BASE_RD_ADDR  (C_M_TARGET_SLAVE_BASE_RD_ADDR  )   
+	,   .C_M_AXI_BURST_LEN	            (C_M_AXI_BURST_LEN	            )   
+	,   .C_M_AXI_ID_WIDTH	            (C_M_AXI_ID_WIDTH	            )   
+	,   .C_M_AXI_ADDR_WIDTH	            (C_M_AXI_ADDR_WIDTH	            )   
+	,   .C_M_AXI_DATA_WIDTH	            (C_M_AXI_DATA_WIDTH	            )   
+	,   .C_M_AXI_AWUSER_WIDTH	        (C_M_AXI_AWUSER_WIDTH	        )   
+	,   .C_M_AXI_ARUSER_WIDTH	        (C_M_AXI_ARUSER_WIDTH	        )   
+	,   .C_M_AXI_WUSER_WIDTH	        (C_M_AXI_WUSER_WIDTH	        )   
+	,   .C_M_AXI_RUSER_WIDTH	        (C_M_AXI_RUSER_WIDTH	        )   
+	,   .C_M_AXI_BUSER_WIDTH	        (C_M_AXI_BUSER_WIDTH	        )   
 )u_axi_full_core(
 //----------------------------------------------------
 // paillier control interface

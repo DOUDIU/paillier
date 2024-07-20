@@ -1,7 +1,7 @@
 
 `timescale 1 ns / 1 ps
 
-	module Virtual_Axi_Little_Stimulation #(
+	module Virtual_Axi_Lite_Stimulation #(
 		// Users to add parameters here
 
 		// User parameters ends

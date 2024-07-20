@@ -27,7 +27,8 @@ module axi_full_core#(
 	,	parameter TEST_TIMES 	=	100000
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h00000000
+	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 0
+	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 0
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 16
 		// Thread ID Width
@@ -176,7 +177,7 @@ module axi_full_core#(
 // paillier control interface
 	,	input 							paillier_start
 	,	input 			[1	:0]			paillier_mode
-	,	output	reg						paillier_finished
+	,	output	reg						paillier_finished = 0
 
 //----------------------------------------------------
 // paillier accelerator interface
@@ -335,7 +336,7 @@ module axi_full_core#(
 	//I/O Connections. Write Address (AW)
 	assign M_AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr;
+	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
@@ -360,7 +361,7 @@ module axi_full_core#(
 	assign M_AXI_BREADY	= axi_bready;
 	//Read Address (AR)
 	assign M_AXI_ARID	= 'b0;
-	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_araddr;
+	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_ARLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
@@ -610,7 +611,7 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-			axi_araddr <= (loop_counter + single_task_read_cnt) << 11;
+			axi_araddr <= (loop_counter + single_task_read_cnt) << 8;//target address = loop_counter * 2048 / 8
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -768,22 +769,6 @@ module axi_full_core#(
 					state_next	=	IDLE_WAIT;
 				end
 			end
-			// INIT_WRITE: begin
-			// 	if (writes_done) begin
-			// 		state_now	=	current_loop_mode;
-			// 	end
-			// 	else begin
-			// 		state_now	=	INIT_WRITE;
-			// 	end
-			// end
-			// INIT_READ: begin
-			// 	if (reads_done) begin                                                                                         
-			// 		state_next	=	current_loop_mode;                                                             
-			// 	end           	                                                                             
-			// 	else begin    	                                                                                  
-			// 		state_next	=	INIT_READ;                                                                                   
-			// 	end
-			// end
 			STA_ENCRYPTION: begin
 				if ((!all_block_is_busy) | (single_task_read_cnt != 0)) begin
 					state_next	=	STA_ENCRYPTION_RD;
@@ -791,7 +776,7 @@ module axi_full_core#(
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_ENCRYPTION_WR;
 				end
-				else if (loop_counter == TEST_TIMES - 1) begin
+				else if (loop_counter == TEST_TIMES) begin
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -807,7 +792,12 @@ module axi_full_core#(
 				end
 			end
 			STA_ENCRYPTION_WR: begin
-
+				if (writes_done) begin
+					state_next	=	STA_ENCRYPTION;
+				end
+				else begin
+					state_next	=	INIT_WRITE;
+				end
 			end
 
 			STA_DECRYPTION: begin
@@ -869,9 +859,8 @@ module axi_full_core#(
 				scalar_mul_const		[j]	<=	0;
 				scalar_mul_const_valid	[j]	<=	0;
 			end
-
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
-				block_targert_addr_cnt[i]	<=	0;
+				block_targert_addr_cnt[j]	<=	0;
 			end
 		end
 		else begin
@@ -887,7 +876,7 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 11;
+							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 8;//target address = loop_counter * 2048 / 8
 						end
 					end
 
@@ -927,7 +916,14 @@ module axi_full_core#(
 				end
 
 				STA_ENCRYPTION_WR: begin
-					
+					if (!writes_done) begin
+						if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
+							start_single_burst_write <= 1'b1;
+						end
+						else begin
+							start_single_burst_write <= 1'b0; //Negate to generate a pulse
+						end
+					end
 				end
 
 				// INIT_WRITE: begin

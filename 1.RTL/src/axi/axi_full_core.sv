@@ -30,7 +30,7 @@ module axi_full_core#(
 	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 0
 	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 0
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   parameter integer C_M_AXI_BURST_LEN	= 16
+	,   parameter integer C_M_AXI_BURST_LEN	= 32
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
@@ -207,9 +207,6 @@ module axi_full_core#(
     ,   output	reg		[K-1:0]			scalar_mul_const			[0 : BLOCK_COUNT - 1]
     ,   output	reg		       			scalar_mul_const_valid		[0 : BLOCK_COUNT - 1]
 
-    ,   input			[K-1:0]			enc_out_data				[0 : BLOCK_COUNT - 1]
-    ,   input			       			enc_out_valid				[0 : BLOCK_COUNT - 1]
-
 //----------------------------------------------------
 // backward fifo read interface
     ,	output 	reg              		rd_rdy                  	[0 : BLOCK_COUNT - 1]
@@ -229,6 +226,7 @@ module axi_full_core#(
 	wire									all_block_is_busy;
 
 	wire	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
+	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_is_busy_next;
 	wire									all_fifo_is_empty;
 	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
 
@@ -295,7 +293,7 @@ module axi_full_core#(
 	//AXI4 internal temp signals
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
-	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
+	wire[C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
 	reg  	axi_wvalid;
 	reg  	axi_bready;
@@ -378,7 +376,7 @@ module axi_full_core#(
 	//Read and Read Response (R)
 	assign M_AXI_RREADY	= axi_rready;
 	//Burst size in bytes
-	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH/8;
+	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH / 8;
 	// assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 	//--------------------
@@ -419,7 +417,7 @@ module axi_full_core#(
 			axi_awaddr <= 1'b0;                                             
 		end                                                              
 		else if (M_AXI_AWREADY && axi_awvalid) begin
-			// axi_awaddr	<=	axi_awaddr + burst_size_bytes;
+			axi_awaddr	<=	block_targert_addr_cnt[fifo_is_busy_next];
 		end                                                              
 		else begin                                                           
 			axi_awaddr <= axi_awaddr;
@@ -520,21 +518,26 @@ module axi_full_core#(
 	/* Write Data Generator                                                             
 	 Data pattern is only a simple incrementing count from 0 for each burst  */         
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                        
-			axi_wdata <= ~128'h0;                                  
+		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
+			for(i = 0; i < BLOCK_COUNT; i = i + 1) begin
+				rd_rdy[i] <= 0;
+			end
 		end                           
-		//else if (wnext && axi_wlast)                                                  
-		//  axi_wdata <= 'b0;      
+		else if (wnext && axi_wlast) begin
+		 	rd_rdy[block_is_busy_next] <= 0;
+		end
 		else if (M_AXI_AWREADY && axi_awvalid) begin
-			// axi_wdata <= frd_din;
+			rd_rdy[block_is_busy_next] <= 1;
 		end                                                     
-		else if (wnext) begin                                                                 
-			// axi_wdata <= frd_din;
+		else if (wnext) begin         
+			rd_rdy[block_is_busy_next] <= 1;
 		end                                                   
-		else begin                                                                           
-			axi_wdata <= axi_wdata;
-		end                                                       
+		else begin
+			rd_rdy[block_is_busy_next] <= 0;
+		end
 	end    
+
+	assign axi_wdata = rd_dout[block_is_busy_next];
 
 	//----------------------------
 	//Write Response (B) Channel
@@ -610,8 +613,8 @@ module axi_full_core#(
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
 	        axi_araddr <= 'b0;                                           
 		end                                                            
-	    else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
-			axi_araddr <= (loop_counter + single_task_read_cnt) << 8;//target address = loop_counter * 2048 / 8
+	    else if (M_AXI_ARREADY && axi_arvalid) begin
+			axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -814,8 +817,7 @@ module axi_full_core#(
 			end
 		endcase
 	end
-    // ,   input		[K-1:0]     enc_out_data				[0 : BLOCK_COUNT - 1]
-    // ,   input		            enc_out_valid				[0 : BLOCK_COUNT - 1]
+	
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
@@ -876,12 +878,12 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 8;//target address = loop_counter * 2048 / 8
+							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 						end
 					end
 
 					if(state_next == STA_ENCRYPTION_WR) begin
-						
+						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
 				end
 
@@ -889,9 +891,9 @@ module axi_full_core#(
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
 					if(M_AXI_RVALID && axi_rready) begin
-						enc_m_data	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0;
+						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
-						enc_r_data	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0;
+						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_r_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
 					end
 					else begin
@@ -926,38 +928,6 @@ module axi_full_core#(
 					end
 				end
 
-				// INIT_WRITE: begin
-				// 	// This state is responsible to issue start_single_write pulse to                               
-				// 	// initiate a write transaction. Write transactions will be                                     
-				// 	// issued until burst_write_active signal is asserted.                                          
-				// 	// write controller
-				// 	if (!writes_done) begin
-				// 		if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
-				// 			start_single_burst_write <= 1'b1;
-				// 		end
-				// 		else begin
-				// 			start_single_burst_write <= 1'b0; //Negate to generate a pulse
-				// 		end
-				// 	end
-				// end
-
-				// INIT_READ: begin
-				// 	// This state is responsible to issue start_single_read pulse to                                
-				// 	// initiate a read transaction. Read transactions will be                                       
-				// 	// issued until burst_read_active signal is asserted.                                           
-				// 	// read controller
-				// 	if (!reads_done) begin
-				// 		if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin                                                                                     
-				// 			start_single_burst_read <= 1'b1;                                                        
-				// 		end                                                                                       
-				// 		else begin                                                                                      
-				// 			start_single_burst_read <= 1'b0; //Negate to generate a pulse                            
-				// 		end                                                                                        
-				// 	end
-				// 	if(state_next != INIT_READ) begin
-				// 		loop_counter	<=	loop_counter + 1;
-				// 	end
-				// end                                                                                       
 				default: begin
 				end                                                                                             
 			endcase                                                                                             

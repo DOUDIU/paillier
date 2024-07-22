@@ -1,5 +1,6 @@
 #!/usr/bin/env python3.4
 import math
+import random
 
 import phe.encoding
 from phe import paillier
@@ -31,7 +32,20 @@ def data_seperate_printf(data,nbit,n,order):#0 reverse,1 normal
             # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
             print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
         print('--------------------------------------------------',end='\n',file=RESULT_LOG)
-    print('\n')
+    print('\n',file=RESULT_LOG)
+
+def data_seperate_printf_byte(data,nbit,n,order):#0 reverse,1 normal
+    RESULT_LOG = open("result_log.txt",'a',encoding="utf-8")
+    if order==0:
+        for i in range(n):
+            print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+    else:
+        for i in range(n-1,-1,-1):
+            print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+
+def data_whole_printf(data,file_name):#0 reverse,1 normal
+    RESULT_LOG = open(file_name,'a',encoding="utf-8")
+    print('{:x} '.format(data),end='\n',file=RESULT_LOG)
 
 class ExampleEncodedNumber(phe.encoding.EncodedNumber):
     BASE = 64
@@ -100,16 +114,26 @@ def encrypt_fpga_example():
 def encrypt_fpga_v1_example():
     print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
     
-    print('Public_key nsquare=0x{:x}\n'.format(public_key.nsquare))
+    # print('Public_key nsquare=0x{:x}\n'.format(public_key.nsquare))
 
-    a = 102545 + (64 ** 8)
-    r = 123 + (8 ** 20)#ramdom number
+    # a = 102545 + (64 ** 8)
+    # r = 123 + (8 ** 20)#ramdom number
 
-    RESULT_LOG = open("result_log.txt",'w').close()
-    data_seperate_printf(public_key.nsquare,128, 4096//128,1)
-    data_seperate_printf(public_key.n,128, 4096//128,1)
-    data_seperate_printf(a,128, 4096//128,1)
-    data_seperate_printf(r,128, 4096//128,1)
+    a = random.SystemRandom().randrange(1, n//3)
+    r = random.SystemRandom().randrange(1, n//3)
+
+    # RESULT_LOG = open("result_log.txt",'w').close() #clear the file
+    # data_seperate_printf(public_key.nsquare,128, 4096//128,1)
+    # data_seperate_printf(public_key.n,128, 4096//128,1)
+    # data_seperate_printf(a,128, 4096//128,1)
+    # data_seperate_printf(r,128, 4096//128,1)
+
+    print('a=0x{:x}'.format(a))
+    print('r=0x{:x}'.format(r))
+    data_whole_printf(a,"result_m.txt")
+    data_whole_printf(r,"result_r.txt")
+    # data_seperate_printf_byte(a,8, 2048//8,1)
+    # data_seperate_printf_byte(r,8, 4096//8,1)
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
 
@@ -117,13 +141,14 @@ def encrypt_fpga_v1_example():
     assert a == encoded_a.decode()
     print("Encrypting the encoded numbers")
     encrypted_ciphertext = paillier.mulmod(paillier.mulmod(public_key.n, a, public_key.nsquare) + 1 , paillier.powmod(r, public_key.n, public_key.nsquare) , public_key.nsquare)
-    print('ciphertext_confirm: 0x{:x}\n'.format(encrypted_ciphertext))
-    print('\n1+m*n: 0x{:x}\n'.format(paillier.mulmod(public_key.n, a, public_key.nsquare)+1))
-    print('\nr**n : 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
+    print('result_encrypted=0x{:x}'.format(encrypted_ciphertext))
+    data_whole_printf(encrypted_ciphertext,"result_encrypted.txt")
+    # print('\n1+m*n: 0x{:x}\n'.format(paillier.mulmod(public_key.n, a, public_key.nsquare)+1))
+    # print('\nr**n : 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
     encrypted_a = paillier.EncryptedNumber(public_key, encrypted_ciphertext)
 
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
-    print("Decrypted: {}".format(decrypted_but_encoded.decode()))
+    # print("Decrypted: {}".format(decrypted_but_encoded.decode()))
     assert a == decrypted_but_encoded.decode()
 
 def homomorphic_addition_example():
@@ -220,4 +245,7 @@ def scalar_negative_multiplication_example():
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
 
 if __name__ == "__main__":
-    scalar_postive_multiplication_example()
+    RESULT_LOG = open("result_m.txt",'w').close() #clear the file
+    RESULT_LOG = open("result_r.txt",'w').close() #clear the file
+    for i in range(10):
+        encrypt_fpga_v1_example()

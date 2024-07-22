@@ -543,74 +543,98 @@
 	// ------------------------------------------
 
 	generate
-	  if (USER_NUM_MEM >= 1)
-	    begin
-	      assign mem_select  = 1;
-	      assign mem_address = (axi_arv_arr_flag? axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]:(axi_awv_awr_flag? axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]:0));
-	    end
+	  	if (USER_NUM_MEM >= 1)begin
+			assign mem_select  = 1;
+			assign mem_address = (axi_arv_arr_flag? axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]:(axi_awv_awr_flag? axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB]:0));
+		end
 	endgenerate
-	     
-	// implement Block RAM(s)
-	generate 
-	  for(i=0; i<= USER_NUM_MEM-1; i=i+1)
-	    begin:BRAM_GEN
-	      wire mem_rden;
-	      wire mem_wren;
-	
-	      assign mem_wren = axi_wready && S_AXI_WVALID ;
-	
-	      assign mem_rden = axi_arv_arr_flag ; //& ~axi_rvalid
-	     
-	      for(mem_byte_index=0; mem_byte_index<= (C_S_AXI_DATA_WIDTH/8-1); mem_byte_index=mem_byte_index+1)
-	      begin:BYTE_BRAM_GEN
-	        wire [8-1:0] data_in ;
-	        wire [8-1:0] data_out;
-	        reg  [8-1:0] byte_ram [0 : 655359];
-	        //each frame is 10Mb = 1280 * 1024 * 8 bits
-			//128bits * 655360 = 80Mb = 10Mb * 8 frames
 
-			integer  j;
-	     
-	        //assigning 8 bit data
-	        assign data_in  = S_AXI_WDATA[(mem_byte_index*8+7) -: 8];
-	        assign data_out = byte_ram[mem_address];
-	     
-	        always @( posedge S_AXI_ACLK )
-	        begin
-	          if (mem_wren && S_AXI_WSTRB[mem_byte_index])
-	            begin
-	              byte_ram[mem_address] <= data_in;
-	            end   
-	        end    
-	      
-	        always @( posedge S_AXI_ACLK )
-	        begin
-	          if (mem_rden)
-	            begin
-	              mem_data_out[i][(mem_byte_index*8+7) -: 8] <= data_out;
-	            end   
-	        end    
-	               
-	    end
-	  end       
+	// implement Block RAM(s)
+	// reg  [8-1:0] byte_ram [0:C_S_AXI_DATA_WIDTH/8-1][0 : 33554430];
+	reg  [8-1:0] byte_ram [0:C_S_AXI_DATA_WIDTH/8-1][0 : 1023];
+	generate 
+	  	for(i=0; i<= USER_NUM_MEM-1; i=i+1) begin:BRAM_GEN
+			wire mem_rden;
+			wire mem_wren;
+		
+			assign mem_wren = axi_wready && S_AXI_WVALID ;
+
+			assign mem_rden = axi_arv_arr_flag ; //& ~axi_rvalid
+			
+			for(mem_byte_index=0; mem_byte_index<= (C_S_AXI_DATA_WIDTH/8-1); mem_byte_index=mem_byte_index+1) begin:BYTE_BRAM_GEN
+				wire [8-1:0] data_in ;
+				wire [8-1:0] data_out;
+
+				//assigning 8 bit data
+				assign data_in  = S_AXI_WDATA[(mem_byte_index*8+7) -: 8];
+				assign data_out = byte_ram[mem_byte_index][mem_address];
+
+				always @( posedge S_AXI_ACLK ) begin
+					if (mem_wren && S_AXI_WSTRB[mem_byte_index]) begin
+						byte_ram[mem_byte_index][mem_address] <= data_in;
+					end   
+				end
+
+				always @( posedge S_AXI_ACLK ) begin
+					if (mem_rden) begin
+						mem_data_out[i][(mem_byte_index*8+7) -: 8] <= data_out;
+					end   
+				end
+			end
+
+	  	end       
 	endgenerate
 	//Output register or memory read data
 
 	// always @( mem_data_out, axi_rvalid)
 	always @(*)	begin
-	  if (axi_rvalid) 
-	    begin
-	      // Read address mux
-	      axi_rdata <= mem_data_out[0];
-	    end   
-	  else
-	    begin
-	      axi_rdata <= 32'h00000000;
-	    end       
+		if (axi_rvalid) begin
+			// Read address mux
+			axi_rdata <= mem_data_out[0];
+		end
+		else begin
+			axi_rdata <= 32'h00000000;
+		end
 	end    
 
+	integer o,p,q;
+	integer fp_m, fp_r;
+	localparam integer ENCRYPTION_TIMES = 5;
 	// Add user logic here
+	initial begin
+		fp_m = $fopen("../../../../../2.MODEL/result_m.txt", "r");
+		if (fp_m == 0) begin
+			$display("Error opening file\n");
+			$finish;
+		end
+		fp_r = $fopen("../../../../../2.MODEL/result_r.txt", "r");
+		if (fp_r == 0) begin
+			$display("Error opening file\n");
+			$finish;
+		end
 
+		for(p = 0; p < ENCRYPTION_TIMES * 2; p = p + 2) begin
+			read_file_to_memory(fp_r, (2048/C_S_AXI_DATA_WIDTH)*p);
+			read_file_to_memory(fp_m, (2048/C_S_AXI_DATA_WIDTH)*(p+1));
+		end
+
+		$fclose(fp_m);
+		$fclose(fp_r);
+	end
 	// User logic ends
+
+	// Add user function here
+	function void read_file_to_memory(input integer fp, input integer start_address);
+		reg	[2047:0]	file_data;
+		integer p, o;
+		$fscanf(fp, "%x ", file_data);
+		for(p = start_address; p < start_address + 2048/C_S_AXI_DATA_WIDTH; p=p+1) begin
+			for(o = 0; o <= (C_S_AXI_DATA_WIDTH/8-1); o=o+1) begin
+				byte_ram[o][p]  =  file_data[0+:8];
+				file_data       =  file_data>>8;
+			end
+		end
+	endfunction
+	// User function ends
 
 	endmodule

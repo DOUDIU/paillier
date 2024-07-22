@@ -3,13 +3,23 @@ module paillier_axi_top#(
         parameter BLOCK_COUNT = 4
 	,	parameter K = 128
     ,   parameter N = 32
+    ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                // "TRADITION" :MULT_LATENCY=9                
+                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
+    ,   parameter ADD1_METHOD   = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
+                                                // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
+                                                // 
+    ,   parameter ADD2_METHOD   = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                // 
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave
 	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 64'h0_0000_0000
 	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 64'h1_0000_0000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   parameter integer C_M_AXI_BURST_LEN	= 16
+	,   parameter integer C_M_AXI_BURST_LEN	= 32
 		// Thread ID Width
 	,   parameter integer C_M_AXI_ID_WIDTH	= 1
 		// Width of Address Bus
@@ -324,9 +334,6 @@ axi_full_core #(
     ,   .scalar_mul_c1_valid	(scalar_mul_c1_valid    )
     ,   .scalar_mul_const		(scalar_mul_const       )
     ,   .scalar_mul_const_valid	(scalar_mul_const_valid )
-
-    ,   .enc_out_data	        (enc_out_data           )
-    ,   .enc_out_valid	        (enc_out_valid          )
     
 //----------------------------------------------------
 // AXI-FULL master port
@@ -426,7 +433,20 @@ saxi_lite_core #(
 
 generate 
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
-            paillier_top paillier_top_inst(
+        paillier_top #( 
+                .MULT_METHOD                (MULT_METHOD                )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                                            // "TRADITION" :MULT_LATENCY=9                
+                                                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
+            ,   .ADD1_METHOD                (ADD1_METHOD                )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
+                                                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
+                                                                            // 
+            ,   .ADD2_METHOD                (ADD2_METHOD                )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                                            // 
+            ,   .K                          (K                          )
+            ,   .N                          (N                          )
+        )paillier_top_inst(
                 .clk                        (M_AXI_ACLK                 )
             ,   .rst_n                      (M_AXI_ARESETN              )
 

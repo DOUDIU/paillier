@@ -121,35 +121,48 @@ end
 
 
 paillier_axi_top#(
-//----------------------------------------------------
-// parameter of AXI-LITE slave port
-		// Width of S_AXI data bus
-	    .C_S_AXI_DATA_WIDTH	        ( C_S_AXI_DATA_WIDTH )
-		// Width of S_AXI address bus
-	,	.C_S_AXI_ADDR_WIDTH         ( C_S_AXI_ADDR_WIDTH )
-
+        .BLOCK_COUNT                    (4                          )
+	,	.K                              (128                        )
+    ,   .N                              (32                         )
+    ,   .MULT_METHOD                    ("COMMON"                   )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                                        // "TRADITION" :MULT_LATENCY=9                
+                                                                        // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
+    ,   .ADD1_METHOD                    ("COMMON"                   )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                                        // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
+                                                                        // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
+                                                                        // 
+    ,   .ADD2_METHOD                    ("COMMON"                   )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                                        // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                                        // 
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
         // Base address of targeted slave
-	// ,   .C_M_TARGET_SLAVE_BASE_ADDR	(32'h10000000)
+	,   .C_M_TARGET_SLAVE_BASE_RD_ADDR  (64'h0_0000_0000)
+	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (64'h1_0000_0000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-	,   .C_M_AXI_BURST_LEN	        ( 16 )
+	,   .C_M_AXI_BURST_LEN	            ( 32 )
 		// Thread ID Width
-	,   .C_M_AXI_ID_WIDTH	        ( 1 )
+	,   .C_M_AXI_ID_WIDTH	            ( 1 )
 		// Width of Address Bus
-	,   .C_M_AXI_ADDR_WIDTH	        ( AXI_ADDR_WIDTH )
+	,   .C_M_AXI_ADDR_WIDTH	            ( AXI_ADDR_WIDTH )
 		// Width of Data Bus
-	,   .C_M_AXI_DATA_WIDTH	        ( AXI_DATA_WIDTH )
+	,   .C_M_AXI_DATA_WIDTH	            ( AXI_DATA_WIDTH )
 		// Width of User Write Address Bus
-	,   .C_M_AXI_AWUSER_WIDTH	    ( 0 )
+	,   .C_M_AXI_AWUSER_WIDTH	        ( 0 )
 		// Width of User Read Address Bus
-	,   .C_M_AXI_ARUSER_WIDTH	    ( 0 )
+	,   .C_M_AXI_ARUSER_WIDTH	        ( 0 )
 		// Width of User Write Data Bus
-	,   .C_M_AXI_WUSER_WIDTH	    ( 0 )
+	,   .C_M_AXI_WUSER_WIDTH	        ( 0 )
 		// Width of User Read Data Bus
-	,   .C_M_AXI_RUSER_WIDTH	    ( 0 )
+	,   .C_M_AXI_RUSER_WIDTH	        ( 0 )
 	    // Width of User Response Bus
-	,   .C_M_AXI_BUSER_WIDTH	    ( 0 )
+	,   .C_M_AXI_BUSER_WIDTH	        ( 0 )
+//----------------------------------------------------
+// parameter of AXI-LITE slave port
+		// Width of S_AXI data bus
+	,   .C_S_AXI_DATA_WIDTH	            ( C_S_AXI_DATA_WIDTH )
+		// Width of S_AXI address bus
+	,	.C_S_AXI_ADDR_WIDTH             ( C_S_AXI_ADDR_WIDTH )
 )paillier_axi_top_inst(
 //----------------------------------------------------
 // AXI-FULL master port

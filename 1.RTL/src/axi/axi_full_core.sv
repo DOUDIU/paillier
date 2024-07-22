@@ -209,7 +209,7 @@ module axi_full_core#(
 
 //----------------------------------------------------
 // backward fifo read interface
-    ,	output 	reg              		rd_rdy                  	[0 : BLOCK_COUNT - 1]
+    ,	output 	               			rd_rdy                  	[0 : BLOCK_COUNT - 1]
     ,	input			[K-1:0]       	rd_dout                 	[0 : BLOCK_COUNT - 1]
     ,	input			[$clog2(N):0] 	rd_cnt                  	[0 : BLOCK_COUNT - 1]
 );
@@ -517,27 +517,32 @@ module axi_full_core#(
 
 	/* Write Data Generator                                                             
 	 Data pattern is only a simple incrementing count from 0 for each burst  */         
-	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
-			for(i = 0; i < BLOCK_COUNT; i = i + 1) begin
-				rd_rdy[i] <= 0;
-			end
-		end                           
-		else if (wnext && axi_wlast) begin
-		 	rd_rdy[block_is_busy_next] <= 0;
-		end
-		else if (M_AXI_AWREADY && axi_awvalid) begin
-			rd_rdy[block_is_busy_next] <= 1;
-		end                                                     
-		else if (wnext) begin         
-			rd_rdy[block_is_busy_next] <= 1;
-		end                                                   
-		else begin
-			rd_rdy[block_is_busy_next] <= 0;
-		end
-	end    
+	// always @(posedge M_AXI_ACLK) begin
+	// 	if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
+	// 		for(i = 0; i < BLOCK_COUNT; i = i + 1) begin
+	// 			rd_rdy[i] <= 0;
+	// 		end
+	// 	end
+	// 	else if (wnext && axi_wlast) begin
+	// 	 	rd_rdy[fifo_is_busy_next] <= 0;
+	// 	end
+	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
+	// 		rd_rdy[fifo_is_busy_next] <= 1;
+	// 	end
+	// 	else if (wnext) begin         
+	// 		rd_rdy[fifo_is_busy_next] <= 1;
+	// 	end
+	// 	else begin
+	// 		rd_rdy[fifo_is_busy_next] <= 0;
+	// 	end
+	// end
 
-	assign axi_wdata = rd_dout[block_is_busy_next];
+	generate 
+		for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
+			assign	rd_rdy[o]	=	(o == fifo_is_busy_next) ? wnext : 0; 
+		end
+	endgenerate
+	assign axi_wdata = rd_dout[fifo_is_busy_next];
 
 	//----------------------------
 	//Write Response (B) Channel
@@ -799,7 +804,7 @@ module axi_full_core#(
 					state_next	=	STA_ENCRYPTION;
 				end
 				else begin
-					state_next	=	INIT_WRITE;
+					state_next	=	STA_ENCRYPTION_WR;
 				end
 			end
 
@@ -829,6 +834,8 @@ module axi_full_core#(
 
 			block_is_busy			<=	0;
 			block_is_busy_next		<=	0;
+
+			fifo_is_busy_next		<=	0;
 
 			single_task_read_cnt	<=	0;
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
@@ -926,6 +933,9 @@ module axi_full_core#(
 							start_single_burst_write <= 1'b0; //Negate to generate a pulse
 						end
 					end
+					if(state_next == STA_ENCRYPTION) begin
+						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
+					end
 				end
 
 				default: begin
@@ -998,6 +1008,7 @@ module axi_full_core#(
 	// Add user logic here
 	function logic [$clog2(BLOCK_COUNT)-1:0] find_lowest_zero_bit(logic [BLOCK_COUNT-1:0] data);
 		logic [$clog2(BLOCK_COUNT)-1:0] index;
+		// index = 0;
 		for(int i = 0; i < BLOCK_COUNT; i++) begin
 			if(!data[i]) begin
 				index = i;

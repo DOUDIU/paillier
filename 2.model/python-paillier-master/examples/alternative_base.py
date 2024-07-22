@@ -247,5 +247,6 @@ def scalar_negative_multiplication_example():
 if __name__ == "__main__":
     RESULT_LOG = open("result_m.txt",'w').close() #clear the file
     RESULT_LOG = open("result_r.txt",'w').close() #clear the file
+    RESULT_LOG = open("result_encrypted.txt",'w').close() #clear the file
     for i in range(10):
         encrypt_fpga_v1_example()

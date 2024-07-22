@@ -487,7 +487,7 @@ generate
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
         fifo #(
                 .FDW            (K                          )// data width
-            ,   .FAW            ($clog2(N)                  )// The FIFO depth is twice the value of the output data.
+            ,   .FAW            ($clog2(N<<1)               )// The FIFO depth is twice the value of the output data.
             ,   .ULN            ()// lookahead-full
         )fifo_inst(
                 .clk            (M_AXI_ACLK                 )

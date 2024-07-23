@@ -312,7 +312,7 @@ Virtual_Axi_Full_Memory # (
 
 
 Virtual_Axi_Lite_Stimulation #(
-        .C_M_START_DATA_VALUE       (3'b001                 )
+        .C_M_START_DATA_VALUE       (3'b101                 )
     ,   .C_M_TARGET_SLAVE_BASE_ADDR (32'h00000000           )
     ,   .C_M_AXI_ADDR_WIDTH         (C_S_AXI_ADDR_WIDTH     )
     ,   .C_M_AXI_DATA_WIDTH         (C_S_AXI_DATA_WIDTH     )

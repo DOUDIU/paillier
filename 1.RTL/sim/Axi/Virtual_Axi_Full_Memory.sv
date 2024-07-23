@@ -580,71 +580,101 @@
 		end
 	end    
 
-	integer o,p,q;
-	integer fp_m, fp_r,fp_result;
+
 	localparam integer ENCRYPTION_TIMES = 4;
+
+	reg [$clog2(ENCRYPTION_TIMES):0] paillier_wr_cnt = 0;
+	always @(posedge S_AXI_ACLK) begin
+		if (S_AXI_AWVALID && S_AXI_AWREADY) begin
+			paillier_wr_cnt <= paillier_wr_cnt + 1;
+		end
+	end
+	
 	// Add user logic here
+	// string	file_path_enc_m = "../../../../../5.data/result_enc_m.txt";
+	// string	file_path_enc_r = "../../../../../5.data/result_enc_r.txt";
+	// string	file_path_enc_encrypted = "../../../../../5.data/result_enc_encrypted.txt";
+	// initial begin
+	// 	paillier_initial_memory_task(file_path_enc_m, file_path_enc_r, 2048);
+	// end
+
+	// initial begin
+	// 	paillier_memory_monitor_task(file_path_enc_encrypted);
+	// end
+
+	string	file_path_homomorphic_addition_a 		= "../../../../../5.data/homomorphic_addition_a.txt";
+	string	file_path_homomorphic_addition_b 		= "../../../../../5.data/homomorphic_addition_b.txt";
+	string	file_path_homomorphic_addition_result 	= "../../../../../5.data/homomorphic_addition_result.txt";
+
 	initial begin
-		fp_m = $fopen("../../../../../5.data/result_enc_m.txt", "r");
-		if (fp_m == 0) begin
-			$display("Error opening file\n");
+		paillier_initial_memory_task(file_path_homomorphic_addition_a, file_path_homomorphic_addition_b, 4096);
+	end
+
+	initial begin
+		paillier_memory_monitor_task(file_path_homomorphic_addition_result, 4096);
+	end
+
+
+
+	// User logic ends
+	//Add user task here
+	task automatic paillier_initial_memory_task(input string file_path_r, input string file_path_m, input integer DATA_SIZE);
+		integer p;
+		integer fp_m, fp_r;
+		fp_r = $fopen(file_path_r, "r");
+		if (fp_r == 0) begin
+			$display("Error opening file: %s", file_path_r);
 			$finish;
 		end
-		fp_r = $fopen("../../../../../5.data/result_enc_r.txt", "r");
-		if (fp_r == 0) begin
-			$display("Error opening file\n");
+		fp_m = $fopen(file_path_m, "r");
+		if (fp_m == 0) begin
+			$display("Error opening file: %s", file_path_m);
 			$finish;
 		end
 
 		for(p = 0; p < ENCRYPTION_TIMES * 2; p = p + 2) begin
-			read_file_to_memory(fp_r, (2048/C_S_AXI_DATA_WIDTH)*p);
-			read_file_to_memory(fp_m, (2048/C_S_AXI_DATA_WIDTH)*(p+1));
+			read_file_to_memory(fp_r, (DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
+			read_file_to_memory(fp_m, (DATA_SIZE/C_S_AXI_DATA_WIDTH)*(p+1), DATA_SIZE);
 		end
 
 		$fclose(fp_m);
 		$fclose(fp_r);
-	end
+	endtask
 
-	reg [4095:0] memory_data_actual = 0;
-	reg [4095:0] memory_data_expect = 0;
-	reg [$clog2(ENCRYPTION_TIMES):0] encryption_cnt = 0;
-
-	always @(posedge S_AXI_ACLK) begin
-		if (S_AXI_AWVALID && S_AXI_AWREADY) begin
-			encryption_cnt <= encryption_cnt + 1;
-		end
-	end
-
-	initial begin
-		wait(encryption_cnt == ENCRYPTION_TIMES);
+	task automatic paillier_memory_monitor_task(input string file_path_result, input integer DATA_SIZE);
+		integer p;
+		integer fp_result;
+		reg [4095:0] memory_data_actual = 0;
+		reg [4095:0] memory_data_expect = 0;
+		wait(paillier_wr_cnt == ENCRYPTION_TIMES);
 		wait(S_AXI_WREADY & S_AXI_WVALID & S_AXI_WLAST);
 		@(posedge S_AXI_ACLK);//Wait until the last result is written.
-		fp_result = $fopen("../../../../../5.data/result_enc_encrypted.txt", "r");
+
+		fp_result = $fopen(file_path_result, "r");
 		if (fp_result == 0) begin
-			$display("Error opening file\n");
+			$display("Error opening file: %s", file_path_result);
 			$finish;
 		end
 		
 		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
 			@(posedge S_AXI_ACLK);//Add for debug.
-			memory_data_actual = read_from_memory_4096((4096/C_S_AXI_DATA_WIDTH)*p);
+			memory_data_actual = read_from_memory((DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
 			$fscanf(fp_result, "%x ", memory_data_expect);
 			assert(memory_data_actual == memory_data_expect)
 				$display("Examine [%d] passed", p);
 			else
 				$display("Error: Examine [%d] failed", p);
 		end
-
 		$fclose(fp_result);
-	end
-	// User logic ends
+	endtask
+	// User task ends
 
 	// Add user function here
-	function void read_file_to_memory(input integer fp, input integer start_address);
-		reg	[2047:0]	file_data;
+	function void read_file_to_memory(input integer fp, input integer start_address, input integer DATA_SIZE);
+		reg	[4095:0]	file_data;
 		integer p, o;
 		$fscanf(fp, "%x ", file_data);
-		for(p = start_address; p < start_address + 2048/C_S_AXI_DATA_WIDTH; p=p+1) begin
+		for(p = start_address; p < start_address + DATA_SIZE/C_S_AXI_DATA_WIDTH; p=p+1) begin
 			for(o = 0; o <= (C_S_AXI_DATA_WIDTH/8-1); o=o+1) begin
 				byte_ram[o][p]  =  file_data[0+:8];
 				file_data       =  file_data>>8;
@@ -652,13 +682,13 @@
 		end
 	endfunction
 
-  	function reg [4095:0] read_from_memory_4096(input integer start_address);
+  	function reg [4095:0] read_from_memory(input integer start_address, input integer DATA_SIZE);
 		reg [4095:0] memory_data;
 		integer p, o;
-		for(p = start_address; p < start_address + 4096/C_S_AXI_DATA_WIDTH; p = p + 1) begin
+		for(p = start_address; p < start_address + DATA_SIZE/C_S_AXI_DATA_WIDTH; p = p + 1) begin
 			for(o = 0; o <= (C_S_AXI_DATA_WIDTH/8 - 1); o = o + 1) begin
 				memory_data = memory_data >> 8;
-				memory_data[4095-:8] = byte_ram[o][p];
+				memory_data[(DATA_SIZE-1)-:8] = byte_ram[o][p];
 			end
 		end
 		return memory_data;

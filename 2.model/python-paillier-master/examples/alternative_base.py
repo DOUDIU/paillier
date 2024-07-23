@@ -155,10 +155,10 @@ def homomorphic_addition_example(file_name_a,file_name_b,file_name_homomorphic_a
 
     print("Adding the encrypted numbers")
     encrypted_c = encrypted_a + encrypted_b #EncryptedNumber: E(a + b), calculated by taking the product of E(a) and E(b) modulo n` ** 2
+    data_whole_printf(encrypted_c.ciphertext(False),file_name_homomorphic_addition)
 
     print("Decrypting the one encrypted sum")
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_c, ExampleEncodedNumber)
-    data_whole_printf(decrypted_but_encoded.encoding,file_name_homomorphic_addition)
 
     print("Checking the decrypted number is what we started with")
     # assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15

@@ -111,29 +111,14 @@ def encrypt_fpga_example():
     assert a == decrypted_but_encoded.decode()
 
 #((1+m*n) * r**n) mod n**2
-def encrypt_fpga_v1_example():
+def encrypt_fpga_v1_example(file_name_m,file_name_r,file_name_encrypted):
     print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
     
-    # print('Public_key nsquare=0x{:x}\n'.format(public_key.nsquare))
-
-    # a = 102545 + (64 ** 8)
-    # r = 123 + (8 ** 20)#ramdom number
-
     a = random.SystemRandom().randrange(1, n//3)
     r = random.SystemRandom().randrange(1, n//3)
 
-    # RESULT_LOG = open("result_log.txt",'w').close() #clear the file
-    # data_seperate_printf(public_key.nsquare,128, 4096//128,1)
-    # data_seperate_printf(public_key.n,128, 4096//128,1)
-    # data_seperate_printf(a,128, 4096//128,1)
-    # data_seperate_printf(r,128, 4096//128,1)
-
-    print('a=0x{:x}'.format(a))
-    print('r=0x{:x}'.format(r))
-    data_whole_printf(a,"result_m.txt")
-    data_whole_printf(r,"result_r.txt")
-    # data_seperate_printf_byte(a,8, 2048//8,1)
-    # data_seperate_printf_byte(r,8, 4096//8,1)
+    data_whole_printf(a,file_name_m)
+    data_whole_printf(r,file_name_r)
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
 
@@ -141,22 +126,18 @@ def encrypt_fpga_v1_example():
     assert a == encoded_a.decode()
     print("Encrypting the encoded numbers")
     encrypted_ciphertext = paillier.mulmod(paillier.mulmod(public_key.n, a, public_key.nsquare) + 1 , paillier.powmod(r, public_key.n, public_key.nsquare) , public_key.nsquare)
-    print('result_encrypted=0x{:x}'.format(encrypted_ciphertext))
-    data_whole_printf(encrypted_ciphertext,"result_encrypted.txt")
-    # print('\n1+m*n: 0x{:x}\n'.format(paillier.mulmod(public_key.n, a, public_key.nsquare)+1))
-    # print('\nr**n : 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
+    data_whole_printf(encrypted_ciphertext,file_name_encrypted)
     encrypted_a = paillier.EncryptedNumber(public_key, encrypted_ciphertext)
 
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_a, ExampleEncodedNumber)
-    # print("Decrypted: {}".format(decrypted_but_encoded.decode()))
     assert a == decrypted_but_encoded.decode()
 
-def homomorphic_addition_example():
+def homomorphic_addition_example(file_name_a,file_name_b,file_name_homomorphic_addition):
     print("Encoding two large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
 
-    a = 102545 + (64 ** 8)
-    b = 123 + (8 ** 20)
-    r = 123 + (8 ** 20) #ramdom number
+    a = random.SystemRandom().randrange(1, n//3)
+    b = random.SystemRandom().randrange(1, n//3)
+    r = random.SystemRandom().randrange(1, n//3)
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
     encoded_b = ExampleEncodedNumber.encode(public_key, b)
@@ -168,22 +149,20 @@ def homomorphic_addition_example():
     print("Encrypting the encoded numbers")
     encrypted_a = public_key.encrypt(encoded_a,None,r)
     encrypted_b = public_key.encrypt(encoded_b,None,r)
-    # RESULT_LOG = open("result_log.txt",'w').close()
-    # data_seperate_printf(encrypted_a.ciphertext(False),128, 4096//128,1)
-    # data_seperate_printf(encrypted_b.ciphertext(False),128, 4096//128,1)
+
+    data_whole_printf(encrypted_a.ciphertext(False),file_name_a)
+    data_whole_printf(encrypted_b.ciphertext(False),file_name_b)
 
     print("Adding the encrypted numbers")
     encrypted_c = encrypted_a + encrypted_b #EncryptedNumber: E(a + b), calculated by taking the product of E(a) and E(b) modulo n` ** 2
-    print('encrypted_c: 0x{:x}\n'.format(encrypted_c.ciphertext(False)))
-    print('encrypted_c_verification: 0x{:x}\n'.format(paillier.mulmod(encrypted_a.ciphertext(False), encrypted_b.ciphertext(False), public_key.nsquare)))
 
     print("Decrypting the one encrypted sum")
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_c, ExampleEncodedNumber)
+    data_whole_printf(decrypted_but_encoded.encoding,file_name_homomorphic_addition)
 
     print("Checking the decrypted number is what we started with")
-
-    print("Decrypted: {}".format(decrypted_but_encoded.decode()))
-    assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15
+    # assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15
+    assert abs((a + b) - decrypted_but_encoded.encoding) < 1e-15 #Not verifying that the decoded number surpasses n // 3
 
 def scalar_postive_multiplication_example():
     print("Encoding a large positive number. BASE={}".format(ExampleEncodedNumber.BASE))
@@ -244,9 +223,25 @@ def scalar_negative_multiplication_example():
     print("Checking the decrypted number is what we started with")
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
 
+
+
+def data_record_for_encryption(file_name_m,file_name_r,file_name_encrypted,counts):
+    RESULT_LOG = open(file_name_m,'w').close() #clear the file
+    RESULT_LOG = open(file_name_r,'w').close() #clear the file
+    RESULT_LOG = open(file_name_encrypted,'w').close() #clear the file
+    for i in range(counts):
+        encrypt_fpga_v1_example(file_name_m,file_name_r,file_name_encrypted)
+
+def data_record_for_homomorphic_addition(file_name_a,file_name_b,file_name_homomorphic_addition,counts):
+    RESULT_LOG = open(file_name_a,'w').close() #clear the file
+    RESULT_LOG = open(file_name_b,'w').close() #clear the file
+    RESULT_LOG = open(file_name_homomorphic_addition,'w').close() #clear the file
+    for i in range(counts):
+        homomorphic_addition_example(file_name_a,file_name_b,file_name_homomorphic_addition)
+
+
 if __name__ == "__main__":
-    RESULT_LOG = open("result_m.txt",'w').close() #clear the file
-    RESULT_LOG = open("result_r.txt",'w').close() #clear the file
-    RESULT_LOG = open("result_encrypted.txt",'w').close() #clear the file
-    for i in range(10):
-        encrypt_fpga_v1_example()
+    # data_record_for_encryption("../5.data/result_enc_m.txt","../5.data/result_enc_r.txt","../5.data/result_enc_encrypted.txt",10)
+    data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
+
+

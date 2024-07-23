@@ -106,19 +106,22 @@
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
-	parameter [1:0] IDLE = 2'b00, // This state initiates AXI4Lite transaction 
-			// after the state machine changes state to INIT_WRITE   
-			// when there is 0 to 1 transition on INIT_AXI_TXN
-		INIT_WRITE   = 2'b01, // This state initializes write transaction,
-			// once writes are done, the state machine 
-			// changes state to INIT_READ 
-		INIT_READ = 2'b10, // This state initializes read transaction
-			// once reads are done, the state machine 
-			// changes state to INIT_COMPARE 
-		INIT_COMPARE = 2'b11; // This state issues the status of comparison 
-			// of the written data with the read data	
+	parameter [2:0] IDLE 	= 3'b000, 		// This state initiates AXI4Lite transaction 
+										// after the state machine changes state to INIT_WRITE   
+										// when there is 0 to 1 transition on INIT_AXI_TXN
+		INIT_WRITE_START   	= 3'b001, 	// This state initializes write transaction,
+										// once writes are done, the state machine 
+										// changes state to INIT_READ 
+		INIT_WRITE_END     	= 3'b010, 	// This state initializes write transaction,
+										// once writes are done, the state machine 
+										// changes state to INIT_READ 
+		INIT_READ 			= 3'b100, 	// This state initializes read transaction
+										// once reads are done, the state machine 
+										// changes state to INIT_COMPARE 
+		INIT_COMPARE 		= 3'b110; 	// This state issues the status of comparison 
+										// of the written data with the read data	
 
-	 reg [1:0] mst_exec_state;
+	 reg [2:0] mst_exec_state;
 
 	// AXI4LITE signals
 	//write address valid
@@ -135,6 +138,7 @@
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	//write data
 	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
+	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata_buf;
 	//read addresss
 	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	//Asserts when there is a write response error
@@ -180,7 +184,8 @@
 	//Adding the offset address to the base addr of the slave
 	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr;
 	//AXI 4 write data
-	assign M_AXI_WDATA	= axi_wdata;
+	// assign M_AXI_WDATA	= axi_wdata;
+	assign M_AXI_WDATA	= (C_M_START_DATA_VALUE & (~1)) | axi_wdata_buf;
 	assign M_AXI_AWPROT	= 3'b000;
 	assign M_AXI_AWVALID	= axi_awvalid;
 	//Write Data(W)
@@ -277,6 +282,9 @@
 		// available by user logic
 		else if (start_single_write) begin
 			write_index <= write_index + 1;
+		end
+		else if (M_AXI_BVALID && axi_bready) begin
+			write_index <= 0;
 		end
 	end
 
@@ -450,19 +458,19 @@
 		end
 	end
 
-	// Write data generation                                      
-	always @(posedge M_AXI_ACLK) begin
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin
-			axi_wdata <= C_M_START_DATA_VALUE;
-		end
-		// Signals a new write address/ write data is
-		// available by user logic
-		else if (M_AXI_WREADY && axi_wvalid) begin
-			// axi_wdata <= C_M_START_DATA_VALUE + write_index;
-			axi_wdata <= C_M_START_DATA_VALUE;
-		end
-	end
-                                                           
+	// // Write data generation                                      
+	// always @(posedge M_AXI_ACLK) begin
+	// 	if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin
+	// 		axi_wdata <= C_M_START_DATA_VALUE;
+	// 	end
+	// 	// Signals a new write address/ write data is
+	// 	// available by user logic
+	// 	else if (M_AXI_WREADY && axi_wvalid) begin
+	// 		// axi_wdata <= C_M_START_DATA_VALUE + write_index;
+	// 		axi_wdata <= (C_M_START_DATA_VALUE & (~1)) | axi_wdata_buf;
+	// 	end
+	// end
+
 	//Read Addresses                                              
 	always @(posedge M_AXI_ACLK) begin
 		if (M_AXI_ARESETN == 0  || init_txn_pulse == 1'b1) begin
@@ -500,6 +508,7 @@
 				read_issued   <= 1'b0;                                                      
 				compare_done  <= 1'b0;                                                      
 				ERROR <= 1'b0;
+				axi_wdata_buf	<=	0;
 			end                                                                           
 			else begin                                                                         
 				// state transition                                                          
@@ -509,7 +518,8 @@
 						// This state is responsible to initiate 
 						// AXI transaction when init_txn_pulse is asserted 
 						if ( init_txn_pulse == 1'b1 ) begin
-							mst_exec_state  <= INIT_WRITE;
+							mst_exec_state  <= INIT_WRITE_START;
+							axi_wdata_buf 	<= 1;
 							ERROR <= 1'b0;
 							compare_done <= 1'b0;
 						end
@@ -518,16 +528,17 @@
 						end
 					end
 
-					INIT_WRITE: begin
+					INIT_WRITE_START: begin
 						// This state is responsible to issue start_single_write pulse to       
 						// initiate a write transaction. Write transactions will be             
 						// issued until last_write signal is asserted.                          
 						// write controller                                                     
 						if (writes_done) begin
-							mst_exec_state <= IDLE;
+							mst_exec_state <= INIT_WRITE_END;
+							axi_wdata_buf <= 0;
 						end
 						else begin
-							mst_exec_state  <= INIT_WRITE;
+							mst_exec_state  <= INIT_WRITE_START;
 							if (~axi_awvalid && ~axi_wvalid && ~M_AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
 								start_single_write <= 1'b1;
 								write_issued  <= 1'b1;
@@ -540,7 +551,30 @@
 							end
 						end
 					end
-																							
+
+					INIT_WRITE_END: begin
+						// This state is responsible to issue start_single_write pulse to       
+						// initiate a write transaction. Write transactions will be             
+						// issued until last_write signal is asserted.                          
+						// write controller                                                     
+						if (writes_done) begin
+							mst_exec_state <= IDLE;
+						end
+						else begin
+							mst_exec_state  <= INIT_WRITE_END;
+							if (~axi_awvalid && ~axi_wvalid && ~M_AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
+								start_single_write <= 1'b1;
+								write_issued  <= 1'b1;
+							end
+							else if (axi_bready) begin
+								write_issued  <= 1'b0;
+							end
+							else begin
+								start_single_write <= 1'b0; //Negate to generate a pulse
+							end
+						end
+					end
+																	
 					INIT_READ: begin                                                                
 						// This state is responsible to issue start_single_read pulse to        
 						// initiate a read transaction. Read transactions will be               
@@ -585,13 +619,16 @@
 	//Terminal write count                                                            
 																					
 	always @(posedge M_AXI_ACLK) begin                                                                             
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)
+		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
 			last_write <= 1'b0;
+		end
 		//The last write should be associated with a write address ready response       
-		else if ((write_index == C_M_TRANSACTIONS_NUM) && M_AXI_AWREADY)
+		else if ((write_index == C_M_TRANSACTIONS_NUM) && M_AXI_AWREADY) begin
 			last_write <= 1'b1;
-		else
-			last_write <= last_write;
+		end
+		else if (M_AXI_BVALID && axi_bready) begin
+			last_write <= 1'b0;
+		end
 	end                                                                               
 	                                                                                    
 	//Check for last write completion.                                                
@@ -607,9 +644,9 @@
 		else if (last_write && M_AXI_BVALID && axi_bready)                              
 			writes_done <= 1'b1;                                                          
 		else                                                                            
-			writes_done <= writes_done;                                                   
+			writes_done <= 1'b0;                                                   
 	end                                                                               
-	                                                                                    
+
 	//------------------                                                                
 	//Read example                                                                      
 	//------------------                                                                

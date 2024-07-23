@@ -221,7 +221,7 @@ module axi_full_core#(
 
 	reg		[BLOCK_COUNT - 1 : 0]			block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	block_is_busy_next;
-	reg		[$clog2(TEST_TIMES) + 1  : 0]	block_targert_addr_cnt	[0:BLOCK_COUNT-1];
+	reg		[C_M_AXI_ADDR_WIDTH-1	 : 0]	block_targert_addr	[0:BLOCK_COUNT-1];
 	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
 	wire									all_block_is_busy;
 
@@ -284,7 +284,9 @@ module axi_full_core#(
 		STA_HOMOMORPHIC_ADD		=	4'b0110,
 		STA_SCALAR_MUL			=	4'b0111,
 		STA_ENCRYPTION_RD		=	4'b1000,
-		STA_ENCRYPTION_WR 		=	4'b1001;
+		STA_ENCRYPTION_WR 		=	4'b1001,
+		STA_HOMOMORPHIC_ADD_RD	=	4'b1010,
+		STA_HOMOMORPHIC_ADD_WR	=	4'b1011;
 
 	reg [3:0] state_now;
 	reg [3:0] state_next;
@@ -417,14 +419,14 @@ module axi_full_core#(
 	// 		axi_awaddr <= 1'b0;                                             
 	// 	end                                                              
 	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
-	// 		axi_awaddr	<=	block_targert_addr_cnt[fifo_is_busy_next];
+	// 		axi_awaddr	<=	block_targert_addr[fifo_is_busy_next];
 	// 	end                                                              
 	// 	else begin                                                           
 	// 		axi_awaddr <= axi_awaddr;
 	// 	end                                        
 	// end
 
-	assign	axi_awaddr	=	axi_awvalid ? block_targert_addr_cnt[fifo_is_busy_next] : 0;
+	assign	axi_awaddr	=	axi_awvalid ? block_targert_addr[fifo_is_busy_next] : 0;
 
 	//--------------------
 	//Write Data Channel
@@ -620,7 +622,17 @@ module axi_full_core#(
 	        axi_araddr <= 'b0;                                           
 		end                                                            
 	    else if (M_AXI_ARREADY && axi_arvalid) begin
-			axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
+			case(state_now)
+				STA_ENCRYPTION_RD: begin
+					axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
+				end
+				STA_HOMOMORPHIC_ADD_RD: begin
+					axi_araddr	<=	axi_araddr + burst_size_bytes;
+				end
+				default: begin
+					axi_araddr	<=	axi_araddr + burst_size_bytes;
+				end
+			endcase
 		end                                                            
 	    else begin                                                            
 	      	axi_araddr <= axi_araddr;       
@@ -779,13 +791,16 @@ module axi_full_core#(
 				end
 			end
 			STA_ENCRYPTION: begin
-				if ((!all_block_is_busy) | (single_task_read_cnt != 0)) begin
+				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_ENCRYPTION_RD;
 				end
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_ENCRYPTION_WR;
 				end
-				else if (loop_counter == TEST_TIMES) begin
+				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -809,10 +824,41 @@ module axi_full_core#(
 				end
 			end
 
-			STA_DECRYPTION: begin
-				
-			end
 			STA_HOMOMORPHIC_ADD: begin
+				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+					//all blocks is not busy or single read rask is not finished
+					state_next	=	STA_HOMOMORPHIC_ADD_RD;
+				end
+				else if (!all_fifo_is_empty) begin
+					state_next	=	STA_HOMOMORPHIC_ADD_WR;
+				end
+				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+					state_next	=	IDLE_WAIT;
+				end
+				else begin
+					state_next	=	STA_HOMOMORPHIC_ADD;
+				end
+			end
+			STA_HOMOMORPHIC_ADD_RD: begin
+				if (reads_done) begin
+					state_next	=	STA_HOMOMORPHIC_ADD;
+				end
+				else begin
+					state_next	=	STA_HOMOMORPHIC_ADD_RD;
+				end
+			end
+			STA_HOMOMORPHIC_ADD_WR: begin
+				if (writes_done) begin
+					state_next	=	STA_HOMOMORPHIC_ADD;
+				end
+				else begin
+					state_next	=	STA_HOMOMORPHIC_ADD_WR;
+				end
+			end
+
+			STA_DECRYPTION: begin
 				
 			end
 			STA_SCALAR_MUL: begin
@@ -823,7 +869,7 @@ module axi_full_core#(
 			end
 		endcase
 	end
-	
+
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
@@ -870,7 +916,7 @@ module axi_full_core#(
 				scalar_mul_const_valid	[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
-				block_targert_addr_cnt[j]	<=	0;
+				block_targert_addr[j]	<=	0;
 			end
 		end
 		else begin
@@ -886,7 +932,7 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr_cnt[block_lowest_zero_bit]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
+							block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 						end
 					end
 
@@ -939,6 +985,65 @@ module axi_full_core#(
 					end
 				end
 
+				STA_HOMOMORPHIC_ADD: begin
+					if(state_next == STA_HOMOMORPHIC_ADD_RD) begin
+						if(single_task_read_cnt == 0) begin
+							task_cmd[block_lowest_zero_bit]					<=	STA_HOMOMORPHIC_ADD[1:0];
+							task_req[block_lowest_zero_bit]					<=	1;
+							block_is_busy_next 								<=	block_lowest_zero_bit;
+							block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
+						end
+					end
+
+					if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
+						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
+					end
+				end
+
+				STA_HOMOMORPHIC_ADD_RD: begin
+					task_cmd[block_lowest_zero_bit]			<=	0;
+					task_req[block_lowest_zero_bit]			<=	0;
+					if(M_AXI_RVALID && axi_rready) begin
+						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0;
+						homo_add_c1_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
+						homo_add_c2			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0;
+						homo_add_c2_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
+					end
+					else begin
+						homo_add_c1			[block_is_busy_next]	<=	0;
+						homo_add_c1_valid	[block_is_busy_next]	<=	0;
+						homo_add_c2			[block_is_busy_next]	<=	0;
+						homo_add_c2_valid	[block_is_busy_next]	<=	0;
+					end
+					if(!reads_done) begin
+						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin
+							start_single_burst_read <= 1'b1;
+						end
+						else begin
+							start_single_burst_read <= 1'b0; //Negate to generate a pulse
+						end
+					end
+					if(state_next == STA_HOMOMORPHIC_ADD) begin
+						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
+						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
+					end
+				end
+
+				STA_HOMOMORPHIC_ADD_WR: begin
+					if (!writes_done) begin
+						if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
+							start_single_burst_write <= 1'b1;
+						end
+						else begin
+							start_single_burst_write <= 1'b0; //Negate to generate a pulse
+						end
+					end
+					if(state_next == STA_HOMOMORPHIC_ADD) begin
+						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
+					end
+				end
+
 				default: begin
 				end                                                                                             
 			endcase                                                                                             
@@ -949,22 +1054,21 @@ module axi_full_core#(
 	// burst_write_active signal is asserted when there is a burst write transaction                          
 	// is initiated by the assertion of start_single_burst_write. burst_write_active                          
 	// signal remains asserted until the burst write is accepted by the slave                                 
-	always @(posedge M_AXI_ACLK) begin                                                                                                     
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
+	always @(posedge M_AXI_ACLK) begin
+		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)
 			burst_write_active <= 1'b0;
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
-		else if (start_single_burst_write)                                                                      
-			burst_write_active <= 1'b1;                                                                           
-		else if (M_AXI_BVALID && axi_bready)                                                                    
-			burst_write_active <= 0;                                                                              
+		else if (start_single_burst_write)
+			burst_write_active <= 1'b1;
+		else if (M_AXI_BVALID && axi_bready)
+			burst_write_active <= 0;
 	end                                                                                                       
+	 // Check for last write completion.
 
-	 // Check for last write completion.                                                                        
-	                                                                                                            
-	 // This logic is to qualify the last write count with the final write                                      
-	 // response. This demonstrates how to confirm that a write has been                                        
-	 // committed.                                                                                              
-	                                                                                                            
+	 // This logic is to qualify the last write count with the final write
+	 // response. This demonstrates how to confirm that a write has been
+	 // committed.
+
 	always @(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			writes_done <= 1'b0;
@@ -1009,7 +1113,7 @@ module axi_full_core#(
 	// Add user logic here
 	function logic [$clog2(BLOCK_COUNT)-1:0] find_lowest_zero_bit(logic [BLOCK_COUNT-1:0] data);
 		logic [$clog2(BLOCK_COUNT)-1:0] index;
-		// index = 0;
+		index = 0;
 		for(int i = 0; i < BLOCK_COUNT; i++) begin
 			if(!data[i]) begin
 				index = i;

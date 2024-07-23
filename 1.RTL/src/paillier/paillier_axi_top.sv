@@ -1,8 +1,9 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT = 4
-	,	parameter K = 128
-    ,   parameter N = 32
+        parameter BLOCK_COUNT   = 4
+    ,   parameter TEST_TIMES    = 4
+	,	parameter K             = 128
+    ,   parameter N             = 32
     ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                 // "TRADITION" :MULT_LATENCY=9                
                                                 // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
@@ -280,6 +281,8 @@ axi_full_core #(
     // FIFO parameters
 	 	.BLOCK_COUNT                    (BLOCK_COUNT                    )
 	,	.K                              (K                              )
+    ,   .N                              (N                              )
+    ,   .TEST_TIMES                     (TEST_TIMES                     )
 
     //----------------------------------------------------
     // AXI-FULL parameters

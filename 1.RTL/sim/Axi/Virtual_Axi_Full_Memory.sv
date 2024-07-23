@@ -585,12 +585,12 @@
 	localparam integer ENCRYPTION_TIMES = 4;
 	// Add user logic here
 	initial begin
-		fp_m = $fopen("../../../../../2.MODEL/result_m.txt", "r");
+		fp_m = $fopen("../../../../../5.data/result_enc_m.txt", "r");
 		if (fp_m == 0) begin
 			$display("Error opening file\n");
 			$finish;
 		end
-		fp_r = $fopen("../../../../../2.MODEL/result_r.txt", "r");
+		fp_r = $fopen("../../../../../5.data/result_enc_r.txt", "r");
 		if (fp_r == 0) begin
 			$display("Error opening file\n");
 			$finish;
@@ -619,7 +619,7 @@
 		wait(encryption_cnt == ENCRYPTION_TIMES);
 		wait(S_AXI_WREADY & S_AXI_WVALID & S_AXI_WLAST);
 		@(posedge S_AXI_ACLK);//Wait until the last result is written.
-		fp_result = $fopen("../../../../../2.MODEL/result_encrypted.txt", "r");
+		fp_result = $fopen("../../../../../5.data/result_enc_encrypted.txt", "r");
 		if (fp_result == 0) begin
 			$display("Error opening file\n");
 			$finish;
@@ -663,8 +663,6 @@
 		end
 		return memory_data;
 	endfunction
-
-
 	// User function ends
 
 	endmodule

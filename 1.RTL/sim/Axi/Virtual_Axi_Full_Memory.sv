@@ -244,96 +244,79 @@
 	// S_AXI_AWVALID and S_AXI_WVALID are asserted. axi_awready is
 	// de-asserted when reset is low.
 
-	always @( posedge S_AXI_ACLK )
-	begin
-	  if ( S_AXI_ARESETN == 1'b0 )
-	    begin
-	      axi_awready <= 1'b0;
-	      axi_awv_awr_flag <= 1'b0;
-	    end 
-	  else
-	    begin    
-	      if (~axi_awready && S_AXI_AWVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag)
-	        begin
-	          // slave is ready to accept an address and
-	          // associated control signals
-	          axi_awready <= 1'b1;
-	          axi_awv_awr_flag  <= 1'b1; 
-	          // used for generation of bresp() and bvalid
-	        end
-	      else if (S_AXI_WLAST && axi_wready)          
-	      // preparing to accept next address after current write burst tx completion
-	        begin
-	          axi_awv_awr_flag  <= 1'b0;
-	        end
-	      else        
-	        begin
-	          axi_awready <= 1'b0;
-	        end
-	    end 
+	always @( posedge S_AXI_ACLK ) begin
+		if ( S_AXI_ARESETN == 1'b0 ) begin
+			axi_awready <= 1'b0;
+			axi_awv_awr_flag <= 1'b0;
+		end 
+		else begin    
+			if (~axi_awready && S_AXI_AWVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag) begin
+				// slave is ready to accept an address and
+				// associated control signals
+				axi_awready <= 1'b1;
+				axi_awv_awr_flag  <= 1'b1; 
+				// used for generation of bresp() and bvalid
+			end
+			else if (S_AXI_WLAST && axi_wready) begin        
+				// preparing to accept next address after current write burst tx completion
+				axi_awv_awr_flag  <= 1'b0;
+			end
+			else begin
+				axi_awready <= 1'b0;
+			end
+		end 
 	end       
 	// Implement axi_awaddr latching
 
 	// This process is used to latch the address when both 
 	// S_AXI_AWVALID and S_AXI_WVALID are valid. 
 
-	always @( posedge S_AXI_ACLK )
-	begin
-	  if ( S_AXI_ARESETN == 1'b0 )
-	    begin
-	      axi_awaddr <= 0;
-	      axi_awlen_cntr <= 0;
-	      axi_awburst <= 0;
-	      axi_awlen <= 0;
-	    end 
-	  else
-	    begin    
-	      if (~axi_awready && S_AXI_AWVALID && ~axi_awv_awr_flag)
-	        begin
-	          // address latching 
-	          axi_awaddr <= S_AXI_AWADDR[C_S_AXI_ADDR_WIDTH - 1:0];  
-	           axi_awburst <= S_AXI_AWBURST; 
-	           axi_awlen <= S_AXI_AWLEN;     
-	          // start address of transfer
-	          axi_awlen_cntr <= 0;
+	always @( posedge S_AXI_ACLK ) begin
+		if ( S_AXI_ARESETN == 1'b0 ) begin
+			axi_awaddr <= 0;
+			axi_awlen_cntr <= 0;
+			axi_awburst <= 0;
+			axi_awlen <= 0;
+		end 
+	  	else begin    
+	      	if (~axi_awready && S_AXI_AWVALID && ~axi_awv_awr_flag) begin
+	          	// address latching 
+	          	axi_awaddr <= S_AXI_AWADDR[C_S_AXI_ADDR_WIDTH - 1:0];  
+	           	axi_awburst <= S_AXI_AWBURST; 
+	           	axi_awlen <= S_AXI_AWLEN;     
+				// start address of transfer
+				axi_awlen_cntr <= 0;
 	        end   
-	      else if((axi_awlen_cntr <= axi_awlen) && axi_wready && S_AXI_WVALID)        
-	        begin
-
-	          axi_awlen_cntr <= axi_awlen_cntr + 1;
-
-	          case (axi_awburst)
-	            2'b00: // fixed burst
-	            // The write address for all the beats in the transaction are fixed
-	              begin
-	                axi_awaddr <= axi_awaddr;          
-	                //for awsize = 4 bytes (010)
-	              end   
-	            2'b01: //incremental burst
-	            // The write address for all the beats in the transaction are increments by awsize
-	              begin
-	                axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
-	                //awaddr aligned to 4 byte boundary
-	                axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}};   
-	                //for awsize = 4 bytes (010)
-	              end   
-	            2'b10: //Wrapping burst
-	            // The write address wraps when the address reaches wrap boundary 
-	              if (aw_wrap_en)
-	                begin
-	                  axi_awaddr <= (axi_awaddr - aw_wrap_size); 
-	                end
-	              else 
-	                begin
-	                  axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
-	                  axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}}; 
-	                end                      
-	            default: //reserved (incremental burst for example)
-	              begin
-	                axi_awaddr <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
-	                //for awsize = 4 bytes (010)
-	              end
-	          endcase              
+	      	else if((axi_awlen_cntr <= axi_awlen) && axi_wready && S_AXI_WVALID) begin
+				axi_awlen_cntr <= axi_awlen_cntr + 1;
+				case (axi_awburst)
+					2'b00: begin// fixed burst
+						// The write address for all the beats in the transaction are fixed
+						axi_awaddr <= axi_awaddr;          
+						//for awsize = 4 bytes (010)
+					end   
+					2'b01: begin//incremental burst
+						// The write address for all the beats in the transaction are increments by awsize
+						axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
+						//awaddr aligned to 4 byte boundary
+						axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}};   
+						//for awsize = 4 bytes (010)
+					end   
+					2'b10: begin//Wrapping burst
+						// The write address wraps when the address reaches wrap boundary 
+						if (aw_wrap_en) begin
+							axi_awaddr <= (axi_awaddr - aw_wrap_size); 
+						end
+						else begin
+							axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
+							axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}}; 
+						end
+					end
+					default: begin//reserved (incremental burst for example)
+						axi_awaddr <= axi_awaddr[C_S_AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
+						//for awsize = 4 bytes (010)
+					end
+				endcase              
 	        end
 	    end 
 	end       
@@ -598,8 +581,8 @@
 	end    
 
 	integer o,p,q;
-	integer fp_m, fp_r;
-	localparam integer ENCRYPTION_TIMES = 5;
+	integer fp_m, fp_r,fp_result;
+	localparam integer ENCRYPTION_TIMES = 4;
 	// Add user logic here
 	initial begin
 		fp_m = $fopen("../../../../../2.MODEL/result_m.txt", "r");
@@ -621,6 +604,39 @@
 		$fclose(fp_m);
 		$fclose(fp_r);
 	end
+
+	reg [4095:0] memory_data_actual = 0;
+	reg [4095:0] memory_data_expect = 0;
+	reg [$clog2(ENCRYPTION_TIMES):0] encryption_cnt = 0;
+
+	always @(posedge S_AXI_ACLK) begin
+		if (S_AXI_AWVALID && S_AXI_AWREADY) begin
+			encryption_cnt <= encryption_cnt + 1;
+		end
+	end
+
+	initial begin
+		wait(encryption_cnt == ENCRYPTION_TIMES);
+		wait(S_AXI_WREADY & S_AXI_WVALID & S_AXI_WLAST);
+		@(posedge S_AXI_ACLK);//Wait until the last result is written.
+		fp_result = $fopen("../../../../../2.MODEL/result_encrypted.txt", "r");
+		if (fp_result == 0) begin
+			$display("Error opening file\n");
+			$finish;
+		end
+		
+		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
+			@(posedge S_AXI_ACLK);//Add for debug.
+			memory_data_actual = read_from_memory_4096((4096/C_S_AXI_DATA_WIDTH)*p);
+			$fscanf(fp_result, "%x ", memory_data_expect);
+			assert(memory_data_actual == memory_data_expect)
+				$display("Examine [%d] passed", p);
+			else
+				$display("Error: Examine [%d] failed", p);
+		end
+
+		$fclose(fp_result);
+	end
 	// User logic ends
 
 	// Add user function here
@@ -635,6 +651,20 @@
 			end
 		end
 	endfunction
+
+  	function reg [4095:0] read_from_memory_4096(input integer start_address);
+		reg [4095:0] memory_data;
+		integer p, o;
+		for(p = start_address; p < start_address + 4096/C_S_AXI_DATA_WIDTH; p = p + 1) begin
+			for(o = 0; o <= (C_S_AXI_DATA_WIDTH/8 - 1); o = o + 1) begin
+				memory_data = memory_data >> 8;
+				memory_data[4095-:8] = byte_ram[o][p];
+			end
+		end
+		return memory_data;
+	endfunction
+
+
 	// User function ends
 
 	endmodule

@@ -147,8 +147,8 @@
 	end
 
 	always @(posedge S_AXI_ACLK or negedge S_AXI_ARESETN) begin
-		if (!S_AXI_ARESETN == 1'b0) begin
-			paillier_finished_reg <= 1'b0;
+		if (S_AXI_ARESETN == 1'b0) begin
+			paillier_finished_reg <= 0;
 		end
 		else if (!paillier_finished_d2 & paillier_finished_d1) begin
 			paillier_finished_reg <= 1;

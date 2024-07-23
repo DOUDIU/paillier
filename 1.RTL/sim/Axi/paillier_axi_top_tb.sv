@@ -138,7 +138,7 @@ paillier_axi_top#(
 // parameter of AXI-FULL slave port
         // Base address of targeted slave
 	,   .C_M_TARGET_SLAVE_BASE_RD_ADDR  (64'h0_0000_0000)
-	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (64'h1_0000_0000)
+	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (64'h0_0000_0000)
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   .C_M_AXI_BURST_LEN	            ( 32 )
 		// Thread ID Width

@@ -269,29 +269,29 @@ module axi_full_core#(
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
-	parameter [3:0] IDLE_WAIT = 4'b0000, // This state initiates AXI4Lite transaction 
-			// after the state machine changes state to INIT_WRITE 
-			// when there is 0 to 1 transition on INIT_AXI_TXN
-		INIT_WRITE   = 4'b0001, // This state initializes write transaction,
-			// once writes are done, the state machine 
-			// changes state to INIT_READ 
-		INIT_READ = 4'b0010, // This state initializes read transaction
-			// once reads are done, the state machine 
-			// changes state to INIT_COMPARE 	
-		IDLE_RW = 4'b0011,
-		STA_ENCRYPTION		=	4'b0100,
-		STA_DECRYPTION		=	4'b0101,
-		STA_HOMOMORPHIC_ADD	=	4'b0110,
-		STA_SCALAR_MUL		=	4'b0111,
-		STA_ENCRYPTION_RD	=	4'b1000,
-		STA_ENCRYPTION_WR 	=	4'b1001;
+	parameter [3:0] IDLE_WAIT 	= 	4'b0000,	// This state initiates AXI4Lite transaction 
+												// after the state machine changes state to INIT_WRITE 
+												// when there is 0 to 1 transition on INIT_AXI_TXN
+		INIT_WRITE   			= 	4'b0001, 	// This state initializes write transaction,
+												// once writes are done, the state machine 
+												// changes state to INIT_READ 
+		INIT_READ 				= 	4'b0010, 	// This state initializes read transaction
+												// once reads are done, the state machine 
+												// changes state to INIT_COMPARE 	
+		IDLE_RW 				= 	4'b0011,
+		STA_ENCRYPTION			=	4'b0100,
+		STA_DECRYPTION			=	4'b0101,
+		STA_HOMOMORPHIC_ADD		=	4'b0110,
+		STA_SCALAR_MUL			=	4'b0111,
+		STA_ENCRYPTION_RD		=	4'b1000,
+		STA_ENCRYPTION_WR 		=	4'b1001;
 
 	reg [3:0] state_now;
 	reg [3:0] state_next;
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
-	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+	wire [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
 	wire[C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
@@ -411,19 +411,20 @@ module axi_full_core#(
 	end                                                                
 
 	                                                                       
-	// Next address after AWREADY indicates previous address acceptance    
-	always @(posedge M_AXI_ACLK) begin                                                                
-		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                            
-			axi_awaddr <= 1'b0;                                             
-		end                                                              
-		else if (M_AXI_AWREADY && axi_awvalid) begin
-			axi_awaddr	<=	block_targert_addr_cnt[fifo_is_busy_next];
-		end                                                              
-		else begin                                                           
-			axi_awaddr <= axi_awaddr;
-		end                                        
-	end
+	// // Next address after AWREADY indicates previous address acceptance    
+	// always @(posedge M_AXI_ACLK) begin                                                                
+	// 	if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                            
+	// 		axi_awaddr <= 1'b0;                                             
+	// 	end                                                              
+	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
+	// 		axi_awaddr	<=	block_targert_addr_cnt[fifo_is_busy_next];
+	// 	end                                                              
+	// 	else begin                                                           
+	// 		axi_awaddr <= axi_awaddr;
+	// 	end                                        
+	// end
 
+	assign	axi_awaddr	=	axi_awvalid ? block_targert_addr_cnt[fifo_is_busy_next] : 0;
 
 	//--------------------
 	//Write Data Channel

@@ -27,8 +27,8 @@ module axi_full_core#(
 	,	parameter TEST_TIMES 	=	100000
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 0
-	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 0
+	,   parameter  C_M_TARGET_RD_ADDR	= 0
+	,   parameter  C_M_TARGET_WR_ADDR	= 0
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 32
 		// Thread ID Width
@@ -338,7 +338,7 @@ module axi_full_core#(
 	//I/O Connections. Write Address (AW)
 	assign M_AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_WR_ADDR + axi_awaddr;
+	assign M_AXI_AWADDR	= C_M_TARGET_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
@@ -363,7 +363,7 @@ module axi_full_core#(
 	assign M_AXI_BREADY	= axi_bready;
 	//Read Address (AR)
 	assign M_AXI_ARID	= 'b0;
-	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_RD_ADDR + axi_araddr;
+	assign M_AXI_ARADDR	= C_M_TARGET_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign M_AXI_ARLEN	= C_M_AXI_BURST_LEN - 1;
 	//Size should be C_M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used

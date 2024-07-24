@@ -119,20 +119,25 @@ initial begin
     INIT_AXI_TXN    <=  0;
 end
 
+parameter   K                       = 128;
+parameter   N                       = 32;
 
-localparam  STA_ENCRYPTION      = 2'b00,
-            STA_DECRYPTION      = 2'b01,
-            STA_HOMOMORPHIC_ADD = 2'b10,
-            STA_SCALAR_MUL      = 2'b11;
+localparam  STA_ENCRYPTION          = 2'b00,
+            STA_DECRYPTION          = 2'b01,
+            STA_HOMOMORPHIC_ADD     = 2'b10,
+            STA_SCALAR_MUL          = 2'b11;
 
-parameter   PAILLIER_MODE   = STA_SCALAR_MUL;
+parameter   PAILLIER_MODE           = STA_HOMOMORPHIC_ADD;
+parameter   BLOCK_COUNT             = 8;
+parameter   TEST_TIMES              = 8;
 
 
 
 paillier_axi_top#(
-        .BLOCK_COUNT                    (4                          )
-	,	.K                              (128                        )
-    ,   .N                              (32                         )
+        .BLOCK_COUNT                    (BLOCK_COUNT                )
+    ,   .TEST_TIMES                     (TEST_TIMES                 )
+	,	.K                              (K                          )
+    ,   .N                              (N                          )
     ,   .MULT_METHOD                    ("COMMON"                   )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                                         // "TRADITION" :MULT_LATENCY=9                
                                                                         // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
@@ -258,6 +263,8 @@ paillier_axi_top#(
 //Virtual AXI-FULL MEMORY 
 Virtual_Axi_Full_Memory # ( 
         .PAILLIER_MODE          (PAILLIER_MODE      )
+    ,   .TEST_TIMES             (TEST_TIMES         )
+
 	,   .C_S_AXI_ID_WIDTH    	(AXI_ID_WIDTH     	)
 	,	.C_S_AXI_DATA_WIDTH  	(AXI_DATA_WIDTH   	)
 	,	.C_S_AXI_ADDR_WIDTH  	(AXI_ADDR_WIDTH   	)

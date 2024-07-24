@@ -1,7 +1,7 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 4
-    ,   parameter TEST_TIMES    = 4
+        parameter BLOCK_COUNT   = 10
+    ,   parameter TEST_TIMES    = 10
 	,	parameter K             = 128
     ,   parameter N             = 32
     ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
@@ -17,8 +17,8 @@ module paillier_axi_top#(
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_SLAVE_BASE_RD_ADDR	= 64'h0_0000_0000
-	,   parameter  C_M_TARGET_SLAVE_BASE_WR_ADDR	= 64'h1_0000_0000
+	,   parameter  C_M_TARGET_RD_ADDR = 64'h0_0000_0000
+	,   parameter  C_M_TARGET_WR_ADDR = 64'h1_0000_0000
 		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
 	,   parameter integer C_M_AXI_BURST_LEN	= 32
 		// Thread ID Width
@@ -237,66 +237,66 @@ module paillier_axi_top#(
 //----------------------------------------------------
 // wire definition
 
-    wire                                rd_rdy                  [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     rd_dout                 [0 : BLOCK_COUNT - 1]   ;
-    wire    [$clog2(N):0]               rd_cnt                  [0 : BLOCK_COUNT - 1]   ;
+    wire                        rd_rdy                  [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             rd_dout                 [0 : BLOCK_COUNT - 1]   ;
+    wire    [$clog2(N):0]       rd_cnt                  [0 : BLOCK_COUNT - 1]   ;
 
-    wire    		                    paillier_start                                  ;
-    wire    [1:0]	                    paillier_mode                                   ;
-    wire    			                paillier_finished                               ;
+    wire    		            paillier_start                                  ;
+    wire    [1:0]	            paillier_mode                                   ;
+    wire    			        paillier_finished                               ;
 
-    wire    [1  :0]                     task_cmd                [0 : BLOCK_COUNT - 1]   ;
-    wire                                task_req                [0 : BLOCK_COUNT - 1]   ;
-    wire                                task_end                [0 : BLOCK_COUNT - 1]   ;
+    wire    [1  :0]             task_cmd                [0 : BLOCK_COUNT - 1]   ;
+    wire                        task_req                [0 : BLOCK_COUNT - 1]   ;
+    wire                        task_end                [0 : BLOCK_COUNT - 1]   ;
 
-    wire    [K-1:0]                     enc_m_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     enc_r_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                enc_r_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             enc_m_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                        enc_m_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             enc_r_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                        enc_r_valid             [0 : BLOCK_COUNT - 1]   ;
 
-    wire    [K-1:0]                     dec_c_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                dec_c_valid             [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     dec_lambda_data         [0 : BLOCK_COUNT - 1]   ;
-    wire                                dec_lambda_valid        [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     dec_n_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                                dec_n_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             dec_c_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                        dec_c_valid             [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             dec_lambda_data         [0 : BLOCK_COUNT - 1]   ;
+    wire                        dec_lambda_valid        [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             dec_n_data              [0 : BLOCK_COUNT - 1]   ;
+    wire                        dec_n_valid             [0 : BLOCK_COUNT - 1]   ;
 
-    wire    [K-1:0]                     homo_add_c1             [0 : BLOCK_COUNT - 1]   ;
-    wire                                homo_add_c1_valid       [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     homo_add_c2             [0 : BLOCK_COUNT - 1]   ;
-    wire                                homo_add_c2_valid       [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             homo_add_c1             [0 : BLOCK_COUNT - 1]   ;
+    wire                        homo_add_c1_valid       [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             homo_add_c2             [0 : BLOCK_COUNT - 1]   ;
+    wire                        homo_add_c2_valid       [0 : BLOCK_COUNT - 1]   ;
 
-    wire    [K-1:0]                     scalar_mul_c1           [0 : BLOCK_COUNT - 1]   ;
-    wire                                scalar_mul_c1_valid     [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]                     scalar_mul_const        [0 : BLOCK_COUNT - 1]   ;
-    wire                                scalar_mul_const_valid  [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             scalar_mul_c1           [0 : BLOCK_COUNT - 1]   ;
+    wire                        scalar_mul_c1_valid     [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             scalar_mul_const        [0 : BLOCK_COUNT - 1]   ;
+    wire                        scalar_mul_const_valid  [0 : BLOCK_COUNT - 1]   ;
 
-    wire    [K-1:0]                     enc_out_data            [0 : BLOCK_COUNT - 1]   ;
-    wire                                enc_out_valid           [0 : BLOCK_COUNT - 1]   ;
+    wire    [K-1:0]             enc_out_data            [0 : BLOCK_COUNT - 1]   ;
+    wire                        enc_out_valid           [0 : BLOCK_COUNT - 1]   ;
 
 //---------------------------------------------------
 // FIFO TO AXI FULL
 axi_full_core #(
     //----------------------------------------------------
     // FIFO parameters
-	 	.BLOCK_COUNT                    (BLOCK_COUNT                    )
-	,	.K                              (K                              )
-    ,   .N                              (N                              )
-    ,   .TEST_TIMES                     (TEST_TIMES                     )
+	 	.BLOCK_COUNT            (BLOCK_COUNT            )
+	,	.K                      (K                      )
+    ,   .N                      (N                      )
+    ,   .TEST_TIMES             (TEST_TIMES             )
 
     //----------------------------------------------------
     // AXI-FULL parameters
-	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (C_M_TARGET_SLAVE_BASE_WR_ADDR  )   
-	,   .C_M_TARGET_SLAVE_BASE_RD_ADDR  (C_M_TARGET_SLAVE_BASE_RD_ADDR  )   
-	,   .C_M_AXI_BURST_LEN	            (C_M_AXI_BURST_LEN	            )   
-	,   .C_M_AXI_ID_WIDTH	            (C_M_AXI_ID_WIDTH	            )   
-	,   .C_M_AXI_ADDR_WIDTH	            (C_M_AXI_ADDR_WIDTH	            )   
-	,   .C_M_AXI_DATA_WIDTH	            (C_M_AXI_DATA_WIDTH	            )   
-	,   .C_M_AXI_AWUSER_WIDTH	        (C_M_AXI_AWUSER_WIDTH	        )   
-	,   .C_M_AXI_ARUSER_WIDTH	        (C_M_AXI_ARUSER_WIDTH	        )   
-	,   .C_M_AXI_WUSER_WIDTH	        (C_M_AXI_WUSER_WIDTH	        )   
-	,   .C_M_AXI_RUSER_WIDTH	        (C_M_AXI_RUSER_WIDTH	        )   
-	,   .C_M_AXI_BUSER_WIDTH	        (C_M_AXI_BUSER_WIDTH	        )   
+	,   .C_M_TARGET_WR_ADDR     (C_M_TARGET_WR_ADDR     )   
+	,   .C_M_TARGET_RD_ADDR     (C_M_TARGET_RD_ADDR     )   
+	,   .C_M_AXI_BURST_LEN	    (C_M_AXI_BURST_LEN	    )      
+	,   .C_M_AXI_ID_WIDTH	    (C_M_AXI_ID_WIDTH	    )   
+	,   .C_M_AXI_ADDR_WIDTH	    (C_M_AXI_ADDR_WIDTH	    )   
+	,   .C_M_AXI_DATA_WIDTH	    (C_M_AXI_DATA_WIDTH	    )   
+	,   .C_M_AXI_AWUSER_WIDTH   (C_M_AXI_AWUSER_WIDTH   )   
+	,   .C_M_AXI_ARUSER_WIDTH   (C_M_AXI_ARUSER_WIDTH   )   
+	,   .C_M_AXI_WUSER_WIDTH    (C_M_AXI_WUSER_WIDTH    )   
+	,   .C_M_AXI_RUSER_WIDTH    (C_M_AXI_RUSER_WIDTH    )   
+	,   .C_M_AXI_BUSER_WIDTH    (C_M_AXI_BUSER_WIDTH    )   
 )u_axi_full_core(
 //----------------------------------------------------
 // paillier control interface

@@ -4,6 +4,7 @@
 	module Virtual_Axi_Full_Memory #(
 		// Users to add parameters here
 		parameter 	 	  PAILLIER_MODE = 2'b0,
+		parameter		  TEST_TIMES = 10,
 		// User parameters ends
 		// Do not modify the parameters beyond this line
 
@@ -581,9 +582,7 @@
 	end    
 
 
-	localparam integer ENCRYPTION_TIMES = 4;
-
-	reg [$clog2(ENCRYPTION_TIMES):0] paillier_wr_cnt = 0;
+	reg [$clog2(TEST_TIMES):0] paillier_wr_cnt = 0;
 	always @(posedge S_AXI_ACLK) begin
 		if (S_AXI_AWVALID && S_AXI_AWREADY) begin
 			paillier_wr_cnt <= paillier_wr_cnt + 1;
@@ -659,7 +658,7 @@ endgenerate
 			$finish;
 		end
 
-		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
+		for(p = 0; p < TEST_TIMES; p = p + 1) begin
 			write_file_to_memory(fp_a, ((DATA_SIZE_1+DATA_SIZE_2)/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE_1);
 			write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/C_S_AXI_DATA_WIDTH)*p + DATA_SIZE_1/C_S_AXI_DATA_WIDTH, DATA_SIZE_2);
 		end
@@ -673,7 +672,7 @@ endgenerate
 		integer fp_result;
 		reg [4095:0] memory_data_actual = 0;
 		reg [4095:0] memory_data_expect = 0;
-		wait(paillier_wr_cnt == ENCRYPTION_TIMES);
+		wait(paillier_wr_cnt == TEST_TIMES);
 		wait(S_AXI_WREADY & S_AXI_WVALID & S_AXI_WLAST);
 		@(posedge S_AXI_ACLK);//Wait until the last result is written.
 
@@ -683,7 +682,7 @@ endgenerate
 			$finish;
 		end
 		
-		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
+		for(p = 0; p < TEST_TIMES; p = p + 1) begin
 			@(posedge S_AXI_ACLK);//Add for debug.
 			memory_data_actual = read_file_from_memory((DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
 			$fscanf(fp_result, "%x ", memory_data_expect);

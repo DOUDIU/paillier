@@ -3,7 +3,7 @@
 
 	module Virtual_Axi_Lite_Stimulation #(
 		// Users to add parameters here
-
+		parameter PAILLIER_MODE	= 2'b00,
 		// User parameters ends
 		// Do not modify the parameters beyond this line
 
@@ -185,7 +185,7 @@
 	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr;
 	//AXI 4 write data
 	// assign M_AXI_WDATA	= axi_wdata;
-	assign M_AXI_WDATA	= (C_M_START_DATA_VALUE & (~1)) | axi_wdata_buf;
+	assign M_AXI_WDATA	= (PAILLIER_MODE << 1) | axi_wdata_buf;
 	assign M_AXI_AWPROT	= 3'b000;
 	assign M_AXI_AWVALID	= axi_awvalid;
 	//Write Data(W)

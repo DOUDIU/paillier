@@ -164,14 +164,16 @@ def homomorphic_addition_example(file_name_a,file_name_b,file_name_homomorphic_a
     # assert abs((a + b) - decrypted_but_encoded.decode()) < 1e-15
     assert abs((a + b) - decrypted_but_encoded.encoding) < 1e-15 #Not verifying that the decoded number surpasses n // 3
 
-def scalar_postive_multiplication_example():
+def scalar_postive_multiplication_example(file_name_m,file_name_c,file_name_result):
     print("Encoding a large positive number. BASE={}".format(ExampleEncodedNumber.BASE))
 
-    a = 102545 + (64 ** 8)
-    const_scalar = 34+(11**3)
-    # RESULT_LOG = open("result_log.txt",'w').close()
-    # data_seperate_printf(const_scalar,128, 4096//128,1)
-    r = 123 + (8 ** 20) #ramdom number
+    # a = 102545 + (64 ** 8)
+    # const_scalar = 34+(11**3)
+    # r = 123 + (8 ** 20) #ramdom number
+
+    a = random.SystemRandom().randrange(1, (n//3)>>1024)
+    const_scalar = random.SystemRandom().randrange(1, (n//3)>>1024)
+    r = random.SystemRandom().randrange(1, n//3)
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
 
@@ -180,12 +182,15 @@ def scalar_postive_multiplication_example():
 
     print("Encrypting the encoded number")
     encrypted_a = public_key.encrypt(encoded_a,None,r)
+    data_whole_printf(encrypted_a.ciphertext(False),file_name_m)
+    data_whole_printf(const_scalar,file_name_c)
 
     print("Multiplying the encrypted number by a scalar")
     encrypted_b = const_scalar * encrypted_a #EncryptedNumber: E(a * scalar), calculated by taking the power exponent of E(a) and scalar modulo n` ** 2
+    data_whole_printf(encrypted_b.ciphertext(False),file_name_result)
 
-    print('encrypted_b: 0x{:x}\n'.format(encrypted_b.ciphertext(False)))
-    print('encrypted_b_verification: 0x{:x}\n'.format(paillier.powmod(encrypted_a.ciphertext(False), const_scalar, public_key.nsquare)))
+    # print('encrypted_b: 0x{:x}\n'.format(encrypted_b.ciphertext(False)))
+    # print('encrypted_b_verification: 0x{:x}\n'.format(paillier.powmod(encrypted_a.ciphertext(False), const_scalar, public_key.nsquare)))
 
     print("Decrypting the one encrypted sum")
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted_b, ExampleEncodedNumber)
@@ -239,9 +244,17 @@ def data_record_for_homomorphic_addition(file_name_a,file_name_b,file_name_homom
     for i in range(counts):
         homomorphic_addition_example(file_name_a,file_name_b,file_name_homomorphic_addition)
 
+def data_record_for_scalar_postive_multiplication(file_name_m,file_name_c,file_name_result,counts):
+    RESULT_LOG = open(file_name_m,'w').close() #clear the file
+    RESULT_LOG = open(file_name_c,'w').close() #clear the file
+    RESULT_LOG = open(file_name_result,'w').close() #clear the file
+    for i in range(counts):
+        scalar_postive_multiplication_example(file_name_m,file_name_c,file_name_result)
 
 if __name__ == "__main__":
     # data_record_for_encryption("../5.data/result_enc_m.txt","../5.data/result_enc_r.txt","../5.data/result_enc_encrypted.txt",10)
-    data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
-
-
+    # data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
+    # data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
+    a = 0x62473723121fa1413366979bab6cc11848075252b92b3ba6392b18c5dac4bb3bbb03952a4b1ffb72e3b42d816e95cdbc795190d7136ef06893e9e0edcf68e60908a64a985ce4543f532db8680aef25a08fe25cff8f16ef461c39dd3f3770f3c0eb3f117148346e81bb675dfddeed6cdc44728af1f65a183497fa5778bace682a4615f6d8ceaf04d9deae0cc36471f5d8c2c58f918c13f6caefe5180bddbea1bb88a34d4228209dee02373aa70ee7b823038f754ebbf1c6ff21ffc2762947cfc3e30d11a86700f24acc498db5f6ae9d8722c14c1110e2abcbb3236432b273c96b1e61bc294c6e6ac50a8da36e8518371c5b3d2a3c3ae45ab1257391618070be8787424474c82d75ce19589589045491530d5a6ffedeef9f936385c23e95e78172a889a8cd876bba43b1cba429296abac9ffbd75ca32e5025f52c694a4b726333b93441ee022dc10406fc8d535fbffd6ae67006c33c6b2d146a30242a3556f3a097273a680017415c2144dd107d3d22501835d2c677cbf0d5761adcea720bf30f53a26d908d0adc18ac8f055810f8aebc94858b8b7bce242223817bb92cd14bf5435be247bc802c59f144a6f47178e0de255f3ec0de028cd430102c1d17d8b11198242a0017121481a7be0118b2e3c6148678d359b8d7696e06745f97c1c1eddcba38c87f0db56426fac65bd91fbf351580f91ba4485f3996feb21510c6471ad24 
+    b = 0x11401bc48162751614fac47d1fac04c9195777f3a01f5da7aa3524c22db5f72c98bb07fa84b723bb05c0c31facd31202088adbcf8bc9126f8b823cb2c0badf10baf9f085a090db04cd4562520c0d9920c19cdec00e6971c9546545205d13acf70029be900c569d7c1b53be7459cea2d73b855f0e825fb421ef85d3709a651a8a
+    print('a ^ b: 0x{:x}\n'.format(paillier.powmod(a,b,public_key.nsquare)))

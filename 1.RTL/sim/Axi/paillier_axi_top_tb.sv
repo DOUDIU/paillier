@@ -120,6 +120,15 @@ initial begin
 end
 
 
+localparam  STA_ENCRYPTION      = 2'b00,
+            STA_DECRYPTION      = 2'b01,
+            STA_HOMOMORPHIC_ADD = 2'b10,
+            STA_SCALAR_MUL      = 2'b11;
+
+parameter   PAILLIER_MODE   = STA_SCALAR_MUL;
+
+
+
 paillier_axi_top#(
         .BLOCK_COUNT                    (4                          )
 	,	.K                              (128                        )
@@ -248,7 +257,8 @@ paillier_axi_top#(
 
 //Virtual AXI-FULL MEMORY 
 Virtual_Axi_Full_Memory # ( 
-		.C_S_AXI_ID_WIDTH    	(AXI_ID_WIDTH     	)
+        .PAILLIER_MODE          (PAILLIER_MODE      )
+	,   .C_S_AXI_ID_WIDTH    	(AXI_ID_WIDTH     	)
 	,	.C_S_AXI_DATA_WIDTH  	(AXI_DATA_WIDTH   	)
 	,	.C_S_AXI_ADDR_WIDTH  	(AXI_ADDR_WIDTH   	)
 	,	.C_S_AXI_AWUSER_WIDTH	(AXI_AWUSER_WIDTH 	)
@@ -312,7 +322,8 @@ Virtual_Axi_Full_Memory # (
 
 
 Virtual_Axi_Lite_Stimulation #(
-        .C_M_START_DATA_VALUE       (3'b101                 )
+        .PAILLIER_MODE              (PAILLIER_MODE          )
+    ,   .C_M_START_DATA_VALUE       ()
     ,   .C_M_TARGET_SLAVE_BASE_ADDR (32'h00000000           )
     ,   .C_M_AXI_ADDR_WIDTH         (C_S_AXI_ADDR_WIDTH     )
     ,   .C_M_AXI_DATA_WIDTH         (C_S_AXI_DATA_WIDTH     )

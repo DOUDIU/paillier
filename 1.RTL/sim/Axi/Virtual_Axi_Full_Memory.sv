@@ -3,7 +3,7 @@
 
 	module Virtual_Axi_Full_Memory #(
 		// Users to add parameters here
-
+		parameter 	 	  PAILLIER_MODE = 2'b0,
 		// User parameters ends
 		// Do not modify the parameters beyond this line
 
@@ -591,54 +591,81 @@
 	end
 	
 	// Add user logic here
-	// string	file_path_enc_m = "../../../../../5.data/result_enc_m.txt";
-	// string	file_path_enc_r = "../../../../../5.data/result_enc_r.txt";
-	// string	file_path_enc_encrypted = "../../../../../5.data/result_enc_encrypted.txt";
-	// initial begin
-	// 	paillier_initial_memory_task(file_path_enc_m, file_path_enc_r, 2048);
-	// end
+generate 
+	if(PAILLIER_MODE == 2'b00) begin
+		string	file_path_enc_m = "../../../../../5.data/result_enc_m.txt";
+		string	file_path_enc_r = "../../../../../5.data/result_enc_r.txt";
+		string	file_path_enc_encrypted = "../../../../../5.data/result_enc_encrypted.txt";
+		initial begin
+			paillier_initial_memory_task(file_path_enc_m, file_path_enc_r, 2048, 2048);
+		end
 
-	// initial begin
-	// 	paillier_memory_monitor_task(file_path_enc_encrypted);
-	// end
+		initial begin
+			paillier_memory_monitor_task(file_path_enc_encrypted, 4096);
+		end
+	end 
+	else if(PAILLIER_MODE == 2'b01) begin
+		// string	file_path_dec_m = "../../../../../5.data/result_dec_m.txt";
+		// string	file_path_dec_r = "../../../../../5.data/result_dec_r.txt";
+		// string	file_path_dec_decrypted = "../../../../../5.data/result_dec_decrypted.txt";
+		// initial begin
+		// 	paillier_initial_memory_task(file_path_dec_m, file_path_dec_r, 4096, 4096);
+		// end
 
-	string	file_path_homomorphic_addition_a 		= "../../../../../5.data/homomorphic_addition_a.txt";
-	string	file_path_homomorphic_addition_b 		= "../../../../../5.data/homomorphic_addition_b.txt";
-	string	file_path_homomorphic_addition_result 	= "../../../../../5.data/homomorphic_addition_result.txt";
-
-	initial begin
-		paillier_initial_memory_task(file_path_homomorphic_addition_a, file_path_homomorphic_addition_b, 4096);
+		// initial begin
+		// 	paillier_memory_monitor_task(file_path_dec_decrypted, 4096);
+		// end
 	end
+	else if(PAILLIER_MODE == 2'b10) begin
+		string	file_path_homomorphic_addition_a 		= "../../../../../5.data/homomorphic_addition_a.txt";
+		string	file_path_homomorphic_addition_b 		= "../../../../../5.data/homomorphic_addition_b.txt";
+		string	file_path_homomorphic_addition_result 	= "../../../../../5.data/homomorphic_addition_result.txt";
+		initial begin
+			paillier_initial_memory_task(file_path_homomorphic_addition_a, file_path_homomorphic_addition_b, 4096, 4096);
+		end
 
-	initial begin
-		paillier_memory_monitor_task(file_path_homomorphic_addition_result, 4096);
+		initial begin
+			paillier_memory_monitor_task(file_path_homomorphic_addition_result, 4096);
+		end
 	end
+	else if(PAILLIER_MODE == 2'b11) begin
+		string	file_path_scalar_postive_multiplication_m 		= "../../../../../5.data/scalar_postive_multiplication_m.txt";
+		string	file_path_scalar_postive_multiplication_const 	= "../../../../../5.data/scalar_postive_multiplication_const.txt";
+		string	file_path_scalar_postive_multiplication_result 	= "../../../../../5.data/scalar_postive_multiplication_result.txt";
+		initial begin
+			paillier_initial_memory_task(file_path_scalar_postive_multiplication_m, file_path_scalar_postive_multiplication_const, 4096, 2048);
+		end
 
+		initial begin
+			paillier_memory_monitor_task(file_path_scalar_postive_multiplication_result, 4096);
+		end
+	end
+endgenerate
 
 
 	// User logic ends
 	//Add user task here
-	task automatic paillier_initial_memory_task(input string file_path_r, input string file_path_m, input integer DATA_SIZE);
+	task automatic paillier_initial_memory_task(input string file_path_a, input string file_path_b, input integer DATA_SIZE_1, input integer DATA_SIZE_2);
 		integer p;
-		integer fp_m, fp_r;
-		fp_r = $fopen(file_path_r, "r");
-		if (fp_r == 0) begin
-			$display("Error opening file: %s", file_path_r);
+		integer fp_a, fp_b;
+		fp_a = $fopen(file_path_a, "r");
+		if (fp_a == 0) begin
+			$display("Error opening file: %s", file_path_a);
 			$finish;
 		end
-		fp_m = $fopen(file_path_m, "r");
-		if (fp_m == 0) begin
-			$display("Error opening file: %s", file_path_m);
+		fp_b = $fopen(file_path_b, "r");
+		if (fp_b == 0) begin
+			$display("Error opening file: %s", file_path_b);
 			$finish;
 		end
 
-		for(p = 0; p < ENCRYPTION_TIMES * 2; p = p + 2) begin
-			read_file_to_memory(fp_r, (DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
-			read_file_to_memory(fp_m, (DATA_SIZE/C_S_AXI_DATA_WIDTH)*(p+1), DATA_SIZE);
+		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
+			write_file_to_memory(fp_a, ((DATA_SIZE_1+DATA_SIZE_2)/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE_1);
+			write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/C_S_AXI_DATA_WIDTH)*p + DATA_SIZE_1/C_S_AXI_DATA_WIDTH, DATA_SIZE_2);
 		end
 
-		$fclose(fp_m);
-		$fclose(fp_r);
+		$fclose(fp_a);
+		$fclose(fp_b);
 	endtask
 
 	task automatic paillier_memory_monitor_task(input string file_path_result, input integer DATA_SIZE);
@@ -658,19 +685,19 @@
 		
 		for(p = 0; p < ENCRYPTION_TIMES; p = p + 1) begin
 			@(posedge S_AXI_ACLK);//Add for debug.
-			memory_data_actual = read_from_memory((DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
+			memory_data_actual = read_file_from_memory((DATA_SIZE/C_S_AXI_DATA_WIDTH)*p, DATA_SIZE);
 			$fscanf(fp_result, "%x ", memory_data_expect);
 			assert(memory_data_actual == memory_data_expect)
-				$display("Examine [%d] passed", p);
+				$display("Check [%d] passed", p);
 			else
-				$display("Error: Examine [%d] failed", p);
+				$display("Error: Check [%d] failed", p);
 		end
 		$fclose(fp_result);
 	endtask
 	// User task ends
 
 	// Add user function here
-	function void read_file_to_memory(input integer fp, input integer start_address, input integer DATA_SIZE);
+	function void write_file_to_memory(input integer fp, input integer start_address, input integer DATA_SIZE);
 		reg	[4095:0]	file_data;
 		integer p, o;
 		$fscanf(fp, "%x ", file_data);
@@ -682,7 +709,7 @@
 		end
 	endfunction
 
-  	function reg [4095:0] read_from_memory(input integer start_address, input integer DATA_SIZE);
+  	function reg [4095:0] read_file_from_memory(input integer start_address, input integer DATA_SIZE);
 		reg [4095:0] memory_data;
 		integer p, o;
 		for(p = start_address; p < start_address + DATA_SIZE/C_S_AXI_DATA_WIDTH; p = p + 1) begin

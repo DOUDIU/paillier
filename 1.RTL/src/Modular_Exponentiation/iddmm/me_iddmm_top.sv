@@ -33,7 +33,7 @@ module me_iddmm_top#(
                                                 // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                                 // 
     ,   parameter K             = 128
-    ,   parameter N             = 16
+    ,   parameter N             = 32
 )(
         input                   clk         
     ,   input                   rst_n       
@@ -52,84 +52,14 @@ module me_iddmm_top#(
 localparam ADDR_W   =   $clog2(N);
 
 reg     [K*N-1  : 0]    me_y_storage             = 0;
-wire    [K-1    : 0]    me_m            [N-1:0]     ;
 wire    [K-1    : 0]    me_m1                       ;
 reg     [K-1    : 0]    rou             [N-1:0]     ;
 reg     [K-1    : 0]    result          [N-1:0]     ;
+reg     [K-1    : 0]    result2         [N-1:0]     ;
 reg     [K-1    : 0]    result_backup   [N-1:0]     ;
+reg     [K-1    : 0]    yy                          ;
 
 assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
-assign  me_m        =   '{
-    128'h92d20837163355491353a40bfbed6aff,
-    128'hfb000939ca99e2dcb7e96c94d9e6ff1b,
-    128'h54db47d62fa87283db4ef47e8119e2cb,
-    128'hd126f44ef110cd64d6493014fbee11f,
-    128'hce25ad01515ed88bef11f595cc5b107a,
-    128'hed44c3aecf42318a0e9dc2431934703c,
-    128'h219abc2ee926037fbd46e2b2465b19b3,
-    128'h110e3ccdbdfbe0daadefe22a725ef38b,
-    128'hc2371fdc5e9cfb439ea6ac84b3e424e7,
-    128'h1cc3a263dc8cb4642042d01abe4e5441,
-    128'h6d821fae3e588950e16d5bdc76fc0629,
-    128'hb4829eabad9ad1535fc322dc0ad791ca,
-    128'h8a353157ab771cc0eafb621a07b0ce09,
-    128'h98a65541754ffeedb756ff3ca3b606de,
-    128'ha2b63fa2483a5dda07c17496f556f441,
-    128'he4c09fbb079cbbb8279c01fca24b56bf,
-    128'h32e9902603d670439cee8a4f9730281c,
-    128'ha7e736783300f69b64cce28fb565b995,
-    128'h99758f8c8e5d58ce03af202cfe8d8809,
-    128'h2884f15b5a76578db8bf6a32cf7e2d78,
-    128'ha758c60de9e6cf037bd2a6c7d22c670b,
-    128'h8b384722fef18a9870588c1368f3c1f8,
-    128'h2caa709eff78cfdb2a3594bce3977875,
-    128'hc0c30e464a5fc136225c7e206ba599b1,
-    128'h4ec856a9a230bca081331c969774eb11,
-    128'h2295c0670d4cb20723ceaa02e0ff4879,
-    128'ha508052dad14c59f1787572686d68c51,
-    128'heb3ce8f505e141803ec18bc77c4986a7,
-    128'hea1dd24c13c7bb976496361ad38078e2,
-    128'hdaaf39f049a489793e2b46643b3eb3f1,
-    128'h68a3ad29eb4accb4ca422e7dd70e809f,
-    128'h4ad5ed15d295f6765773bb5d851b3e81
-    };
-
-initial begin
-    rou = '{//high->low
-    128'h915f94ab9c50ca4ab4eeed592a9beaa5,
-    128'had6f3ab8cde33356263b7ca1cd6327f9,
-    128'h3abe0f5f621642eb55318e74137d0b25,
-    128'h8ebc8b10a00cab3ffe67b8e78a16a98e,
-    128'h4ddb4c9ac0c0a08302a84f682ca131a4,
-    128'h77edce6c0888a7d3b0aa71c00185447b,
-    128'h162a3b903f9853566121da8222821f44,
-    128'h29e054b3919b6c6c038207f135accb78,
-    128'hacd282aca5f291fca5ea2cc846ae54df,
-    128'hfe7b604b0be2fe402bcb234c62e04017,
-    128'h7915fd96957f012fc6c3c43fa5b2e411,
-    128'h7252f907ab98a98c4d0dd09e90ef2e0,
-    128'hf4a75b8a7d8b166e180cb21a76528f23,
-    128'hf9a7752b5ac26ac1e8c15c514343b84b,
-    128'h3b1450e77af95bdf8148328d73d65a6c,
-    128'hd4479f00aaf1fe6a7641a67c0515e8f6,
-    128'he169cc22bf64c781c30d0a498b07001a,
-    128'h95d7776b9beb874091aeaabc1594693f,
-    128'hd8ea828ac8251e7835669e4adb373a0f,
-    128'h24428720ad662853fbb3f3f4d95cf52d,
-    128'he704570cefbc67502abb2837ea155c3d,
-    128'hf5e87eb6400b55d7ec696534b23ed377,
-    128'h4ed73d9fc2788919bf9d984c670019bd,
-    128'h4d0a8c0ba1be9c46ce46811a7f8fbaea,
-    128'h6e74eb0c8d4989c5f7f7ba424a380576,
-    128'h979df18527249a66e10251090d2bad6a,
-    128'h25fa45d9a2ce695e98e2ae4f3b06c5f3,
-    128'hc72909e099111c79ca5511174ff3fb35,
-    128'hf3e16d1d8e50675156b0f608a0c7d82b,
-    128'h62d7b109a4be8fceb700f50b47c35664,
-    128'hce312818a6f6c0b2ff78a1ac2de5674a,
-    128'h4fcaa08ceba5ea9d842695dd79db7aa0
-    };//2^(2*K) mod m
-end
 
 initial begin
     result = '{//high->low
@@ -205,7 +135,8 @@ initial begin
     };//2^(K) mod m
 end
 
-reg     [4              : 0]    current_state           ;  
+reg     [4              : 0]    state_now;
+reg     [4              : 0]    state_next;
 localparam  IDLE        = 0,
             state_0_0   = 1,
             state_0_1   = 2,
@@ -217,8 +148,6 @@ localparam  IDLE        = 0,
             state_4     = 8;
 
 reg     [$clog2(K*N)    : 0]    loop_counter            ; 
-reg     [K-1            : 0]    result2       [N-1 : 0] ;
-reg     [K*N-1          : 0]    yy                      ;
 reg                             result_valid            ;
 reg     [K-1            : 0]    result_out              ; 
 reg     [ADDR_W         : 0]    wr_x_cnt                ;
@@ -228,15 +157,106 @@ reg                             wr_ena_x                ;
 reg                             wr_ena_y                ;
 reg                             wr_ena_m                ;
 reg     [ADDR_W-1       : 0]    wr_addr                 ;
+reg     [ADDR_W-1       : 0]    wr_addr_d1          = 0 ;
 reg     [K-1            : 0]    wr_x                    ;
 reg     [K-1            : 0]    wr_y                    ;
-reg     [K-1            : 0]    wr_m                    ;
+wire    [K-1            : 0]    wr_y_reg                ;
+wire    [K-1            : 0]    wr_m                    ;
 
 reg                             task_req                ;
 
 wire                            task_end                ;
 wire                            task_grant              ;
 wire    [K-1            : 0]    task_res                ;
+
+wire    [K-1            : 0]    ram_rou_rd_data         ;
+wire    [K-1            : 0]    ram_m_rd_data           ;
+
+wire                            ram_result2_wr_en       ;
+wire                            ram_result2_wr_addr     ;
+wire                            ram_result2_rd_en       ;
+
+reg                             ram_result_wr_en        ;
+reg                             ram_result_wr_addr      ;
+reg                             ram_result_wr_data      ;
+reg                             ram_result_rd_en        ;
+reg                             ram_result_rd_addr      ;
+wire                            ram_result_rd_data      ;
+
+reg                             fifo_rd_en_yy           ;
+wire    [K-1            :0]     fifo_rd_data            ;
+
+assign ram_result2_wr_en = (state_now == state_0_1) & task_grant;
+assign wr_y_reg = (state_now == state_0_0) ? ram_rou_rd_data : wr_y;
+
+dual_port_ram#(
+        .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_me_m(
+        .clk            (clk                )
+    ,   .wr_en          (0                  )
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (wr_m               )
+);
+
+dual_port_ram#(
+        .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_me_rou(
+        .clk            (clk                )
+    ,   .wr_en          (0                  )
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_rou_rd_data    )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result2(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result2_wr_en  )
+    ,   .wr_addr        (wr_addr            )
+    ,   .wr_data        (task_res           )
+    ,   .rd_en          ()
+    ,   .rd_addr        ()
+    ,   .rd_data        ()
+);
+
+dual_port_ram#(
+        .filename       ("../../../../../1.RTL/data/ram_me_result.txt")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result_wr_en   )
+    ,   .wr_addr        (ram_result_wr_addr )
+    ,   .wr_data        (ram_result_wr_data )
+    ,   .rd_en          (ram_result_rd_en   )
+    ,   .rd_addr        (ram_result_rd_addr )
+    ,   .rd_data        (ram_result_rd_data )
+);
+
+fifo_ram#(
+        .DATA_WIDTH     (K                  )
+    ,   .DATA_DEPTH     ($clog2(N) + 1      )
+)fifo_ram_y(
+        .clk            (clk                )
+    ,   .wr_en          (me_y_valid         )
+    ,   .wr_data        (me_y               )
+    ,   .wr_full        ()
+    ,   .rd_en          (fifo_rd_en_yy      )
+    ,   .rd_data        (fifo_rd_data       )
+    ,   .rd_empty       ()
+);
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -259,9 +279,8 @@ wire    [K-1            : 0]    task_res                ;
 // result = mont_r2mm(result,1,p,nbit)
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
-reg  [ADDR_W-1       : 0]    wr_addr_d1              = 0;
 always@(posedge clk)begin
-  wr_addr_d1 <= wr_addr;
+    wr_addr_d1 <= wr_addr;
 end
 
 always@(posedge clk or negedge rst_n) begin
@@ -276,37 +295,135 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-always@(posedge clk or negedge rst_n)begin
-    if(!rst_n)begin
-        current_state   <=  IDLE;
-        task_req        <=  0;
-        wr_addr         <=  0;
-        wr_ena_x        <=  0;
-        wr_ena_y        <=  0;
-        wr_ena_m        <=  0;
-        yy              <=  0;
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
         loop_counter    <=  0;
-        result_valid    <=  0;
-        result_out      <=  0;
-        wr_x            <=  0;  
-        wr_y            <=  0;
-        wr_x_cnt        <=  0;
+    end
+    else if(task_end) begin
+        loop_counter    <=  loop_counter + 1;
+    end
+end
+
+// localparam  IDLE        = 0,
+//             state_0_0   = 1,
+//             state_0_1   = 2,
+//             state_1_0   = 3,
+//             state_1_1   = 4,
+//             state_2_0   = 5,
+//             state_2_1   = 6,
+//             state_3     = 7,
+//             state_4     = 8;
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        state_now   <=  IDLE;
     end
     else begin
-        case (current_state)
+        state_now   <=  state_next;
+    end
+end
+
+always@(*) begin
+    if(!rst_n)begin
+        state_next  =  IDLE;
+    end
+    else begin
+        case (state_now)
+            IDLE: begin
+                if(me_start) begin
+                    state_next  =   state_0_0;
+                end
+                else begin
+                    state_next  =   IDLE;
+                end
+            end
+            state_0_0: begin
+                if(wr_x_cnt == N) begin
+                    state_next  =   state_0_1;
+                end
+                else begin
+                    state_next  =   state_0_0;
+                end
+            end
+            state_0_1: begin
+                if(task_end) begin
+                    state_next  =   state_1_0;
+                end
+                else begin
+                    state_next  =   state_0_1;
+                end
+            end
+            state_1_0: begin
+                if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y)) begin
+                    state_next  =   state_2_0;
+                end
+                else begin
+                    state_next  =   state_1_0;
+                end
+            end
+            // state_1_1: begin
+            //     state_next  <=  wr_addr_d1 == N-1 ? state_2_1 : state_1_1;
+            // end
+            // state_2_0: begin
+            //     state_next  <=  loop_counter == K*N-1 ? state_3 : state_1_0;
+            // end
+            // state_2_1: begin
+            //     state_next  <=  loop_counter == K*N ? state_3 : state_1_0;
+            // end
+            // state_3: begin
+            //     state_next  <=  wr_addr_d1 == N-1 ? state_4 : state_3;
+            // end
+            // state_4: begin
+            //     state_next  <=  task_end ? IDLE : state_4;
+            // end
+            default: begin
+                state_next  =  IDLE;
+            end
+        endcase
+    end
+end
+
+always@(posedge clk or negedge rst_n)begin
+    if(!rst_n)begin
+        task_req            <=  0;
+        wr_addr             <=  0;
+
+        wr_x                <=  0;
+        wr_y                <=  0;
+        wr_ena_x            <=  0;
+        wr_ena_y            <=  0;
+        wr_ena_m            <=  0;
+
+        fifo_rd_en_yy       <=  0;
+        yy                  <=  0;
+
+        loop_counter        <=  0;
+        result_valid        <=  0;
+        result_out          <=  0;
+        wr_x_cnt            <=  0;
+
+        ram_result_wr_en    <=  0;
+        ram_result_wr_addr  <=  0;
+        ram_result_wr_data  <=  0;
+        ram_result_rd_en    <=  0;
+        ram_result_rd_addr  <=  0;
+    end
+    else begin
+        case (state_now)
             IDLE:begin
                 task_req          <=  0;
                 loop_counter      <=  0;
                 result_valid      <=  0;
                 result_out        <=  0;
+
                 wr_x              <=  0;
                 wr_y              <=  0;
-                wr_m              <=  0;
+                wr_ena_x          <=  0;
+                wr_ena_y          <=  0;
+                wr_ena_m          <=  0;
+
                 wr_addr           <=  0;
                 wr_x_cnt          <=  0;
-                if(me_start)begin
-                    current_state   <=  state_0_0;
-                end
             end
             //write xx & rou
             state_0_0:begin
@@ -316,9 +433,9 @@ always@(posedge clk or negedge rst_n)begin
                     wr_ena_x            <=  1;
                     wr_x                <=  me_x;
                     wr_ena_y            <=  1;
-                    wr_y                <=  rou[wr_addr];
+                    // wr_y                <=  ram_rou_rd_data;
                     wr_ena_m            <=  1;
-                    wr_m                <=  me_m[wr_addr];
+                    // wr_m                <=  me_m[wr_addr];
                 end 
                 else begin
                     wr_ena_x            <=  0;
@@ -329,30 +446,28 @@ always@(posedge clk or negedge rst_n)begin
                     wr_x_cnt            <=  0;
                     task_req            <=  1;
                     wr_addr             <=  0;
-                    current_state       <=  state_0_1;
                 end
             end
             //store result2
             state_0_1:begin
                 if(task_end)begin
-                    task_req          <=  0;
-                    wr_addr           <=  0;
-                    current_state     <=  state_1_0;
-                    yy                <=  me_y_storage;
+                    task_req            <=  0;
+                    yy                  <=  fifo_rd_data;
+                    fifo_rd_en_yy       <=  1;
                 end
-                if(task_req & task_grant)begin
-                    wr_addr           <=  wr_addr + 1;
-                    result2[wr_addr]  <=  task_res;
+                
+                if(task_grant)begin
+                    wr_addr             <=  wr_addr + 1;
                 end
             end
             //result = mont_r2mm(result,result,p,nbit)
             state_1_0:begin
+                fifo_rd_en_yy           <=  0;
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y))begin
                     task_req          <=  1;
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    current_state     <=  state_2_0;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
@@ -369,7 +484,7 @@ always@(posedge clk or negedge rst_n)begin
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    current_state     <=  state_2_1;
+                    // state_now     <=  state_2_1;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
@@ -384,7 +499,7 @@ always@(posedge clk or negedge rst_n)begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
-                    current_state     <=  yy[K*N-1] ? state_1_1 : ((loop_counter == (K*N-1)) ? state_3 : state_1_0);
+                    // state_now     <=  yy[K*N-1] ? state_1_1 : ((loop_counter == (K*N-1)) ? state_3 : state_1_0);
                     yy                <=  yy << 1;
                     loop_counter      <=  loop_counter == (K*N) ? loop_counter : loop_counter + 1;
                 end
@@ -398,7 +513,7 @@ always@(posedge clk or negedge rst_n)begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
-                    current_state     <=  (loop_counter == (K*N)) ? state_3 : state_1_0;
+                    // state_now     <=  (loop_counter == (K*N)) ? state_3 : state_1_0;
                 end
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
@@ -412,7 +527,7 @@ always@(posedge clk or negedge rst_n)begin
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    current_state     <=  state_4;
+                    // state_now     <=  state_4;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
@@ -427,7 +542,7 @@ always@(posedge clk or negedge rst_n)begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
-                    current_state     <=  IDLE;
+                    // state_now     <=  IDLE;
                 end
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
@@ -441,7 +556,7 @@ always@(posedge clk or negedge rst_n)begin
             end
             //default state
             default:begin
-                current_state     <=  IDLE;
+                // state_now     <=  IDLE;
             end
         endcase
     end
@@ -468,7 +583,7 @@ mmp_iddmm_sp #(
     ,   .wr_ena         (wr_ena         )
     ,   .wr_addr        (wr_addr_d1     )
     ,   .wr_x           (wr_x           )   //low words first
-    ,   .wr_y           (wr_y           )   //low words first
+    ,   .wr_y           (wr_y_reg       )   //low words first
     ,   .wr_m           (wr_m           )   //low words first
     ,   .wr_m1          (me_m1          )
 

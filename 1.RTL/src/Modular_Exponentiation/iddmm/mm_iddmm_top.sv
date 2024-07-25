@@ -10,7 +10,7 @@ module mm_iddmm_top#(
                                                 // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                                 // 
     ,   parameter K             = 128
-    ,   parameter N             = 16
+    ,   parameter N             = 32
 )(
         input                   clk         
     ,   input                   rst_n       

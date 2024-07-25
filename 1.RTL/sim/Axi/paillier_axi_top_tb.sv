@@ -94,7 +94,7 @@ module paillier_axi_top_tb();
     wire                                    M_AXI_RREADY    ;
 
 localparam _DATA_WIDTH_ = 32;
-localparam _PERIOD_ = 10;
+localparam _PERIOD_ = 5;
 initial begin
     M_AXI_ACLK      <=  0;
     M_AXI_ARESETN   <=  0;
@@ -127,7 +127,7 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_HOMOMORPHIC_ADD     = 2'b10,
             STA_SCALAR_MUL          = 2'b11;
 
-parameter   PAILLIER_MODE           = STA_HOMOMORPHIC_ADD;
+parameter   PAILLIER_MODE           = STA_ENCRYPTION;
 parameter   BLOCK_COUNT             = 8;
 parameter   TEST_TIMES              = 8;
 

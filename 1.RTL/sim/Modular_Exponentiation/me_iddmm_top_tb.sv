@@ -90,6 +90,11 @@ task rsa2048test; begin
         result      = {me_result,result[(K*N-1):K]};
     end
     $display("[mmp_iddmm_sp_tb.v]result_iddmm: \n0x%x\n",result);
+    #100;
+    assert(result ==  result_confirmed)
+        $display("result is correct!");
+    else
+        $display("result is wrong!");
     $stop;
 end
 endtask

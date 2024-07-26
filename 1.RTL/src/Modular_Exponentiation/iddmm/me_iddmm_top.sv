@@ -58,6 +58,7 @@ reg     [K-1    : 0]    yy                          ;
 assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
 
 reg     [4              : 0]    state_now;
+reg     [4              : 0]    state_now_d1;
 reg     [4              : 0]    state_next;
 localparam  IDLE                        =   0,
             STA_WR_ROU_XX               =   1,
@@ -89,6 +90,7 @@ wire    [K-1            : 0]    wr_m                    ;
 reg                             task_req                ;
 wire                            task_end                ;
 wire                            task_grant              ;
+reg                             task_grant_d1           ;
 wire    [K-1            : 0]    task_res                ;
 
 wire    [K-1            : 0]    ram_rou_rd_data         ;
@@ -96,9 +98,14 @@ wire    [K-1            : 0]    ram_rou_rd_data         ;
 wire                            ram_result2_wr_en       ;
 wire    [K-1            : 0]    ram_result2_rd_data     ;
 
-wire    [K-1            : 0]    ram_result_wr_en        ;
+wire                            ram_result_wr_en        ;
+wire    [ADDR_W-1       : 0]    ram_result_wr_addr      ;
 wire    [K-1            : 0]    ram_result_wr_data      ;
 wire    [K-1            : 0]    ram_result_rd_data      ;
+
+wire    [ADDR_W-1       : 0]    ram_result_backup_rd_addr     ;
+wire    [K-1            : 0]    ram_result_backup_rd_data     ;
+
 
 reg                             ram_y_wr_en             ;
 reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
@@ -107,8 +114,10 @@ reg     [ADDR_W-1       : 0]    ram_y_rd_addr           ;
 wire    [K-1            : 0]    ram_y_rd_data           ;
 
 assign ram_result2_wr_en    =   (state_now == STA_STORE_RESULT2) & task_grant;
-assign ram_result_wr_en     =   ((state_now == STA_LOOP_STORE_THEN_JUMP) | (state_now == STA_LOOP_STORE2)) & task_req & task_grant;
-assign ram_result_wr_data   =   (state_now == STA_STORE_RESULT) ? ram_result2_rd_data : task_res;
+
+assign ram_result_wr_en     =   (((state_now == STA_LOOP_STORE_THEN_JUMP) | (state_now == STA_LOOP_STORE2)) & task_req & task_grant) | ((state_now_d1 == STA_STORE_RESULT) & task_grant_d1);
+assign ram_result_wr_addr   =   (state_now_d1 == STA_STORE_RESULT) ? wr_addr_d1 : wr_addr;
+assign ram_result_wr_data   =   (state_now_d1 == STA_STORE_RESULT) ? ram_result_backup_rd_data : task_res;
 
 always@(*) begin
     case(state_now)
@@ -207,11 +216,29 @@ dual_port_ram#(
 )ram_result(
         .clk            (clk                    )
     ,   .wr_en          (ram_result_wr_en       )
-    ,   .wr_addr        (wr_addr                )
+    ,   .wr_addr        (ram_result_wr_addr     )
     ,   .wr_data        (ram_result_wr_data     )
     ,   .rd_en          (1                      )
     ,   .rd_addr        (wr_addr                )
     ,   .rd_data        (ram_result_rd_data     )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_me_result_backup.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_result_backup.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                      )
+    ,   .ADDR_LINE      ($clog2(N)              )
+)ram_result_backup(
+        .clk            (clk                    )
+    ,   .wr_en          (0                      )
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1                      )
+    ,   .rd_addr        (wr_addr                )
+    ,   .rd_data        (ram_result_backup_rd_data)
 );
 
 dual_port_ram#(
@@ -265,6 +292,8 @@ end
 
 always@(posedge clk)begin
     wr_addr_d1 <= wr_addr;
+    task_grant_d1 <= task_grant;
+    state_now_d1 <= state_now;
 end
 
 always@(posedge clk or negedge rst_n) begin

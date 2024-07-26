@@ -50,90 +50,12 @@ module me_iddmm_top#(
     ,   output                  me_valid
 );
 localparam ADDR_W   =   $clog2(N);
+`define Modelsim_Sim
 
-reg     [K*N-1  : 0]    me_y_storage             = 0;
 wire    [K-1    : 0]    me_m1                       ;
-reg     [K-1    : 0]    rou             [N-1:0]     ;
-reg     [K-1    : 0]    result          [N-1:0]     ;
-reg     [K-1    : 0]    result2         [N-1:0]     ;
-reg     [K-1    : 0]    result_backup   [N-1:0]     ;
 reg     [K-1    : 0]    yy                          ;
 
 assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
-
-initial begin
-    result = '{//high->low
-    128'h6d2df7c8e9ccaab6ecac5bf404129500,
-    128'h4fff6c635661d234816936b261900e4,
-    128'hab24b829d0578d7c24b10b817ee61d34,
-    128'hf2ed90bb10eef329b29b6cfeb0411ee0,
-    128'h31da52feaea1277410ee0a6a33a4ef85,
-    128'h12bb3c5130bdce75f1623dbce6cb8fc3,
-    128'hde6543d116d9fc8042b91d4db9a4e64c,
-    128'heef1c33242041f2552101dd58da10c74,
-    128'h3dc8e023a16304bc6159537b4c1bdb18,
-    128'he33c5d9c23734b9bdfbd2fe541b1abbe,
-    128'h927de051c1a776af1e92a4238903f9d6,
-    128'h4b7d615452652eaca03cdd23f5286e35,
-    128'h75cacea85488e33f15049de5f84f31f6,
-    128'h6759aabe8ab0011248a900c35c49f921,
-    128'h5d49c05db7c5a225f83e8b690aa90bbe,
-    128'h1b3f6044f8634447d863fe035db4a940,
-    128'hcd166fd9fc298fbc631175b068cfd7e3,
-    128'h5818c987ccff09649b331d704a9a466a,
-    128'h668a707371a2a731fc50dfd3017277f6,
-    128'hd77b0ea4a589a872474095cd3081d287,
-    128'h58a739f2161930fc842d59382dd398f4,
-    128'h74c7b8dd010e75678fa773ec970c3e07,
-    128'hd3558f6100873024d5ca6b431c68878a,
-    128'h3f3cf1b9b5a03ec9dda381df945a664e,
-    128'hb137a9565dcf435f7ecce369688b14ee,
-    128'hdd6a3f98f2b34df8dc3155fd1f00b786,
-    128'h5af7fad252eb3a60e878a8d9792973ae,
-    128'h14c3170afa1ebe7fc13e743883b67958,
-    128'h15e22db3ec3844689b69c9e52c7f871d,
-    128'h2550c60fb65b7686c1d4b99bc4c14c0e,
-    128'h975c52d614b5334b35bdd18228f17f60,
-    128'hb52a12ea2d6a0989a88c44a27ae4c17f
-    };//2^(K) mod m
-end
-
-initial begin
-    result_backup = '{//high->low
-    128'h6d2df7c8e9ccaab6ecac5bf404129500,
-    128'h4fff6c635661d234816936b261900e4,
-    128'hab24b829d0578d7c24b10b817ee61d34,
-    128'hf2ed90bb10eef329b29b6cfeb0411ee0,
-    128'h31da52feaea1277410ee0a6a33a4ef85,
-    128'h12bb3c5130bdce75f1623dbce6cb8fc3,
-    128'hde6543d116d9fc8042b91d4db9a4e64c,
-    128'heef1c33242041f2552101dd58da10c74,
-    128'h3dc8e023a16304bc6159537b4c1bdb18,
-    128'he33c5d9c23734b9bdfbd2fe541b1abbe,
-    128'h927de051c1a776af1e92a4238903f9d6,
-    128'h4b7d615452652eaca03cdd23f5286e35,
-    128'h75cacea85488e33f15049de5f84f31f6,
-    128'h6759aabe8ab0011248a900c35c49f921,
-    128'h5d49c05db7c5a225f83e8b690aa90bbe,
-    128'h1b3f6044f8634447d863fe035db4a940,
-    128'hcd166fd9fc298fbc631175b068cfd7e3,
-    128'h5818c987ccff09649b331d704a9a466a,
-    128'h668a707371a2a731fc50dfd3017277f6,
-    128'hd77b0ea4a589a872474095cd3081d287,
-    128'h58a739f2161930fc842d59382dd398f4,
-    128'h74c7b8dd010e75678fa773ec970c3e07,
-    128'hd3558f6100873024d5ca6b431c68878a,
-    128'h3f3cf1b9b5a03ec9dda381df945a664e,
-    128'hb137a9565dcf435f7ecce369688b14ee,
-    128'hdd6a3f98f2b34df8dc3155fd1f00b786,
-    128'h5af7fad252eb3a60e878a8d9792973ae,
-    128'h14c3170afa1ebe7fc13e743883b67958,
-    128'h15e22db3ec3844689b69c9e52c7f871d,
-    128'h2550c60fb65b7686c1d4b99bc4c14c0e,
-    128'h975c52d614b5334b35bdd18228f17f60,
-    128'hb52a12ea2d6a0989a88c44a27ae4c17f
-    };//2^(K) mod m
-end
 
 reg     [4              : 0]    state_now;
 reg     [4              : 0]    state_next;
@@ -159,38 +81,77 @@ reg                             wr_ena_m                ;
 reg     [ADDR_W-1       : 0]    wr_addr                 ;
 reg     [ADDR_W-1       : 0]    wr_addr_d1          = 0 ;
 reg     [K-1            : 0]    wr_x                    ;
+reg     [K-1            : 0]    wr_x_reg                ;
 reg     [K-1            : 0]    wr_y                    ;
-wire    [K-1            : 0]    wr_y_reg                ;
+reg     [K-1            : 0]    wr_y_reg                ;
 wire    [K-1            : 0]    wr_m                    ;
 
 reg                             task_req                ;
-
 wire                            task_end                ;
 wire                            task_grant              ;
 wire    [K-1            : 0]    task_res                ;
 
 wire    [K-1            : 0]    ram_rou_rd_data         ;
-wire    [K-1            : 0]    ram_m_rd_data           ;
 
 wire                            ram_result2_wr_en       ;
-wire                            ram_result2_wr_addr     ;
-wire                            ram_result2_rd_en       ;
+wire    [K-1            : 0]    ram_result2_rd_data     ;
 
-reg                             ram_result_wr_en        ;
-reg                             ram_result_wr_addr      ;
-reg                             ram_result_wr_data      ;
-reg                             ram_result_rd_en        ;
-reg                             ram_result_rd_addr      ;
-wire                            ram_result_rd_data      ;
+wire    [K-1            : 0]    ram_result_wr_en        ;
+wire    [K-1            : 0]    ram_result_wr_data      ;
+wire    [K-1            : 0]    ram_result_rd_data      ;
 
-reg                             fifo_rd_en_yy           ;
-wire    [K-1            :0]     fifo_rd_data            ;
+reg                             ram_y_wr_en             ;
+reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
+reg     [K-1            : 0]    ram_y_wr_data           ;
+reg     [ADDR_W-1       : 0]    ram_y_rd_addr           ;
+wire    [K-1            : 0]    ram_y_rd_data           ;
 
-assign ram_result2_wr_en = (state_now == STA_STORE_RESULT2) & task_grant;
-assign wr_y_reg = (state_now == STA_WR_ROU_XX) ? ram_rou_rd_data : wr_y;
+assign ram_result2_wr_en    =   (state_now == STA_STORE_RESULT2) & task_grant;
+assign ram_result_wr_en     =   ((state_now == STA_LOOP_STORE_THEN_JUMP) | (state_now == STA_LOOP_STORE2)) & task_req & task_grant;
+assign ram_result_wr_data   =   (state_now == STA_STORE_RESULT) ? ram_result2_rd_data : task_res;
+
+always@(*) begin
+    case(state_now)
+        STA_LOOP_STEP1: begin
+            wr_x_reg    = ram_result_rd_data;
+        end
+        STA_LOOP_STEP2: begin
+            wr_x_reg    = ram_result_rd_data;
+        end
+        STA_FINAL_MM: begin
+            wr_x_reg    = ram_result_rd_data;
+        end
+        default: begin
+            wr_x_reg    = wr_x;
+        end
+    endcase
+end
+always@(*) begin
+    case(state_now)
+        STA_WR_ROU_XX: begin
+            wr_y_reg    = ram_rou_rd_data;
+        end
+        STA_LOOP_STEP1: begin
+            wr_y_reg    = ram_result_rd_data;
+        end
+        STA_LOOP_STEP2: begin
+            wr_y_reg    = ram_result2_rd_data;
+        end
+        STA_FINAL_MM: begin
+            wr_y_reg    = wr_addr_d1 == 0 ? 1 : 0;
+        end
+        default: begin
+            wr_y_reg    = wr_y;
+        end
+    endcase
+end
 
 dual_port_ram#(
+    `ifndef Modelsim_Sim
         .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
+    `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
 )ram_me_m(
@@ -204,7 +165,11 @@ dual_port_ram#(
 );
 
 dual_port_ram#(
+    `ifndef Modelsim_Sim
         .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
+    `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
 )ram_me_rou(
@@ -226,36 +191,41 @@ dual_port_ram#(
     ,   .wr_en          (ram_result2_wr_en  )
     ,   .wr_addr        (wr_addr            )
     ,   .wr_data        (task_res           )
-    ,   .rd_en          ()
-    ,   .rd_addr        ()
-    ,   .rd_data        ()
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_result2_rd_data)
 );
 
 dual_port_ram#(
+    `ifndef Modelsim_Sim
         .filename       ("../../../../../1.RTL/data/ram_me_result.txt")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_result.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                      )
+    ,   .ADDR_LINE      ($clog2(N)              )
 )ram_result(
-        .clk            (clk                )
-    ,   .wr_en          (ram_result_wr_en   )
-    ,   .wr_addr        (ram_result_wr_addr )
-    ,   .wr_data        (ram_result_wr_data )
-    ,   .rd_en          (ram_result_rd_en   )
-    ,   .rd_addr        (ram_result_rd_addr )
-    ,   .rd_data        (ram_result_rd_data )
+        .clk            (clk                    )
+    ,   .wr_en          (ram_result_wr_en       )
+    ,   .wr_addr        (wr_addr                )
+    ,   .wr_data        (ram_result_wr_data     )
+    ,   .rd_en          (1                      )
+    ,   .rd_addr        (wr_addr                )
+    ,   .rd_data        (ram_result_rd_data     )
 );
 
-fifo_ram#(
-        .DATA_WIDTH     (K                  )
-    ,   .DATA_DEPTH     ($clog2(N) + 1      )
-)fifo_ram_y(
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_y(
         .clk            (clk                )
-    ,   .wr_en          (me_y_valid         )
-    ,   .wr_data        (me_y               )
-    ,   .wr_full        ()
-    ,   .rd_en          (fifo_rd_en_yy      )
-    ,   .rd_data        (fifo_rd_data       )
-    ,   .rd_empty       ()
+    ,   .wr_en          (ram_y_wr_en        )
+    ,   .wr_addr        (ram_y_wr_addr      )
+    ,   .wr_data        (ram_y_wr_data      )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (ram_y_rd_addr      )
+    ,   .rd_data        (ram_y_rd_data      )
 );
 
 //---------------------------------------------------------------------
@@ -279,17 +249,22 @@ fifo_ram#(
 // result = mont_r2mm(result,1,p,nbit)
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
-always@(posedge clk)begin
-    wr_addr_d1 <= wr_addr;
-end
 
 always@(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        loop_counter    <=  0;
+    if(!rst_n | me_start)begin
+        ram_y_wr_en         <=  0;
+        ram_y_wr_addr       <=  0-1;
+        ram_y_wr_data       <=  0;
     end
-    else if(task_end) begin
-        loop_counter    <=  loop_counter + 1;
+    else if(me_y_valid) begin
+        ram_y_wr_en         <=  1;
+        ram_y_wr_addr       <=  ram_y_wr_addr + 1;
+        ram_y_wr_data       <=  me_y;
     end
+end
+
+always@(posedge clk)begin
+    wr_addr_d1 <= wr_addr;
 end
 
 always@(posedge clk or negedge rst_n) begin
@@ -339,21 +314,41 @@ always@(*) begin
                     state_next  =   STA_LOOP_STEP1;
                 end
             end
-            // STA_LOOP_STEP2: begin
-            //     state_next  <=  wr_addr_d1 == N-1 ? STA_LOOP_STORE2 : STA_LOOP_STEP2;
-            // end
-            // STA_LOOP_STORE_THEN_JUMP: begin
-            //     state_next  <=  loop_counter == K*N-1 ? STA_FINAL_MM : STA_LOOP_STEP1;
-            // end
-            // STA_LOOP_STORE2: begin
-            //     state_next  <=  loop_counter == K*N ? STA_FINAL_MM : STA_LOOP_STEP1;
-            // end
-            // STA_FINAL_MM: begin
-            //     state_next  <=  wr_addr_d1 == N-1 ? STA_STORE_RESULT : STA_FINAL_MM;
-            // end
-            // STA_STORE_RESULT: begin
-            //     state_next  <=  task_end ? IDLE : STA_STORE_RESULT;
-            // end
+            STA_LOOP_STEP2: begin
+                if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y)) begin
+                    state_next  =   STA_LOOP_STORE2;
+                end
+                else begin
+                    state_next  =   STA_LOOP_STEP2;
+                end
+            end
+            STA_LOOP_STORE_THEN_JUMP: begin
+                if(task_end) begin
+                    state_next  =   yy[K-1] ? STA_LOOP_STEP2 : ((loop_counter == (K*N-1)) ? STA_FINAL_MM : STA_LOOP_STEP1);
+                end
+                else begin
+                    state_next  =   STA_LOOP_STORE_THEN_JUMP;
+                end
+            end
+            STA_LOOP_STORE2: begin
+                if(task_end) begin
+                    state_next  =   (loop_counter == (K*N)) ? STA_FINAL_MM : STA_LOOP_STEP1;
+                end
+                else begin
+                    state_next  =   STA_LOOP_STORE2;
+                end
+            end
+            STA_FINAL_MM: begin
+                if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y)) begin
+                    state_next  =   STA_STORE_RESULT;
+                end
+                else begin
+                    state_next  =   STA_FINAL_MM;
+                end
+            end
+            STA_STORE_RESULT: begin
+                state_next  <=  task_end ? IDLE : STA_STORE_RESULT;
+            end
             default: begin
                 state_next  =  IDLE;
             end
@@ -372,7 +367,7 @@ always@(posedge clk or negedge rst_n)begin
         wr_ena_y            <=  0;
         wr_ena_m            <=  0;
 
-        fifo_rd_en_yy       <=  0;
+        ram_y_rd_addr       <=  0-1;
         yy                  <=  0;
 
         loop_counter        <=  0;
@@ -380,11 +375,6 @@ always@(posedge clk or negedge rst_n)begin
         result_out          <=  0;
         wr_x_cnt            <=  0;
 
-        ram_result_wr_en    <=  0;
-        ram_result_wr_addr  <=  0;
-        ram_result_wr_data  <=  0;
-        ram_result_rd_en    <=  0;
-        ram_result_rd_addr  <=  0;
     end
     else begin
         case (state_now)
@@ -402,6 +392,8 @@ always@(posedge clk or negedge rst_n)begin
 
                 wr_addr           <=  0;
                 wr_x_cnt          <=  0;
+
+                ram_y_rd_addr     <=  0-1;
             end
             //write xx & rou
             STA_WR_ROU_XX:begin
@@ -411,9 +403,7 @@ always@(posedge clk or negedge rst_n)begin
                     wr_ena_x            <=  1;
                     wr_x                <=  me_x;
                     wr_ena_y            <=  1;
-                    // wr_y                <=  ram_rou_rd_data;
                     wr_ena_m            <=  1;
-                    // wr_m                <=  me_m[wr_addr];
                 end 
                 else begin
                     wr_ena_x            <=  0;
@@ -430,8 +420,9 @@ always@(posedge clk or negedge rst_n)begin
             STA_STORE_RESULT2:begin
                 if(task_end)begin
                     task_req            <=  0;
-                    yy                  <=  fifo_rd_data;
-                    fifo_rd_en_yy       <=  1;
+                    
+                    ram_y_rd_addr       <=  ram_y_rd_addr - 1;//inverted read address
+                    yy                  <=  ram_y_rd_data;
                 end
                 
                 if(task_grant)begin
@@ -440,7 +431,6 @@ always@(posedge clk or negedge rst_n)begin
             end
             //result = mont_r2mm(result,result,p,nbit)
             STA_LOOP_STEP1:begin
-                fifo_rd_en_yy           <=  0;
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y))begin
                     task_req          <=  1;
                     wr_addr           <=  0;
@@ -450,9 +440,7 @@ always@(posedge clk or negedge rst_n)begin
                 else begin
                     wr_addr           <=  wr_addr + 1;
                     wr_ena_x          <=  1;
-                    wr_x              <=  result[wr_addr];
                     wr_ena_y          <=  1;
-                    wr_y              <=  result[wr_addr];
                 end
             end
             //result = mont_r2mm(result,result2,p,nbit)
@@ -462,40 +450,39 @@ always@(posedge clk or negedge rst_n)begin
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    // state_now     <=  STA_LOOP_STORE2;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
                     wr_ena_x          <=  1;
-                    wr_x              <=  result[wr_addr];
                     wr_ena_y          <=  1;
-                    wr_y              <=  result2[wr_addr];
                 end
             end
             //store result of STA_LOOP_STEP1 and decide whether to skip STA_LOOP_STEP2
             STA_LOOP_STORE_THEN_JUMP:begin
                 if(task_end)begin
                     task_req          <=  0;
-                    wr_addr           <=  0;
-                    // state_now     <=  yy[K*N-1] ? STA_LOOP_STEP2 : ((loop_counter == (K*N-1)) ? STA_FINAL_MM : STA_LOOP_STEP1);
-                    yy                <=  yy << 1;
                     loop_counter      <=  loop_counter == (K*N) ? loop_counter : loop_counter + 1;
+
+                    if(loop_counter[($clog2(K)-1):0] == K-1)begin//loop_counter+1 % 128 == 0
+                        ram_y_rd_addr       <=  ram_y_rd_addr - 1;//inverted read address
+                        yy                  <=  ram_y_rd_data;
+                    end
+                    else begin
+                        yy                  <=  yy << 1;
+                    end
                 end
+
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
-                    result[wr_addr]   <=  task_res;
                 end
             end
             //store result of STA_LOOP_STEP2 and decide whether to jump to STA_FINAL_MM
             STA_LOOP_STORE2:begin
                 if(task_end)begin
                     task_req          <=  0;
-                    wr_addr           <=  0;
-                    // state_now     <=  (loop_counter == (K*N)) ? STA_FINAL_MM : STA_LOOP_STEP1;
                 end
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
-                    result[wr_addr]   <=  task_res;
                 end
             end
             //result = mont_r2mm(result,1,p,nbit)
@@ -505,36 +492,31 @@ always@(posedge clk or negedge rst_n)begin
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    // state_now     <=  STA_STORE_RESULT;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
                     wr_ena_x          <=  1;
-                    wr_x              <=  result[wr_addr];
                     wr_ena_y          <=  1;
-                    wr_y              <=  wr_addr==0 ? 1 : 0;
                 end
             end
             //get final result
             STA_STORE_RESULT:begin
                 if(task_end)begin
                     task_req          <=  0;
-                    wr_addr           <=  0;
-                    // state_now     <=  IDLE;
                 end
+
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
-                    result[wr_addr]   <=  result_backup[wr_addr];
                     result_out        <=  task_res;
                     result_valid      <=  1;  
                 end
                 else begin
+                    result_out        <=  0;
                     result_valid      <=  0;
                 end
             end
             //default state
             default:begin
-                // state_now     <=  IDLE;
             end
         endcase
     end
@@ -560,7 +542,7 @@ mmp_iddmm_sp #(
 
     ,   .wr_ena         (wr_ena         )
     ,   .wr_addr        (wr_addr_d1     )
-    ,   .wr_x           (wr_x           )   //low words first
+    ,   .wr_x           (wr_x_reg       )   //low words first
     ,   .wr_y           (wr_y_reg       )   //low words first
     ,   .wr_m           (wr_m           )   //low words first
     ,   .wr_m1          (me_m1          )

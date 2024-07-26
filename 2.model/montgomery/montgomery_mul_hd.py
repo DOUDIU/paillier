@@ -427,15 +427,14 @@ def RSA2048_test(xx,yy,p,nbit):
     # data_seperate_printf(result,128,nbit//128,1)
 
     result2 = mont_r2mm(xx,rou,p,nbit)
-    print('result2={:x}\n'.format(result2))
-    # data_seperate_printf(result2,128,nbit//128,1)
+    data_seperate_printf(result2,128,nbit//128,1)
 
     for(i) in range(nbit-1,-1,-1):
         result = mont_r2mm(result,result,p,nbit)
-        # data_seperate_printf(result,128,nbit//128,1)
+        data_seperate_printf(result,128,nbit//128,1)
         if((yy>>i)&1==1):
             result = mont_r2mm(result,result2,p,nbit)
-            # data_seperate_printf(result,128,nbit//128,1)
+            data_seperate_printf(result,128,nbit//128,1)
         num = (yy>>i)&1
     result = mont_r2mm(result,1,p,nbit)
     # data_seperate_printf(result,128,nbit//128,1)

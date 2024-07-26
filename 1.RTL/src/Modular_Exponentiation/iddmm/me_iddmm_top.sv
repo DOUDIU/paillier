@@ -137,15 +137,15 @@ end
 
 reg     [4              : 0]    state_now;
 reg     [4              : 0]    state_next;
-localparam  IDLE        = 0,
-            state_0_0   = 1,
-            state_0_1   = 2,
-            state_1_0   = 3,
-            state_1_1   = 4,
-            state_2_0   = 5,
-            state_2_1   = 6,
-            state_3     = 7,
-            state_4     = 8;
+localparam  IDLE                        =   0,
+            STA_WR_ROU_XX               =   1,
+            STA_STORE_RESULT2           =   2,
+            STA_LOOP_STEP1              =   3,
+            STA_LOOP_STEP2              =   4,
+            STA_LOOP_STORE_THEN_JUMP    =   5,
+            STA_LOOP_STORE2             =   6,
+            STA_FINAL_MM                =   7,
+            STA_STORE_RESULT            =   8;
 
 reg     [$clog2(K*N)    : 0]    loop_counter            ; 
 reg                             result_valid            ;
@@ -186,8 +186,8 @@ wire                            ram_result_rd_data      ;
 reg                             fifo_rd_en_yy           ;
 wire    [K-1            :0]     fifo_rd_data            ;
 
-assign ram_result2_wr_en = (state_now == state_0_1) & task_grant;
-assign wr_y_reg = (state_now == state_0_0) ? ram_rou_rd_data : wr_y;
+assign ram_result2_wr_en = (state_now == STA_STORE_RESULT2) & task_grant;
+assign wr_y_reg = (state_now == STA_WR_ROU_XX) ? ram_rou_rd_data : wr_y;
 
 dual_port_ram#(
         .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
@@ -285,34 +285,12 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        me_y_storage    <=  0;
-    end
-    // else if(me_start) begin
-    //     me_y_storage    <=  0;
-    // end
-    else if(me_y_valid) begin
-        me_y_storage    <=  {me_y,me_y_storage[K+:(K*N-K)]};
-    end
-end
-
-always@(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
         loop_counter    <=  0;
     end
     else if(task_end) begin
         loop_counter    <=  loop_counter + 1;
     end
 end
-
-// localparam  IDLE        = 0,
-//             state_0_0   = 1,
-//             state_0_1   = 2,
-//             state_1_0   = 3,
-//             state_1_1   = 4,
-//             state_2_0   = 5,
-//             state_2_1   = 6,
-//             state_3     = 7,
-//             state_4     = 8;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -331,50 +309,50 @@ always@(*) begin
         case (state_now)
             IDLE: begin
                 if(me_start) begin
-                    state_next  =   state_0_0;
+                    state_next  =   STA_WR_ROU_XX;
                 end
                 else begin
                     state_next  =   IDLE;
                 end
             end
-            state_0_0: begin
+            STA_WR_ROU_XX: begin
                 if(wr_x_cnt == N) begin
-                    state_next  =   state_0_1;
+                    state_next  =   STA_STORE_RESULT2;
                 end
                 else begin
-                    state_next  =   state_0_0;
+                    state_next  =   STA_WR_ROU_XX;
                 end
             end
-            state_0_1: begin
+            STA_STORE_RESULT2: begin
                 if(task_end) begin
-                    state_next  =   state_1_0;
+                    state_next  =   STA_LOOP_STEP1;
                 end
                 else begin
-                    state_next  =   state_0_1;
+                    state_next  =   STA_STORE_RESULT2;
                 end
             end
-            state_1_0: begin
+            STA_LOOP_STEP1: begin
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y)) begin
-                    state_next  =   state_2_0;
+                    state_next  =   STA_LOOP_STORE_THEN_JUMP;
                 end
                 else begin
-                    state_next  =   state_1_0;
+                    state_next  =   STA_LOOP_STEP1;
                 end
             end
-            // state_1_1: begin
-            //     state_next  <=  wr_addr_d1 == N-1 ? state_2_1 : state_1_1;
+            // STA_LOOP_STEP2: begin
+            //     state_next  <=  wr_addr_d1 == N-1 ? STA_LOOP_STORE2 : STA_LOOP_STEP2;
             // end
-            // state_2_0: begin
-            //     state_next  <=  loop_counter == K*N-1 ? state_3 : state_1_0;
+            // STA_LOOP_STORE_THEN_JUMP: begin
+            //     state_next  <=  loop_counter == K*N-1 ? STA_FINAL_MM : STA_LOOP_STEP1;
             // end
-            // state_2_1: begin
-            //     state_next  <=  loop_counter == K*N ? state_3 : state_1_0;
+            // STA_LOOP_STORE2: begin
+            //     state_next  <=  loop_counter == K*N ? STA_FINAL_MM : STA_LOOP_STEP1;
             // end
-            // state_3: begin
-            //     state_next  <=  wr_addr_d1 == N-1 ? state_4 : state_3;
+            // STA_FINAL_MM: begin
+            //     state_next  <=  wr_addr_d1 == N-1 ? STA_STORE_RESULT : STA_FINAL_MM;
             // end
-            // state_4: begin
-            //     state_next  <=  task_end ? IDLE : state_4;
+            // STA_STORE_RESULT: begin
+            //     state_next  <=  task_end ? IDLE : STA_STORE_RESULT;
             // end
             default: begin
                 state_next  =  IDLE;
@@ -426,7 +404,7 @@ always@(posedge clk or negedge rst_n)begin
                 wr_x_cnt          <=  0;
             end
             //write xx & rou
-            state_0_0:begin
+            STA_WR_ROU_XX:begin
                 if(me_x_valid)begin
                     wr_x_cnt            <=  wr_x_cnt + 1;
                     wr_addr             <=  wr_addr + 1;
@@ -449,7 +427,7 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             //store result2
-            state_0_1:begin
+            STA_STORE_RESULT2:begin
                 if(task_end)begin
                     task_req            <=  0;
                     yy                  <=  fifo_rd_data;
@@ -461,7 +439,7 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             //result = mont_r2mm(result,result,p,nbit)
-            state_1_0:begin
+            STA_LOOP_STEP1:begin
                 fifo_rd_en_yy           <=  0;
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y))begin
                     task_req          <=  1;
@@ -478,13 +456,13 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             //result = mont_r2mm(result,result2,p,nbit)
-            state_1_1:begin
+            STA_LOOP_STEP2:begin
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y))begin
                     task_req          <=  1;
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    // state_now     <=  state_2_1;
+                    // state_now     <=  STA_LOOP_STORE2;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
@@ -494,12 +472,12 @@ always@(posedge clk or negedge rst_n)begin
                     wr_y              <=  result2[wr_addr];
                 end
             end
-            //store result and decide whether to skip state_1_1
-            state_2_0:begin
+            //store result of STA_LOOP_STEP1 and decide whether to skip STA_LOOP_STEP2
+            STA_LOOP_STORE_THEN_JUMP:begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
-                    // state_now     <=  yy[K*N-1] ? state_1_1 : ((loop_counter == (K*N-1)) ? state_3 : state_1_0);
+                    // state_now     <=  yy[K*N-1] ? STA_LOOP_STEP2 : ((loop_counter == (K*N-1)) ? STA_FINAL_MM : STA_LOOP_STEP1);
                     yy                <=  yy << 1;
                     loop_counter      <=  loop_counter == (K*N) ? loop_counter : loop_counter + 1;
                 end
@@ -508,12 +486,12 @@ always@(posedge clk or negedge rst_n)begin
                     result[wr_addr]   <=  task_res;
                 end
             end
-            //store result and decide whether to skip state_1_1
-            state_2_1:begin
+            //store result of STA_LOOP_STEP2 and decide whether to jump to STA_FINAL_MM
+            STA_LOOP_STORE2:begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;
-                    // state_now     <=  (loop_counter == (K*N)) ? state_3 : state_1_0;
+                    // state_now     <=  (loop_counter == (K*N)) ? STA_FINAL_MM : STA_LOOP_STEP1;
                 end
                 if(task_req & task_grant)begin
                     wr_addr           <=  wr_addr + 1;
@@ -521,13 +499,13 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             //result = mont_r2mm(result,1,p,nbit)
-            state_3:begin
+            STA_FINAL_MM:begin
                 if((wr_addr_d1 == N-1)&(wr_ena_x | wr_ena_y))begin
                     task_req          <=  1;
                     wr_addr           <=  0;
                     wr_ena_x          <=  0;
                     wr_ena_y          <=  0;
-                    // state_now     <=  state_4;
+                    // state_now     <=  STA_STORE_RESULT;
                 end
                 else begin
                     wr_addr           <=  wr_addr + 1;
@@ -538,7 +516,7 @@ always@(posedge clk or negedge rst_n)begin
                 end
             end
             //get final result
-            state_4:begin
+            STA_STORE_RESULT:begin
                 if(task_end)begin
                     task_req          <=  0;
                     wr_addr           <=  0;

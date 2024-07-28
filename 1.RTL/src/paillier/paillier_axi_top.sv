@@ -1,7 +1,7 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 10
-    ,   parameter TEST_TIMES    = 10
+        parameter BLOCK_COUNT   = 8
+    ,   parameter TEST_TIMES    = 8
 	,	parameter K             = 128
     ,   parameter N             = 32
     ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily

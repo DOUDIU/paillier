@@ -67,7 +67,7 @@ me_iddmm_top #(
     ,   .me_valid       (me_valid       )
 );
 
-task rsa2048test; begin
+task me_4096_test; begin
     #(PERIOD*100)
     me_start = 1;
     #(PERIOD)
@@ -101,7 +101,7 @@ endtask
 
 
 initial begin
-    rsa2048test;
+    me_4096_test;
 end
 
 

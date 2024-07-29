@@ -87,11 +87,11 @@ def encrypt_fpga_example():
     a = 102545 + (64 ** 8)
     r = 123 + (8 ** 20)#ramdom number
 
-    RESULT_LOG = open("result_log.txt",'w').close()
-    data_seperate_printf(public_key.nsquare,128, 4096//128,1)
-    data_seperate_printf(public_key.n,128, 4096//128,1)
-    data_seperate_printf(a,128, 4096//128,1)
-    data_seperate_printf(r,128, 4096//128,1)
+    # RESULT_LOG = open("result_log.txt",'w').close()
+    # data_seperate_printf(public_key.nsquare,128, 4096//128,1)
+    # data_seperate_printf(public_key.n,128, 4096//128,1)
+    # data_seperate_printf(a,128, 4096//128,1)
+    # data_seperate_printf(r,128, 4096//128,1)
 
     encoded_a = ExampleEncodedNumber.encode(public_key, a)
 
@@ -254,4 +254,9 @@ def data_record_for_scalar_postive_multiplication(file_name_m,file_name_c,file_n
 if __name__ == "__main__":
     # data_record_for_encryption("../5.data/result_enc_m.txt","../5.data/result_enc_r.txt","../5.data/result_enc_encrypted.txt",10)
     # data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
-    data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
+    # data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
+
+    a = 102545 + (64 ** 8)
+    r = 123 + (8 ** 20)#ramdom number
+    # ciphertext_confirm = paillier.mulmod(paillier.powmod(public_key.g, a, public_key.nsquare) , paillier.powmod(r, public_key.n, public_key.nsquare) , public_key.nsquare)
+    print('r^n mod n^2: 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))

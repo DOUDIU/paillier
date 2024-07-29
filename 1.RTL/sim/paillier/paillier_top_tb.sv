@@ -361,8 +361,6 @@ paillier_top #(
     ,   .enc_out_valid              (enc_out_valid              )
 );
 
-
-
 task paillier_encrypt_task;
     task_cmd    <=  2'b00;
     task_req    <=  0;
@@ -445,7 +443,6 @@ task paillier_homomorphic_addition_task;
     $stop;
 endtask
 
-
 task paillier_postive_scalar_multiplication_task;
     task_cmd                <=  3'b000;
     task_req                <=  0;
@@ -489,6 +486,8 @@ endtask
 
 initial begin
     paillier_encrypt_task;
+    // paillier_homomorphic_addition_task;
+    // paillier_postive_scalar_multiplication_task;
 end
 
 

@@ -107,16 +107,33 @@ wire                            mm_valid_0              ;
 reg     [K-1            : 0]    mm_result_0_storage     [N-1:0] ;
 reg     [$clog2(N)-1    : 0]    mm_result_0_cnt     =   0;
 
+//could be optimized begin
+reg     [K-1            : 0]    enc_tem_buf_for_m       [N-1:0] ;
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(int i = 0; i < N; i = i + 1) begin
+            enc_tem_buf_for_m[i]    <=  0;
+        end
+    end
+    else if(enc_m_valid) begin
+        enc_tem_buf_for_m[N-1]    <=  enc_m_data;
+        for(int i = N-2; i >= 0; i = i - 1) begin
+            enc_tem_buf_for_m[i]    <=  enc_tem_buf_for_m[i+1];
+        end
+    end
+end
+//could be optimized end
 
 localparam  STA_IDLE                = 0,
             STA_ENCRYPTION_ME       = 1,
-            STA_ENCRYPTION_MM       = 2,
-            STA_DECRYPTION_ME       = 3,
-            STA_DECRYPTION_L        = 4,
-            STA_DECRYPTION_MM       = 5,
-            STA_HOMOMORPHIC_ADD     = 6,
-            STA_SCALAR_MUL          = 7,
-            STA_END                 = 8;
+            STA_ENCRYPTION_MM_STEP0 = 2,
+            STA_ENCRYPTION_MM_STEP1 = 3,
+            STA_DECRYPTION_ME       = 4,
+            STA_DECRYPTION_L        = 5,
+            STA_DECRYPTION_MM       = 6,
+            STA_HOMOMORPHIC_ADD     = 7,
+            STA_SCALAR_MUL          = 8,
+            STA_END                 = 9;
 
 reg         [3:0]        state_now;
 reg         [3:0]        state_next;
@@ -147,18 +164,26 @@ always@(*) begin
         end
         STA_ENCRYPTION_ME: begin
             if(me_result_0_cnt == N - 1) begin
-                state_next  =   STA_ENCRYPTION_MM;
+                state_next  =   STA_ENCRYPTION_MM_STEP0;
             end
             else begin
                 state_next  =   STA_ENCRYPTION_ME;
             end
         end
-        STA_ENCRYPTION_MM: begin
+        STA_ENCRYPTION_MM_STEP0: begin
+            if(mm_result_0_cnt == N - 1) begin
+                state_next  =   STA_ENCRYPTION_MM_STEP1;
+            end
+            else begin
+                state_next  =   STA_ENCRYPTION_MM_STEP0;
+            end
+        end
+        STA_ENCRYPTION_MM_STEP1: begin
             if(mm_result_0_cnt == N - 1) begin
                 state_next  =   STA_IDLE;
             end
             else begin
-                state_next  =   STA_ENCRYPTION_MM;
+                state_next  =   STA_ENCRYPTION_MM_STEP1;
             end
         end
         STA_DECRYPTION_ME: begin
@@ -230,7 +255,6 @@ always@(posedge clk or negedge rst_n) begin
                 me_addr             <=      0;
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0          <=      1;
-                    mm_start_0          <=      1;
                 end
                 if((state_next == STA_SCALAR_MUL) | (state_next == STA_DECRYPTION_ME)) begin
                     me_start_0          <=      1;
@@ -257,30 +281,36 @@ always@(posedge clk or negedge rst_n) begin
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
 
-                mm_start_0          <=      0;
-                mm_addr             <=      mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
-                mm_y_0              <=      enc_m_data;
-                mm_y_valid_0        <=      enc_m_valid;
-                if(mm_addr_d1 < N - 1) begin
-                    mm_x_0              <=  PAILLIER_N[mm_addr];
-                    mm_x_valid_0        <=  1;
-                end
-                else begin
-                    mm_x_0              <=  0;
-                    mm_x_valid_0        <=  0;
-                end    
-                if(mm_valid_0) begin
-                    mm_result_0_cnt                         <=      mm_result_0_cnt + 1;
-                    //some problem here, if overflow, the result will be wrong.
-                    mm_result_0_storage[mm_result_0_cnt]    <=      mm_result_0_cnt == 0 ? (mm_result_0 + 1) : mm_result_0;
-                end
-
-                if(state_next   ==  STA_ENCRYPTION_MM) begin
+                if(state_next   ==  STA_ENCRYPTION_MM_STEP0) begin
                     mm_addr             <=  0;
                     mm_start_0          <=  1;
                 end
             end
-            STA_ENCRYPTION_MM: begin
+            STA_ENCRYPTION_MM_STEP0: begin
+                mm_start_0          <=  0;
+                mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
+                if(mm_addr_d1 < N - 1) begin
+                    mm_x_0              <=  PAILLIER_N[mm_addr];
+                    mm_y_0              <=  enc_tem_buf_for_m[mm_addr];
+                    mm_x_valid_0        <=  1;
+                    mm_y_valid_0        <=  1;
+                end
+                else begin
+                    mm_x_valid_0        <=  0;
+                    mm_y_valid_0        <=  0;
+                end
+                if(mm_valid_0) begin
+                    mm_result_0_cnt     <=  mm_result_0_cnt + 1;
+                    //some problem here, if overflow, the result will be wrong.
+                    mm_result_0_storage[mm_result_0_cnt]    <=      mm_result_0_cnt == 0 ? (mm_result_0 + 1) : mm_result_0;
+                end
+
+                if(state_next   ==  STA_ENCRYPTION_MM_STEP1) begin
+                    mm_addr             <=  0;
+                    mm_start_0          <=  1;
+                end
+            end
+            STA_ENCRYPTION_MM_STEP1: begin
                 mm_start_0          <=  0;
                 if(!mm_start_0) begin//delay 1 cycle to clear mm_addr_d1
                     mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
@@ -351,7 +381,7 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-me_iddmm_top #(
+montgomery_iddmm_top #(
         .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                             // "TRADITION" :MULT_LATENCY=9                
                                             // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
@@ -364,9 +394,18 @@ me_iddmm_top #(
                                             // 
     ,   .K              (K              )
     ,   .N              (N              )
-)me_4096_inst_0(
+)montgomery_iddmm_top(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
+
+    ,   .mm_start       (mm_start_0     )
+    ,   .mm_x           (mm_x_0         )
+    ,   .mm_x_valid     (mm_x_valid_0   )
+    ,   .mm_y           (mm_y_0         )
+    ,   .mm_y_valid     (mm_y_valid_0   )
+    ,   .mm_result      (mm_result_0    )
+    ,   .mm_valid       (mm_valid_0     )
+
     ,   .me_start       (me_start_0     )
     ,   .me_x           (me_x_0         )
     ,   .me_x_valid     (me_x_valid_0   )
@@ -376,29 +415,6 @@ me_iddmm_top #(
     ,   .me_valid       (me_valid_0     )
 );
 
-mm_iddmm_top #(
-        .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                            // "TRADITION" :MULT_LATENCY=9                
-                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                            // 
-    ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                            // 
-    ,   .K              (K              )
-    ,   .N              (N              )
-)mm_4096_inst_0(
-        .clk            (clk            )
-    ,   .rst_n          (rst_n          )
-    ,   .mm_start       (mm_start_0     )
-    ,   .mm_x           (mm_x_0         )
-    ,   .mm_x_valid     (mm_x_valid_0   )
-    ,   .mm_y           (mm_y_0         )
-    ,   .mm_y_valid     (mm_y_valid_0   )
-    ,   .mm_result      (mm_result_0    )
-    ,   .mm_valid       (mm_valid_0     )
-);
+
 
 endmodule

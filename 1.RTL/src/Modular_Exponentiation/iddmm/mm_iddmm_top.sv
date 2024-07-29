@@ -1,30 +1,40 @@
 module mm_iddmm_top#(
-        parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                // "TRADITION" :MULT_LATENCY=9                
-                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
-    ,   parameter ADD1_METHOD   = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
-                                                // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
-                                                // 
-    ,   parameter ADD2_METHOD   = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                // 
-    ,   parameter K             = 128
-    ,   parameter N             = 32
+        parameter MULT_METHOD           = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                        // "TRADITION" :MULT_LATENCY=9                
+                                                        // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
+    ,   parameter ADD1_METHOD           = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                        // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
+                                                        // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
+                                                        // 
+    ,   parameter ADD2_METHOD           = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                        // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                        // 
+    ,   parameter K                     = 128
+    ,   parameter N                     = 32
+    ,   parameter OUTSIDE_MONTGOMERY    = 0
 )(
-        input                   clk         
-    ,   input                   rst_n       
+        input                       clk         
+    ,   input                       rst_n       
 
-    ,   input                   mm_start
+    ,   input                       mm_start
+    ,   input   [K-1:0]             mm_x
+    ,   input                       mm_x_valid
+    ,   input   [K-1:0]             mm_y
+    ,   input                       mm_y_valid
+    ,   output  [K-1:0]             mm_result   
+    ,   output                      mm_valid
 
-    ,   input       [K-1:0]     mm_x
-    ,   input                   mm_x_valid
+    ,   output  [2  :0]             iddmm_wr_ena
+    ,   output  [$clog2(N)-1:0]     iddmm_wr_addr
+    ,   output  [K-1:0]             iddmm_wr_x
+    ,   output  [K-1:0]             iddmm_wr_y
+    ,   output  [K-1:0]             iddmm_wr_m
+    ,   output  [K-1:0]             iddmm_wr_m1
 
-    ,   input       [K-1:0]     mm_y
-    ,   input                   mm_y_valid
-
-    ,   output      [K-1:0]     mm_result   
-    ,   output                  mm_valid
+    ,   output                      iddmm_task_req
+    ,   input                       iddmm_task_end
+    ,   input                       iddmm_task_grant
+    ,   input   [K-1:0]             iddmm_task_res
 );
 localparam ADDR_W   =   $clog2(N);
 
@@ -386,43 +396,57 @@ always@(posedge clk or negedge rst_n)begin
     end
 end
 
-
-mmp_iddmm_sp #(
-        .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                            // "TRADITION" :MULT_LATENCY=9                
-                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                            // 
-    ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                            // 
-    ,   .K              (K              )   // K bits in every group
-    ,   .N              (N              )   // Number of groups
-)u_mmp_iddmm_sp(
-        .clk            (clk            )
-    ,   .rst_n          (rst_n          )
-
-    ,   .wr_ena         (wr_ena         )
-    ,   .wr_addr        (wr_addr_d1     )
-    ,   .wr_x           (wr_x           )   //low words first
-    ,   .wr_y           (wr_y           )   //low words first
-    ,   .wr_m           (wr_m           )   //low words first
-    ,   .wr_m1          (mm_m1          )
-
-    ,   .task_req       (task_req       )
-    ,   .task_end       (task_end       )
-    ,   .task_grant     (task_grant     )
-    ,   .task_res       (task_res       )    
-);
-
-
-
 assign wr_ena       = {wr_ena_m,wr_ena_y,wr_ena_x};
 assign mm_result    = result_out;
 assign mm_valid     = result_valid;
 
 
+generate 
+    if(OUTSIDE_MONTGOMERY == 1) begin
+        assign  iddmm_wr_ena        =   wr_ena;
+        assign  iddmm_wr_addr       =   wr_addr_d1;
+        assign  iddmm_wr_x          =   wr_x;
+        assign  iddmm_wr_y          =   wr_y;
+        assign  iddmm_wr_m          =   wr_m;
+        assign  iddmm_wr_m1         =   mm_m1;
+
+        assign  iddmm_task_req      =   task_req;
+        
+        assign  task_res            =   iddmm_task_res;
+        assign  task_end            =   iddmm_task_end;
+        assign  task_grant          =   iddmm_task_grant;
+    end
+    else begin
+        mmp_iddmm_sp #(
+                .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                                    // "TRADITION" :MULT_LATENCY=9                
+                                                    // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
+            ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                                    // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
+                                                    // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
+                                                    // 
+            ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                                    // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                                    // 
+            ,   .K              (K              )   // K bits in every group
+            ,   .N              (N              )   // Number of groups
+        )u_mmp_iddmm_sp(
+                .clk            (clk            )
+            ,   .rst_n          (rst_n          )
+
+            ,   .wr_ena         (wr_ena         )
+            ,   .wr_addr        (wr_addr_d1     )
+            ,   .wr_x           (wr_x           )   //low words first
+            ,   .wr_y           (wr_y           )   //low words first
+            ,   .wr_m           (wr_m           )   //low words first
+            ,   .wr_m1          (mm_m1          )
+
+            ,   .task_req       (task_req       )
+            ,   .task_end       (task_end       )
+            ,   .task_grant     (task_grant     )
+            ,   .task_res       (task_res       )
+        );
+    end
+endgenerate
 
 endmodule

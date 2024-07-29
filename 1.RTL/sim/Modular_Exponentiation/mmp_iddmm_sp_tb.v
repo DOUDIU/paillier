@@ -9,7 +9,7 @@
 `timescale  1ns / 1ps
 // `define _VIEW_WAVEFORM_
 
-`define _RSA2048
+`define _RSA4096
 module mmp_iddmm_sp_tb;
 //---------------------------------------------------------------------------------------------------
 
@@ -102,8 +102,6 @@ mmp_iddmm_sp #(
     .MULT_METHOD            ( MULT_METHOD                   ),
     .ADD1_METHOD            ( ADD1_METHOD                   ),
     .ADD2_METHOD            ( ADD2_METHOD                   ),
-    .MULT_LATENCY           ( MULT_LATENCY                  ),        
-    .ADD1_LATENCY           ( ADD1_LATENCY                  ),
     .K                      ( K                             ),
     .N                      ( N                             ) 
 )mmp_iddmm_sp_0 (
@@ -266,18 +264,18 @@ endtask
 reg  r2mm_req=0;
 wire [K*N-1:0]r2mm_res;
 wire r2mm_val;
-mm_r2mm_2n #(
-    .K ( K*N )
-)mm_r2mm_2n (
-    .clk                     ( clk              ),
-    .rst_n                   ( rst_n            ),
-    .x                       ( big_x            ),
-    .y                       ( big_y            ),
-    .m                       ( big_m            ),
-    .req                     ( r2mm_req         ),
-    .res                     ( r2mm_res         ),
-    .val                     ( r2mm_val         )
-); 
+// mm_r2mm_2n #(
+//     .K ( K*N )
+// )mm_r2mm_2n (
+//     .clk                     ( clk              ),
+//     .rst_n                   ( rst_n            ),
+//     .x                       ( big_x            ),
+//     .y                       ( big_y            ),
+//     .m                       ( big_m            ),
+//     .req                     ( r2mm_req         ),
+//     .res                     ( r2mm_res         ),
+//     .val                     ( r2mm_val         )
+// ); 
 task run_r2mm;
     begin
         @(posedge clk);

@@ -32,9 +32,19 @@ module mmp_iddmm_pe #(
     parameter L2 = 0     ,// First add latency
     parameter L3 = 0     ,// m1*s latency
     parameter L4 = 0     ,// mj*q latency
-    parameter MULT_METHOD = "COMMON",
-    parameter ADD1_METHOD = "COMMON",
-    parameter ADD2_METHOD = "COMMON",
+    // parameter MULT_METHOD = "COMMON",
+    // parameter ADD1_METHOD = "COMMON",
+    // parameter ADD2_METHOD = "COMMON",
+    parameter MULT_METHOD  = "TRADITION",   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
+                                            // "TRADITION" :MULT_LATENCY=9                
+                                            // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
+    parameter ADD1_METHOD  = "3-2_PIPE1",   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+                                            // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
+                                            // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
+                                            // 
+    parameter ADD2_METHOD  = "3-2_DELAY2",  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
+                                            // 
 
     parameter D5 = 0     ,// if ADD2_METHOD=="3-2_DELAY2" D5 should be 1,else 0
     parameter K  = 128   ,// K bits in every group,fixed do not modify!

@@ -22,7 +22,7 @@ module mmp_iddmm_sp#(
                                                 // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
                                                 // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
                                                 // 
-    ,   parameter ADD2_METHOD  = "3-2_DELAY2"   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+    ,   parameter ADD2_METHOD  = "COMMON"       // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
                                                 // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                                 // 
 
@@ -188,7 +188,7 @@ mm_iddmm_sub #(
 //----------------------------------------------------------------------------------------------------------
 simple_ram#(
         .width              ( K                 )
-    ,   .widthad            ( ADDR_W+1          )//0-63,0-32 will be used
+    ,   .widthad            ( ADDR_W + 1        )//0-63,0-32 will be used
 )simple_ram_x(//caution:>>>>> addr32 must be 0 <<<<<
         .clk                ( clk               )
     ,   .wraddress          ( {1'd0,wr_addr}    )//0-31

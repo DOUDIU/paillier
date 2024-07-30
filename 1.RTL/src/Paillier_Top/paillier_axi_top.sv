@@ -11,7 +11,7 @@ module paillier_axi_top#(
                                                 // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
                                                 // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
                                                 // 
-    ,   parameter ADD2_METHOD   = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
+    ,   parameter ADD2_METHOD   = "COMMON"      // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
                                                 // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
                                                 // 
 //----------------------------------------------------

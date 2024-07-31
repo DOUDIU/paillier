@@ -78,6 +78,39 @@ def encode_and_encrypt_example():
     print("Checking the decrypted number is what we started with")
     assert abs(2.1 ** 20 - decrypted_but_encoded.decode()) < 1e-12
 
+
+#(L(c^lamda mod n^2) * mu) mod n
+def decrypt_example():
+    RESULT_LOG = open("result_log.txt",'w').close()
+    print("Encoding a large positive number. With a BASE {} encoding scheme".format(ExampleEncodedNumber.BASE))
+    original_data = 2 ** 20 + 23*17
+    encoded = ExampleEncodedNumber.encode(public_key, original_data)
+
+    print("Encrypting the encoded number")
+    encrypted = public_key.encrypt(encoded)
+
+    print("Decrypting...")
+    decrypted_but_encoded = private_key.decrypt_encoded(encrypted, ExampleEncodedNumber)
+
+    lamda = math.lcm(private_key.p - 1, private_key.q - 1)
+    mu = paillier.invert(lamda, public_key.n)
+    # data_seperate_printf(lamda,128, 4096//128,1)
+    # data_seperate_printf(mu,128, 4096//128,1)
+
+    a = paillier.powmod(encrypted.ciphertext(False), lamda, public_key.nsquare)
+    # data_seperate_printf(encrypted.ciphertext(False),128, 4096//128,1)
+    b = (a - 1) // public_key.n
+    c = b * mu % public_key.n
+    print("Decrypted: 0x{:x}".format(c))
+    print('official decrypted: 0x{:x}'.format(decrypted_but_encoded.decode()))
+
+    # print("Checking the decrypted number is what we started with")
+    assert abs(original_data - decrypted_but_encoded.decode()) < 1e-12
+
+    print('original_data: 0x{:x}'.format(original_data))
+    
+
+
 #(g**m * r**n) mod n**2
 def encrypt_fpga_example():
     print("Encoding single large positive numbers. BASE={}".format(ExampleEncodedNumber.BASE))
@@ -256,7 +289,4 @@ if __name__ == "__main__":
     # data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
     # data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
 
-    a = 102545 + (64 ** 8)
-    r = 123 + (8 ** 20)#ramdom number
-    # ciphertext_confirm = paillier.mulmod(paillier.powmod(public_key.g, a, public_key.nsquare) , paillier.powmod(r, public_key.n, public_key.nsquare) , public_key.nsquare)
-    print('r^n mod n^2: 0x{:x}\n'.format(paillier.powmod(r, public_key.n, public_key.nsquare)))
+    decrypt_example()

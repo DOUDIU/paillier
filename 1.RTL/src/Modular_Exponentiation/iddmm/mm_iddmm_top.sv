@@ -145,20 +145,17 @@ reg     [K-1            : 0]    result_out              ;
 //algorithm achievement:
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
-// rou = fastExpMod(2,2*nbit,p)
-// result = mont_r2mm(rou,1,p,nbit)
+//pre calculate
+    // rou = fastExpMod(2,2*k,m)
 
 //step0
-// result2 = mont_r2mm(xx,rou,p,nbit) 
-
+    // result0 = mont_r2mm(x,rou,m,k)
 //step1
-// for(i) in range(nbit-1,-1,-1):
-//     result = mont_r2mm(result,result,p,nbit)
-//     if((yy>>i)&1==1):
-//         result = mont_r2mm(result,result2,p,nbit)
-
+    // result1 = mont_r2mm(y,rou,m,k)
 //step2
-// result = mont_r2mm(result,1,p,nbit)
+    // result2 = mont_r2mm(result0,result1,m,k)
+//step3
+    // result3 = mont_r2mm(result2,1,m,k)
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 reg  [ADDR_W-1       : 0]    wr_addr_d1              = 0;

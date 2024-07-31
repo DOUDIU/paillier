@@ -192,10 +192,6 @@ module axi_full_core#(
 
     ,   output	reg		[K-1:0]			dec_c_data					[0 : BLOCK_COUNT - 1]
     ,   output	reg		       			dec_c_valid					[0 : BLOCK_COUNT - 1]
-    ,   output	reg		[K-1:0]			dec_lambda_data				[0 : BLOCK_COUNT - 1]
-    ,   output	reg		       			dec_lambda_valid			[0 : BLOCK_COUNT - 1]
-    ,   output	reg		[K-1:0]			dec_n_data					[0 : BLOCK_COUNT - 1]
-    ,   output	reg		       			dec_n_valid					[0 : BLOCK_COUNT - 1]
 
     ,   output	reg		[K-1:0]			homo_add_c1					[0 : BLOCK_COUNT - 1]
     ,   output	reg		       			homo_add_c1_valid			[0 : BLOCK_COUNT - 1]
@@ -285,10 +281,12 @@ module axi_full_core#(
 		STA_SCALAR_MUL			=	4'b0111,
 		STA_ENCRYPTION_RD		=	4'b1000,
 		STA_ENCRYPTION_WR 		=	4'b1001,
-		STA_HOMOMORPHIC_ADD_RD	=	4'b1010,
-		STA_HOMOMORPHIC_ADD_WR	=	4'b1011,
-		STA_SCALAR_MUL_RD		=	4'b1100,
-		STA_SCALAR_MUL_WR		=	4'b1101;
+		STA_DECRYPTION_RD		=	4'b1010,
+		STA_DECRYPTION_WR		=	4'b1011,
+		STA_HOMOMORPHIC_ADD_RD	=	4'b1100,
+		STA_HOMOMORPHIC_ADD_WR	=	4'b1101,
+		STA_SCALAR_MUL_RD		=	4'b1110,
+		STA_SCALAR_MUL_WR		=	4'b1111;
 
 	reg [3:0] state_now;
 	reg [3:0] state_next;
@@ -628,6 +626,9 @@ module axi_full_core#(
 				STA_ENCRYPTION_RD: begin
 					axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
 				end
+				STA_DECRYPTION_RD: begin
+					axi_araddr	<=	axi_araddr + burst_size_bytes;//The function of ">>" is for decryption.
+				end
 				STA_HOMOMORPHIC_ADD_RD: begin
 					axi_araddr	<=	axi_araddr + burst_size_bytes;
 				end
@@ -795,6 +796,7 @@ module axi_full_core#(
 					state_next	=	IDLE_WAIT;
 				end
 			end
+
 			STA_ENCRYPTION: begin
 				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
@@ -826,6 +828,40 @@ module axi_full_core#(
 				end
 				else begin
 					state_next	=	STA_ENCRYPTION_WR;
+				end
+			end
+
+			STA_DECRYPTION: begin
+				if ((loop_counter != TEST_TIMES) & (!all_block_is_busy)) begin
+					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+					//all blocks is not busy or single read rask is not finished
+					state_next	=	STA_DECRYPTION_RD;
+				end
+				else if (!all_fifo_is_empty) begin
+					state_next	=	STA_DECRYPTION_WR;
+				end
+				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+					state_next	=	IDLE_WAIT;
+				end
+				else begin
+					state_next	=	STA_DECRYPTION;
+				end
+			end
+			STA_DECRYPTION_RD: begin
+				if (reads_done) begin
+					state_next	=	STA_DECRYPTION;
+				end
+				else begin
+					state_next	=	STA_DECRYPTION_RD;
+				end
+			end
+			STA_DECRYPTION_WR: begin
+				if (writes_done) begin
+					state_next	=	STA_DECRYPTION;
+				end
+				else begin
+					state_next	=	STA_DECRYPTION_WR;
 				end
 			end
 
@@ -934,10 +970,6 @@ module axi_full_core#(
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				dec_c_data			[j]	<=	0;
 				dec_c_valid			[j]	<=	0;
-				dec_lambda_data		[j]	<=	0;
-				dec_lambda_valid	[j]	<=	0;
-				dec_n_data			[j]	<=	0;
-				dec_n_valid			[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				homo_add_c1			[j]	<=	0;
@@ -1017,6 +1049,58 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_ENCRYPTION) begin
+						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
+					end
+				end
+
+				STA_DECRYPTION: begin
+					if(state_next == STA_DECRYPTION_RD) begin
+						task_cmd[block_lowest_zero_bit]					<=	STA_DECRYPTION[1:0];
+						task_req[block_lowest_zero_bit]					<=	1;
+						block_is_busy_next 								<=	block_lowest_zero_bit;
+						block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 8;//target wr address = loop_counter * 2048 / 8
+					end
+
+					if(state_next == STA_DECRYPTION_WR) begin
+						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
+					end
+				end
+
+				STA_DECRYPTION_RD: begin
+					task_cmd[block_lowest_zero_bit]			<=	0;
+					task_req[block_lowest_zero_bit]			<=	0;
+					if(M_AXI_RVALID && axi_rready) begin
+						dec_c_data	[block_is_busy_next]	<=	M_AXI_RDATA;
+						dec_c_valid	[block_is_busy_next]	<=	1;
+					end
+					else begin
+						dec_c_data	[block_is_busy_next]	<=	0;
+						dec_c_valid	[block_is_busy_next]	<=	0;
+					end
+					if(!reads_done) begin
+						if (~axi_arvalid && ~burst_read_active && ~start_single_burst_read) begin
+							start_single_burst_read <= 1'b1;
+						end
+						else begin
+							start_single_burst_read <= 1'b0; //Negate to generate a pulse
+						end
+					end
+					if(state_next == STA_DECRYPTION) begin
+						loop_counter			<=	loop_counter + 1;
+						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
+					end
+				end
+
+				STA_DECRYPTION_WR: begin
+					if (!writes_done) begin
+						if (~axi_awvalid && ~start_single_burst_write && ~burst_write_active) begin
+							start_single_burst_write <= 1'b1;
+						end
+						else begin
+							start_single_burst_write <= 1'b0; //Negate to generate a pulse
+						end
+					end
+					if(state_next == STA_DECRYPTION) begin
 						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
 					end
 				end

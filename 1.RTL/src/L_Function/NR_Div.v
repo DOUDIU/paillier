@@ -31,14 +31,16 @@ module NR_Div#(
     input  [Block-1:0]          y,
     input                       valid_in,
     input                       data_vld_in,
-    output reg [Block-1:0]      qblock, 
+
     output reg [N-1:0]          q,
     output reg [N-1:0]          r,
     output reg [Block-1:0]      rblock,
     output                      valid_out,
+
+    output reg [Block-1:0]      qblock, 
     output reg                  data_vld_out
 );
-    
+
     parameter   Ncnt    =   N/Block;
     parameter   Mcnt    =   M/Block;
     
@@ -326,37 +328,55 @@ module NR_Div#(
 
     end
 
-blk_mem_gen_0 Dividend (
-  .clka(clk),    // input wire clka
-  .wea(wea_n),      // input wire [0 : 0] wea
-  .addra(addra_n),  // input wire [5 : 0] addra
-  .dina(dina_n),    // input wire [127 : 0] dina
-  .clkb(clk),    // input wire clkb
-  .enb(enb_n),      // input wire enb
-  .addrb(addrb_n),  // input wire [5 : 0] addrb
-  .doutb(doutb_n)  // output wire [127 : 0] doutb
+dual_port_ram#(
+        .RAM_WIDTH      (128                )
+    ,   .ADDR_LINE      (6                  )
+)Dividend(
+        .clk            (clk                )
+    ,   .wr_en          (wea_n              )
+    ,   .wr_addr        (addra_n            )
+    ,   .wr_data        (dina_n             )
+    ,   .rd_en          (enb_n              )
+    ,   .rd_addr        (addrb_n            )
+    ,   .rd_data        (doutb_n            )
 );
-blk_mem_gen_1 Divisor (
-  .clka(clk),    // input wire clka
-  .wea(wea_d),      // input wire [0 : 0] wea
-  .addra(addra_d),  // input wire [5 : 0] addra
-  .dina(dina_d),    // input wire [127 : 0] dina
-  .clkb(clk),    // input wire clkb
-  .enb(enb_d),      // input wire enb
-  .addrb(addrb_d),  // input wire [5 : 0] addrb
-  .doutb(doutb_d)  // output wire [127 : 0] doutb
+dual_port_ram#(
+        .RAM_WIDTH      (128                )
+    ,   .ADDR_LINE      (6                  )
+)Divisor(
+        .clk            (clk                )
+    ,   .wr_en          (wea_d              )
+    ,   .wr_addr        (addra_d            )
+    ,   .wr_data        (dina_d             )
+    ,   .rd_en          (enb_d              )
+    ,   .rd_addr        (addrb_d            )
+    ,   .rd_data        (doutb_d            )
 );
-//blk_mem_gen_2 Sum (
-//  .clka(clk),    // input wire clka
-//  .wea(wea_s),      // input wire [0 : 0] wea
-//  .addra(addra_s),  // input wire [5 : 0] addra
-//  .dina(dina_s),    // input wire [127 : 0] dina
-//  .clkb(clk),    // input wire clkb
-//  .enb(enb_s),      // input wire enb
-//  .addrb(addrb_s),  // input wire [5 : 0] addrb
-//  .doutb(doutb_s)  // output wire [127 : 0] doutb
-//);
- 
+
+/*
+    blk_mem_gen_0 Dividend (
+    .clka(clk),    // input wire clka
+    .wea(wea_n),      // input wire [0 : 0] wea
+    .addra(addra_n),  // input wire [5 : 0] addra
+    .dina(dina_n),    // input wire [127 : 0] dina
+    .clkb(clk),    // input wire clkb
+    .enb(enb_n),      // input wire enb
+    .addrb(addrb_n),  // input wire [5 : 0] addrb
+    .doutb(doutb_n)  // output wire [127 : 0] doutb
+    );
+    blk_mem_gen_1 Divisor (
+    .clka(clk),    // input wire clka
+    .wea(wea_d),      // input wire [0 : 0] wea
+    .addra(addra_d),  // input wire [5 : 0] addra
+    .dina(dina_d),    // input wire [127 : 0] dina
+    .clkb(clk),    // input wire clkb
+    .enb(enb_d),      // input wire enb
+    .addrb(addrb_d),  // input wire [5 : 0] addrb
+    .doutb(doutb_d)  // output wire [127 : 0] doutb
+    );
+*/
+
+
 adder_128  #(Block)
     inst(
     .clk(clk),    

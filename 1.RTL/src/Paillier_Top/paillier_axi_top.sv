@@ -1,7 +1,7 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 18
-    ,   parameter TEST_TIMES    = 18
+        parameter BLOCK_COUNT   = 4
+    ,   parameter TEST_TIMES    = 4
 	,	parameter K             = 128
     ,   parameter N             = 32
     ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
@@ -256,10 +256,6 @@ module paillier_axi_top#(
 
     wire    [K-1:0]             dec_c_data              [0 : BLOCK_COUNT - 1]   ;
     wire                        dec_c_valid             [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]             dec_lambda_data         [0 : BLOCK_COUNT - 1]   ;
-    wire                        dec_lambda_valid        [0 : BLOCK_COUNT - 1]   ;
-    wire    [K-1:0]             dec_n_data              [0 : BLOCK_COUNT - 1]   ;
-    wire                        dec_n_valid             [0 : BLOCK_COUNT - 1]   ;
 
     wire    [K-1:0]             homo_add_c1             [0 : BLOCK_COUNT - 1]   ;
     wire                        homo_add_c1_valid       [0 : BLOCK_COUNT - 1]   ;
@@ -323,10 +319,6 @@ axi_full_core #(
 
     ,   .dec_c_data				(dec_c_data             )
     ,   .dec_c_valid			(dec_c_valid            )
-    ,   .dec_lambda_data		(dec_lambda_data        )
-    ,   .dec_lambda_valid		(dec_lambda_valid       )
-    ,   .dec_n_data				(dec_n_data             )
-    ,   .dec_n_valid			(dec_n_valid            )
 
     ,   .homo_add_c1			(homo_add_c1            )
     ,   .homo_add_c1_valid		(homo_add_c1_valid      )
@@ -464,10 +456,6 @@ generate
 
             ,   .dec_c_data                 (dec_c_data             [o] )
             ,   .dec_c_valid                (dec_c_valid            [o] )
-            ,   .dec_lambda_data            (dec_lambda_data        [o] )
-            ,   .dec_lambda_valid           (dec_lambda_valid       [o] )
-            ,   .dec_n_data                 (dec_n_data             [o] )
-            ,   .dec_n_valid                (dec_n_valid            [o] )
 
             ,   .homo_add_c1                (homo_add_c1            [o] )
             ,   .homo_add_c1_valid          (homo_add_c1_valid      [o] )

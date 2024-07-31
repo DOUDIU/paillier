@@ -26,10 +26,6 @@ module paillier_top#(
 
     ,   input       [K-1:0]     dec_c_data
     ,   input                   dec_c_valid
-    ,   input       [K-1:0]     dec_lambda_data
-    ,   input                   dec_lambda_valid
-    ,   input       [K-1:0]     dec_n_data
-    ,   input                   dec_n_valid
 
     ,   input       [K-1:0]     homo_add_c1
     ,   input                   homo_add_c1_valid
@@ -44,7 +40,9 @@ module paillier_top#(
     ,   output  reg [K-1:0]     enc_out_data
     ,   output  reg             enc_out_valid
 );
-wire    [K-1    :   0]     PAILLIER_N               [N-1:0];
+wire    [K-1    :   0]      PAILLIER_N              [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_LAMDA          [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_MU             [N-1:0] ;
 assign  PAILLIER_N          =       {
     128'h0,
     128'h0,
@@ -79,6 +77,74 @@ assign  PAILLIER_N          =       {
     128'h8213cc126746497a511d8d29aea5ac13,
     128'hd2c5de79b62fb1a1a8e12114c110a8bf
 };
+assign  PAILLIER_LAMDA      =       {
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h436ef6b2a5b234d453095476258275a,
+    128'h5ddb27eb69685c7566ffd4c424f7311b,
+    128'h80c6386324f2f1ee41624dac4516976b,
+    128'hbe877965398b4459c3e7e0967e156bdb,
+    128'haf65a05d3b313797d4a4aa1a822023d1,
+    128'h68f7549036e401596e254b27e4eca76b,
+    128'h4662be05d5734d02798500678b74acb6,
+    128'hfa8fb6a0fc6e93ecc8201762004b17c6,
+    128'hc87a633e8503b841094f1f5baab06a61,
+    128'h66d1a8e340e439163593638cc15a3187,
+    128'h7e9e758c0864992908dd063b948b169,
+    128'h327642949ead9756b21f08a6749c10b2,
+    128'h43f36cda2c56d178b3c3ff826a75dd35,
+    128'hfb451c71423c33e6aeb494f635b9f560,
+    128'ha90f9762979adcaad390ed52dbfaabe0,
+    128'h38b447c60bcd5d05003e898d29037548
+};
+assign  PAILLIER_MU         =       {
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'h0,
+    128'hc8fa4d3f1579f2835d860978c22712b,
+    128'h7072c23b499b6f2cdbe724bd831e21e,
+    128'ha4f9178eceede09ed4889f17c206d201,
+    128'h95549e59aa3df84ad851b880ecc9790,
+    128'h4399d7cae69b0d762f6276e1e66cbc5b,
+    128'h6490ec1e76391f41b36e84d4600dd63d,
+    128'h17b9431521e828c5c485ad1f39534ede,
+    128'h35b681988102ff6c65c3f8ffe40f73fb,
+    128'h18e27c929806a8eafd9232f16de429b8,
+    128'h49714ab662761d00a5a5d762bc34bfe3,
+    128'h82f682192794746d0f05d01c6b8d0aa3,
+    128'hb497a69a08d510d21e25f30c0490e61a,
+    128'he8d504a8bc1324c016eadbcf82fd07c7,
+    128'h429e0dbf233c58e6810a01dd18acb824,
+    128'h1d6a644ef3e3d82937f292eb570acb1f,
+    128'ha051299ebbfec549aaf7fd05cc118918
+};
 
 reg                             me_start_0              ;
 reg     [$clog2(N)-1    : 0]    me_addr                 ;
@@ -106,6 +172,18 @@ wire                            mm_valid_0              ;
 
 reg     [K-1            : 0]    mm_result_0_storage     [N-1:0] ;
 reg     [$clog2(N)-1    : 0]    mm_result_0_cnt     =   0;
+
+reg                             L_start                 ;
+reg     [$clog2(N)-1    : 0]    L_addr                  ;
+reg     [$clog2(N)-1    : 0]    L_addr_d1               ;
+reg     [K-1            : 0]    L_x                     ;
+reg     [K-1            : 0]    L_y                     ;
+reg                             L_data_valid            ;
+wire    [K-1            : 0]    L_result                ;
+wire                            L_valid                 ;
+
+reg     [K-1            : 0]    L_result_storage        [N-1:0] ;
+reg     [$clog2(N)-1    : 0]    L_result_cnt        =   0;
 
 //could be optimized begin
 reg     [K-1            : 0]    enc_tem_buf_for_m       [N-1:0] ;
@@ -190,9 +268,25 @@ always@(*) begin
             if(me_result_0_cnt == N - 1) begin
                 state_next  =   STA_DECRYPTION_L;
             end
+            else begin
+                state_next  =   STA_DECRYPTION_ME;
+            end
         end
         STA_DECRYPTION_L: begin
-
+            if(L_result_cnt == N - 1) begin
+                state_next  =   STA_DECRYPTION_MM;
+            end
+            else begin
+                state_next  =   STA_DECRYPTION_L;
+            end
+        end
+        STA_DECRYPTION_MM: begin
+            if(mm_result_0_cnt == N - 1) begin
+                state_next  =   STA_IDLE;
+            end
+            else begin
+                state_next  =   STA_DECRYPTION_MM;
+            end
         end
         STA_HOMOMORPHIC_ADD: begin
             if(mm_result_0_cnt == N - 1) begin
@@ -229,12 +323,21 @@ always@(posedge clk or negedge rst_n) begin
 
         mm_addr             <=  0;
         mm_addr_d1          <=  0;
+        mm_start_0          <=  0;
         mm_x_0              <=  0;
         mm_y_0              <=  0;
         mm_x_valid_0        <=  0;
         mm_y_valid_0        <=  0;
-        mm_start_0          <=  0;
         mm_result_0_cnt     <=  0;
+
+
+        L_addr              <=  0;
+        L_addr_d1           <=  0;
+        L_start             <=  0;
+        L_x                 <=  0;
+        L_y                 <=  0;
+        L_data_valid        <=  0;
+        L_result_cnt        <=  0;
 
         enc_out_data        <=  0;
         enc_out_valid       <=  0;
@@ -244,15 +347,18 @@ always@(posedge clk or negedge rst_n) begin
     else begin
         mm_addr_d1          <=  mm_addr; 
         me_addr_d1          <=  me_addr;
+        L_addr_d1           <=  L_addr;
         case(state_now)
             STA_IDLE: begin
                 me_result_0_cnt     <=      0;
                 mm_result_0_cnt     <=      0;
-                enc_out_data        <=      0;
-                enc_out_valid       <=      0;
-                task_end            <=      0;
+                L_result_cnt        <=      0;
                 mm_addr             <=      0;
                 me_addr             <=      0;
+                L_addr              <=      0;
+                task_end            <=      0;
+                enc_out_data        <=      0;
+                enc_out_valid       <=      0;
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0          <=      1;
                 end
@@ -336,13 +442,72 @@ always@(posedge clk or negedge rst_n) begin
             end
             STA_DECRYPTION_ME: begin
                 me_start_0          <=      0;
+                me_addr             <=      me_addr < N - 1 ? me_addr + 1 : me_addr;
                 me_x_0              <=      dec_c_data;
                 me_x_valid_0        <=      dec_c_valid;
-                me_y_0              <=      dec_lambda_data;
-                me_y_valid_0        <=      dec_lambda_valid;
+                if(me_addr_d1 < N - 1) begin
+                    me_y_0              <=  PAILLIER_LAMDA[me_addr];
+                    me_y_valid_0        <=  1;
+                end
+                else begin
+                    me_y_0              <=  0;
+                    me_y_valid_0        <=  0;
+                end
                 if(me_valid_0) begin
-                    me_result_0_storage[me_result_0_cnt]    <=      me_result_0;
+                    //some problem here, if me_result_0[127:0] == 0, the result will be wrong.
+                    me_result_0_storage[me_result_0_cnt]    <=      mm_result_0_cnt == 0 ? me_result_0 - 1 : me_result_0;
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                end
+
+                if(state_next   ==  STA_DECRYPTION_L) begin
+                    L_addr              <=  0;
+                    L_start             <=  1;
+                end
+            end
+            STA_DECRYPTION_L: begin
+                L_start             <=  0;
+                L_addr              <=  L_addr < N - 1 ? L_addr + 1 : L_addr;
+                if(L_addr_d1 < N - 1) begin
+                    L_x                 <=  me_result_0_storage[L_addr];
+                    L_y                 <=  PAILLIER_N[L_addr];
+                    L_data_valid        <=  1;
+                end
+                else begin
+                    L_data_valid        <=  0;
+                end
+
+                if(L_valid) begin
+                    L_result_cnt                        <=  L_result_cnt + 1;
+                    L_result_storage[L_result_cnt]      <=  L_result;
+                end
+
+                if(state_next   ==  STA_DECRYPTION_MM) begin
+                    mm_addr             <=  0;
+                    mm_start_0          <=  1;
+                end
+            end
+            STA_DECRYPTION_MM: begin
+                mm_start_0          <=  0;
+                if(!mm_start_0) begin//delay 1 cycle to clear mm_addr_d1
+                    mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
+                end
+                if(mm_addr_d1 < N - 1) begin
+                    mm_x_0              <=  L_result_storage[mm_addr];
+                    mm_y_0              <=  PAILLIER_MU[mm_addr];
+                    mm_x_valid_0        <=  1;
+                    mm_y_valid_0        <=  1;
+                end
+                else begin
+                    mm_x_valid_0        <=  0;
+                    mm_y_valid_0        <=  0;
+                end
+                if(mm_valid_0) begin
+                    mm_result_0_cnt     <=  mm_result_0_cnt + 1;
+                end
+                enc_out_data        <=  mm_result_0;
+                enc_out_valid       <=  mm_valid_0;
+                if(mm_result_0_cnt == N - 1) begin
+                    task_end        <=  1;
                 end
             end
             STA_HOMOMORPHIC_ADD: begin
@@ -381,6 +546,20 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
+NR_Div L_Func(
+        .clk            (clk            )
+    ,   .rst_n          (rst_n          )
+
+    ,   .valid_in       (L_start        )
+
+    ,   .x              (L_x            )
+    ,   .y              (L_y            )
+    ,   .data_vld_in    (L_data_valid   )
+
+    ,   .qblock         (L_result       )
+    ,   .data_vld_out   (L_valid        )
+);
+
 montgomery_iddmm_top #(
         .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                             // "TRADITION" :MULT_LATENCY=9                
@@ -394,7 +573,7 @@ montgomery_iddmm_top #(
                                             // 
     ,   .K              (K              )
     ,   .N              (N              )
-)montgomery_iddmm_top(
+)montgomery_iddmm_top_inst(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
 

@@ -16,6 +16,7 @@ initial #100 rst_n = 1;
 wire    [K-1    :   0]      PAILLIER_N              [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_N_SQUARE       [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_M              [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_C              [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_R              [N-1:0] ;
 
 wire    [K-1    :   0]      PAILLIER_ENC_A          [N-1:0] ;
@@ -24,7 +25,9 @@ wire    [K-1    :   0]      PAILLIER_ENC_B          [N-1:0] ;
 wire    [K-1    :   0]      PAILLIER_CONST_SCALAR   [N-1:0] ;
 
 reg     [K*N-1  :   0]      PAILLIER_ENC_RESULT                             ;
+reg     [K*N-1  :   0]      PAILLIER_DEC_RESULT                             ;
 wire    [K*N-1  :   0]      PAILLIER_ENC_RESULT_CONFIRM                     ;
+wire    [K*N-1  :   0]      PAILLIER_DEC_RESULT_CONFIRM                     ;
 wire    [K*N-1  :   0]      PAILLIER_HOMOMORPHIC_ADD_RESULT_CONFIRM         ;
 wire    [K*N-1  :   0]      PAILLIER_POSTIVE_SCALAR_MUL_RESULT_CONFIRM      ;
 
@@ -130,6 +133,40 @@ assign  PAILLIER_M          =       {
     128'h0,
     128'h1000000019091
 };
+assign  PAILLIER_C          =       {
+    128'h8db32da6ffff11c8e61628df86e22770,
+    128'h9d27a5124ac08945d25f588a7fca8b27,
+    128'h215e36898672c91967bb64cc8235e45b,
+    128'h59c018b516e61275372d512372014396,
+    128'haa802a623da261552b503d1829ea67cd,
+    128'h7c83597c18a392877ddd1bc1a6da20fd,
+    128'h3f22c08f29a7e409e94d0ec0727faa9f,
+    128'h862a2fd4a6e2ad23f5a9c4b9c00616b7,
+    128'h554783ed802de7b710315f04533772a4,
+    128'h4dd042c09a32aa4a23dd824b7ba18786,
+    128'hed8129b0d5174c8115a8671a339df887,
+    128'he238d2be1f9e6d3ca90e617cccf91869,
+    128'ha683429c3cec0a671bc72f183b2e43ba,
+    128'he27b23cca7dc5b5acddffc8ca8ab74af,
+    128'h756631da37b86fa1daf1791746fdb1e1,
+    128'h1c1c3b77dd0d0e5279283154f05a1a29,
+    128'h2008368fa60227a9c292e3cafbdde768,
+    128'h8472e7f1d776f5b1a5ab2be7109621f4,
+    128'hf6f3b62dc0a0b26d8baec3a40da21d6c,
+    128'hdcabb321b843673caf122f99a1b0eb15,
+    128'h71f18f377d9d7049bc5d031be840c0eb,
+    128'h59a4ae1f821f7d19ca5729892df17fca,
+    128'h871b1b2b7df94c318cbf60da873ea8cc,
+    128'had39a9aee7635b032f20a03cd4f42c86,
+    128'hc0cfd344213a8a11625f7b68cef0467e,
+    128'h9f23ecb5ab98bcdf36327f169f5b2a5c,
+    128'h60eb8e7bc16faccdc5b581a1fecb519d,
+    128'h8ae8ca23a75ff744d28e3433a59b9d53,
+    128'h99be7b2d085e7089e759467b3d7b9d77,
+    128'hfe0eb0ced4fe416ad8b0ac0a854f9e8f,
+    128'hfe433570c58238aa3fd6bea5e99eb5ae,
+    128'he5525bae59bd45312aafc58e09e3e331
+};
 assign  PAILLIER_R          =       {
     128'h0,
     128'h0,
@@ -164,7 +201,6 @@ assign  PAILLIER_R          =       {
     128'h0,
     128'h100000000000007b
 };
-
 assign PAILLIER_ENC_A = {
     128'h39979947f84591c7011dc06e677dc75c,
     128'he460fd29a14d022555732743a714c8cf,
@@ -279,7 +315,7 @@ assign PAILLIER_HOMOMORPHIC_ADD_RESULT_CONFIRM =
 assign PAILLIER_POSTIVE_SCALAR_MUL_RESULT_CONFIRM = 
     4096'h8ae38ca70b6322b2b552b35e545efa4c9b4e82c402598dd8a8e7c47d2f87da6e43e68d9cf70ba51cd82bb8c71f3d7cf012e6c107c10174658aee26b50af8a44021c9a21b8090d3252d36af98b56622d220a29eb9afd9edb9e8a0cf58d29eaea148094e85c3ddc54561f4758503b32efa4253f7d8c418598f4609515315d1216ee34b8833608707b7afe6bf7e209200857f7baa06dcec92de158db58b738840f42ea573c75c949fccf675a4c5e92512ba84363446ad240406c90c458e141d975f6807027ad4269b4b8cef188a9e150f9d3b8e9681146e96db313eb896814490ad95a95918ac63ef3a95c11b51945d2827fe1db44c19cde01d17f6a3ccf29bef7bb5125c044ac23aef94fc8f636a3e5703728331103e31d119b709b460bd651945a0aa7a62407886ac970751fffa6edfaff3a3c9fc3d50f1bfc942f80ba898f1e23f8409bfbc72f2ea866774236b7528d5de76524a584ef74ea20c072461d260eacc3e73ed548e29f154c9bce54eddb13e70db47601a291a4238c3e3b04901ae6e98cbdfc047197d37a6ce7018493698e81a98e3364ed3e73117687e64984531dc7d048682b9cf46129f1da43d51fb82f1e497639fcbc6d1ff901f796145ace2d44e1dc59cc0f66cc222d333d1fa7213f342db41e599e4998cceb5f64126761a18aee1c876e93062a6feb965cd915739409fdbd55130d07a8658cee1fb0156c3f8;
 
-
+assign PAILLIER_DEC_RESULT_CONFIRM = 4096'h100187;
 
 
 
@@ -296,10 +332,6 @@ reg                 enc_r_valid             ;
 
 reg     [K-1:0]     dec_c_data              ;
 reg                 dec_c_valid             ;
-reg     [K-1:0]     dec_lambda_data         ;
-reg                 dec_lambda_valid        ;
-reg     [K-1:0]     dec_n_data              ;
-reg                 dec_n_valid             ;
 
 reg     [K-1:0]     homo_add_c1             ;
 reg                 homo_add_c1_valid       ;
@@ -342,10 +374,6 @@ paillier_top #(
 
     ,   .dec_c_data                 (dec_c_data                 )
     ,   .dec_c_valid                (dec_c_valid                )
-    ,   .dec_lambda_data            (dec_lambda_data            )
-    ,   .dec_lambda_valid           (dec_lambda_valid           )
-    ,   .dec_n_data                 (dec_n_data                 )
-    ,   .dec_n_valid                (dec_n_valid                )
 
     ,   .homo_add_c1                (homo_add_c1                )
     ,   .homo_add_c1_valid          (homo_add_c1_valid          )
@@ -399,6 +427,43 @@ task paillier_encrypt_task;
         $display("paillier encrypt result is correct!");
     else
         $display("paillier encrypt result is wrong!");
+    $stop;
+endtask
+
+task paillier_decrypt_task;
+    task_cmd    <=  2'b00;
+    task_req    <=  0;
+    dec_c_data  <=  0;
+    dec_c_valid <=  0;
+
+    @(posedge rst_n);
+    #40
+    @(posedge clk);
+    task_req    <=  1;
+    task_cmd    <=  2'b01;
+    @(posedge clk);
+    task_req    <=  0;
+    task_cmd    <=  0;
+    for(integer i = 0; i < 32; i = i + 1) begin
+        @(posedge clk);
+        dec_c_data  <=  PAILLIER_C[i];
+        dec_c_valid <=  1;
+    end
+    @(posedge clk);
+    dec_c_data  <=  0;
+    dec_c_valid <=  0;
+    wait(enc_out_valid);
+    PAILLIER_DEC_RESULT      = {PAILLIER_DEC_RESULT[(K*N-K-1):0],enc_out_data};
+    for (integer i = 0; i <= N-1; i = i + 1) begin
+        @(posedge clk)
+        PAILLIER_DEC_RESULT      = {enc_out_data,PAILLIER_DEC_RESULT[(K*N-1):K]};
+    end
+    $display("paillier decrypt result: \n0x%x",PAILLIER_DEC_RESULT);
+    #100;
+    assert(PAILLIER_DEC_RESULT ==  PAILLIER_DEC_RESULT_CONFIRM)
+        $display("paillier decrypt result is correct!");
+    else
+        $display("paillier decrypt result is wrong!");
     $stop;
 endtask
 
@@ -485,7 +550,8 @@ task paillier_postive_scalar_multiplication_task;
 endtask
 
 initial begin
-    paillier_encrypt_task;
+    // paillier_encrypt_task;
+    paillier_decrypt_task;
     // paillier_homomorphic_addition_task;
     // paillier_postive_scalar_multiplication_task;
 end

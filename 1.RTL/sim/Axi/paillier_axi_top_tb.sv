@@ -128,7 +128,7 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_SCALAR_MUL          = 2'b11;
 
 parameter   PAILLIER_MODE           = STA_ENCRYPTION;
-parameter   BLOCK_COUNT             = 18;
+parameter   BLOCK_COUNT             = 8;
 parameter   TEST_TIMES              = 8;
 
 
@@ -362,13 +362,5 @@ Virtual_Axi_Lite_Stimulation #(
     ,   .M_AXI_RREADY               (S_LITE_AXI_RREADY      )
 );
 
-// function called clogb2 that returns an integer which has the 
-// value of the ceiling of the log base 2.
-function integer clogb2 (input integer bit_depth);
-begin
-for(clogb2=0; bit_depth>0; clogb2=clogb2+1)
-	bit_depth = bit_depth >> 1;
-end
-endfunction // WAIT_COUNT_BITS is the width of the wait counter.
 
 endmodule

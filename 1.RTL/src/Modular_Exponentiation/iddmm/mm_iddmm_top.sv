@@ -38,86 +38,87 @@ module mm_iddmm_top#(
 );
 localparam ADDR_W   =   $clog2(N);
 
-reg     [K*N-1  : 0]    mm_y_storage             = 0;
-wire    [K-1    : 0]    mm_m            [N-1:0]     ;
 wire    [K-1    : 0]    mm_m1                       ;
-reg     [K-1    : 0]    rou             [N-1:0]     ;
-reg     [K-1    : 0]    result_x_rou    [N-1:0]     ;
-reg     [K-1    : 0]    result_y_rou    [N-1:0]     ;
-reg     [K-1    : 0]    result_r1_r2    [N-1:0]     ;
 
 assign  mm_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
-assign  mm_m        =   '{
-    128'h92d20837163355491353a40bfbed6aff,
-    128'hfb000939ca99e2dcb7e96c94d9e6ff1b,
-    128'h54db47d62fa87283db4ef47e8119e2cb,
-    128'hd126f44ef110cd64d6493014fbee11f,
-    128'hce25ad01515ed88bef11f595cc5b107a,
-    128'hed44c3aecf42318a0e9dc2431934703c,
-    128'h219abc2ee926037fbd46e2b2465b19b3,
-    128'h110e3ccdbdfbe0daadefe22a725ef38b,
-    128'hc2371fdc5e9cfb439ea6ac84b3e424e7,
-    128'h1cc3a263dc8cb4642042d01abe4e5441,
-    128'h6d821fae3e588950e16d5bdc76fc0629,
-    128'hb4829eabad9ad1535fc322dc0ad791ca,
-    128'h8a353157ab771cc0eafb621a07b0ce09,
-    128'h98a65541754ffeedb756ff3ca3b606de,
-    128'ha2b63fa2483a5dda07c17496f556f441,
-    128'he4c09fbb079cbbb8279c01fca24b56bf,
-    128'h32e9902603d670439cee8a4f9730281c,
-    128'ha7e736783300f69b64cce28fb565b995,
-    128'h99758f8c8e5d58ce03af202cfe8d8809,
-    128'h2884f15b5a76578db8bf6a32cf7e2d78,
-    128'ha758c60de9e6cf037bd2a6c7d22c670b,
-    128'h8b384722fef18a9870588c1368f3c1f8,
-    128'h2caa709eff78cfdb2a3594bce3977875,
-    128'hc0c30e464a5fc136225c7e206ba599b1,
-    128'h4ec856a9a230bca081331c969774eb11,
-    128'h2295c0670d4cb20723ceaa02e0ff4879,
-    128'ha508052dad14c59f1787572686d68c51,
-    128'heb3ce8f505e141803ec18bc77c4986a7,
-    128'hea1dd24c13c7bb976496361ad38078e2,
-    128'hdaaf39f049a489793e2b46643b3eb3f1,
-    128'h68a3ad29eb4accb4ca422e7dd70e809f,
-    128'h4ad5ed15d295f6765773bb5d851b3e81
-    };
 
-initial begin
-    rou = '{//high->low
-    128'h915f94ab9c50ca4ab4eeed592a9beaa5,
-    128'had6f3ab8cde33356263b7ca1cd6327f9,
-    128'h3abe0f5f621642eb55318e74137d0b25,
-    128'h8ebc8b10a00cab3ffe67b8e78a16a98e,
-    128'h4ddb4c9ac0c0a08302a84f682ca131a4,
-    128'h77edce6c0888a7d3b0aa71c00185447b,
-    128'h162a3b903f9853566121da8222821f44,
-    128'h29e054b3919b6c6c038207f135accb78,
-    128'hacd282aca5f291fca5ea2cc846ae54df,
-    128'hfe7b604b0be2fe402bcb234c62e04017,
-    128'h7915fd96957f012fc6c3c43fa5b2e411,
-    128'h7252f907ab98a98c4d0dd09e90ef2e0,
-    128'hf4a75b8a7d8b166e180cb21a76528f23,
-    128'hf9a7752b5ac26ac1e8c15c514343b84b,
-    128'h3b1450e77af95bdf8148328d73d65a6c,
-    128'hd4479f00aaf1fe6a7641a67c0515e8f6,
-    128'he169cc22bf64c781c30d0a498b07001a,
-    128'h95d7776b9beb874091aeaabc1594693f,
-    128'hd8ea828ac8251e7835669e4adb373a0f,
-    128'h24428720ad662853fbb3f3f4d95cf52d,
-    128'he704570cefbc67502abb2837ea155c3d,
-    128'hf5e87eb6400b55d7ec696534b23ed377,
-    128'h4ed73d9fc2788919bf9d984c670019bd,
-    128'h4d0a8c0ba1be9c46ce46811a7f8fbaea,
-    128'h6e74eb0c8d4989c5f7f7ba424a380576,
-    128'h979df18527249a66e10251090d2bad6a,
-    128'h25fa45d9a2ce695e98e2ae4f3b06c5f3,
-    128'hc72909e099111c79ca5511174ff3fb35,
-    128'hf3e16d1d8e50675156b0f608a0c7d82b,
-    128'h62d7b109a4be8fceb700f50b47c35664,
-    128'hce312818a6f6c0b2ff78a1ac2de5674a,
-    128'h4fcaa08ceba5ea9d842695dd79db7aa0
-    };//2^(2*K) mod m
-end
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_m(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_m_rd_data      )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_rou(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_rou_rd_data    )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result0(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result0_wr_en  )
+    ,   .wr_addr        (wr_cnt             )
+    ,   .wr_data        (task_res           )
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_result0_rd_data)
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result1(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result1_wr_en  )
+    ,   .wr_addr        (wr_cnt             )
+    ,   .wr_data        (task_res           )
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_result1_rd_data)
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_y(
+        .clk            (clk                )
+    ,   .wr_en          (ram_y_wr_en        )
+    ,   .wr_addr        (ram_y_wr_addr      )
+    ,   .wr_data        (ram_y_wr_data      )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_y_rd_data      )
+);
 
 
 
@@ -131,6 +132,11 @@ reg     [K-1            : 0]    wr_x                    ;
 reg     [K-1            : 0]    wr_y                    ;
 reg     [K-1            : 0]    wr_m                    ;
 
+reg     [K-1            : 0]    wr_x_reg                ;
+reg     [K-1            : 0]    wr_y_reg                ;
+reg     [K-1            : 0]    wr_m_reg                ;
+wire    [K-1            : 0]    mm_m1_reg               ;
+
 reg                             task_req                ;
 
 wire                            task_end                ;
@@ -139,6 +145,25 @@ wire    [K-1            : 0]    task_res                ;
 
 reg                             result_valid            ;
 reg     [K-1            : 0]    result_out              ;
+
+
+wire    [K-1            : 0]    ram_rou_rd_data         ;
+
+wire    [K-1            : 0]    ram_m_rd_data           ;
+
+wire                            ram_result0_wr_en       ;
+wire    [K-1            : 0]    ram_result0_rd_data     ;
+
+wire                            ram_result1_wr_en       ;
+wire    [K-1            : 0]    ram_result1_rd_data     ;
+
+reg                             ram_y_wr_en             ;
+reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
+reg     [K-1            : 0]    ram_y_wr_data           ;
+wire    [K-1            : 0]    ram_y_rd_data           ;
+
+assign ram_result0_wr_en = ((state_now == STA_MM_X_ROU) | (state_now == STA_MM_R1_R2)) & task_grant;
+assign ram_result1_wr_en = (state_now == STA_MM_Y_ROU) & task_grant;
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -158,18 +183,68 @@ reg     [K-1            : 0]    result_out              ;
     // result3 = mont_r2mm(result2,1,m,k)
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
+
+always@(*) begin
+    case(state_now) 
+        STA_MM_X_ROU: begin
+            wr_x_reg    =   wr_x;
+        end
+        STA_MM_Y_ROU: begin
+            wr_x_reg    =   ram_y_rd_data;
+        end
+        STA_MM_R1_R2: begin
+            wr_x_reg    =   ram_result0_rd_data;
+        end
+        STA_MM_R3_1: begin
+            wr_x_reg    =   ram_result0_rd_data;
+        end
+        default: begin
+            wr_x_reg    =   wr_x;
+        end
+    endcase
+end
+
+always@(*) begin
+    case(state_now) 
+        STA_MM_X_ROU: begin
+            wr_y_reg    =   ram_rou_rd_data;
+        end
+        STA_MM_Y_ROU: begin
+            wr_y_reg    =   ram_rou_rd_data;
+        end
+        STA_MM_R1_R2: begin
+            wr_y_reg    =   ram_result1_rd_data;
+        end
+        STA_MM_R3_1: begin
+            wr_y_reg    =   (wr_addr_d1 == 0) ? 1 : 0;
+        end
+        default: begin
+            wr_y_reg    =   wr_y;
+        end
+    endcase
+end
+
+assign      wr_m_reg    =   ram_m_rd_data;
+
+assign      mm_m1_reg   =   mm_m1;
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n | mm_start)begin
+        ram_y_wr_en         <=  0;
+        ram_y_wr_addr       <=  0-1;
+        ram_y_wr_data       <=  0;
+    end
+    else if(mm_y_valid) begin
+        ram_y_wr_en         <=  1;
+        ram_y_wr_addr       <=  ram_y_wr_addr + 1;
+        ram_y_wr_data       <=  mm_y;
+    end
+end
+
+
 reg  [ADDR_W-1       : 0]    wr_addr_d1              = 0;
 always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
-end
-
-always@(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        mm_y_storage    <=  0;
-    end
-    else if(mm_y_valid) begin
-        mm_y_storage    <=  {mm_y,mm_y_storage[K+:(K*N-K)]};
-    end
 end
 
 localparam  STA_IDLE                = 0,
@@ -273,8 +348,6 @@ always@(posedge clk or negedge rst_n)begin
                 if(mm_x_valid)begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                     wr_x                <=  mm_x;
-                    wr_y                <=  rou[wr_addr];
-                    wr_m                <=  mm_m[wr_addr];
                     wr_ena_x            <=  1;
                     wr_ena_y            <=  1;
                     wr_ena_m            <=  1;
@@ -293,13 +366,9 @@ always@(posedge clk or negedge rst_n)begin
                 end
                 if(task_grant) begin
                     wr_cnt                  <=  wr_cnt  +  1;
-                    result_x_rou[wr_cnt]    <=  task_res;
                 end
             end
             STA_MM_Y_ROU:begin
-                wr_x                <=  mm_y_storage[wr_addr*K+:K];
-                wr_y                <=  rou[wr_addr];
-                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
@@ -324,13 +393,9 @@ always@(posedge clk or negedge rst_n)begin
                 end
                 if(task_grant) begin
                     wr_cnt                  <=  wr_cnt  +  1;
-                    result_y_rou[wr_cnt]    <=  task_res;
                 end
             end
             STA_MM_R1_R2:begin
-                wr_x                <=  result_x_rou[wr_addr];
-                wr_y                <=  result_y_rou[wr_addr];
-                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
@@ -355,13 +420,9 @@ always@(posedge clk or negedge rst_n)begin
                 end
                 if(task_grant) begin
                     wr_cnt                  <=  wr_cnt  +  1;
-                    result_r1_r2[wr_cnt]    <=  task_res;
                 end
             end
             STA_MM_R3_1:begin
-                wr_x                <=  result_r1_r2[wr_addr];
-                wr_y                <=  wr_addr == 0 ? 128'h1 : 128'h0;
-                wr_m                <=  mm_m[wr_addr];
                 if(!task_req) begin
                     wr_addr             <=  wr_addr < N - 1 ? wr_addr + 1 : wr_addr;
                 end
@@ -402,10 +463,10 @@ generate
     if(OUTSIDE_MONTGOMERY == 1) begin
         assign  iddmm_wr_ena        =   wr_ena;
         assign  iddmm_wr_addr       =   wr_addr_d1;
-        assign  iddmm_wr_x          =   wr_x;
-        assign  iddmm_wr_y          =   wr_y;
-        assign  iddmm_wr_m          =   wr_m;
-        assign  iddmm_wr_m1         =   mm_m1;
+        assign  iddmm_wr_x          =   wr_x_reg;
+        assign  iddmm_wr_y          =   wr_y_reg;
+        assign  iddmm_wr_m          =   wr_m_reg;
+        assign  iddmm_wr_m1         =   mm_m1_reg;
 
         assign  iddmm_task_req      =   task_req;
         
@@ -433,10 +494,10 @@ generate
 
             ,   .wr_ena         (wr_ena         )
             ,   .wr_addr        (wr_addr_d1     )
-            ,   .wr_x           (wr_x           )   //low words first
-            ,   .wr_y           (wr_y           )   //low words first
-            ,   .wr_m           (wr_m           )   //low words first
-            ,   .wr_m1          (mm_m1          )
+            ,   .wr_x           (wr_x_reg       )   //low words first
+            ,   .wr_y           (wr_y_reg       )   //low words first
+            ,   .wr_m           (wr_m_reg       )   //low words first
+            ,   .wr_m1          (mm_m1_reg      )
 
             ,   .task_req       (task_req       )
             ,   .task_end       (task_end       )

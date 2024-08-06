@@ -550,8 +550,8 @@ task paillier_postive_scalar_multiplication_task;
 endtask
 
 initial begin
-    // paillier_encrypt_task;
-    paillier_decrypt_task;
+    paillier_encrypt_task;
+    // paillier_decrypt_task;
     // paillier_homomorphic_addition_task;
     // paillier_postive_scalar_multiplication_task;
 end

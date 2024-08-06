@@ -214,14 +214,15 @@ module axi_full_core#(
 
 	// Add user definition here
 	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter;// tha max value = TEST_TIMES * 4
+	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter_d1;// tha max value = TEST_TIMES * 4
 
 	reg		[BLOCK_COUNT - 1 : 0]			block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	block_is_busy_next;
-	reg		[C_M_AXI_ADDR_WIDTH-1	 : 0]	block_targert_addr	[0:BLOCK_COUNT-1];
+	reg		[C_M_AXI_ADDR_WIDTH-1	 : 0]	block_target_addr	[0:BLOCK_COUNT-1];
 	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
 	wire									all_block_is_busy;
 
-	wire	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
+	reg 	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
 	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_is_busy_next;
 	wire									all_fifo_is_empty;
 	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
@@ -229,15 +230,31 @@ module axi_full_core#(
 
 	reg		[1 : 0]							single_task_read_cnt;
 
+	always @(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+		if (M_AXI_ARESETN == 0) begin
+			loop_counter_d1 <= 0;
+		end
+		else begin
+			loop_counter_d1 <= loop_counter;
+		end
+	end
+
 	// user definition ends
 	assign 	all_block_is_busy = &block_is_busy;
 	assign 	block_lowest_zero_bit = find_lowest_zero_bit(block_is_busy);
 
-	generate 
-		for(o = 0; o < BLOCK_COUNT; o = o + 1) begin : block
-			assign	fifo_is_full[o] = rd_cnt[o] >= N - 1;
+	always @(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+		if (M_AXI_ARESETN == 0) begin
+			for(i=0; i<BLOCK_COUNT; i=i+1) begin
+				fifo_is_full[i] <= 0;
+			end
 		end
-	endgenerate
+		else begin
+			for(i=0; i<BLOCK_COUNT; i=i+1) begin
+				fifo_is_full[i] <= (rd_cnt[i] >= N - 1);
+			end
+		end
+	end
 	assign 	all_fifo_is_empty = &(~fifo_is_full);
 	assign	fifo_lowest_zero_bit = find_lowest_zero_bit(~fifo_is_full);
 
@@ -419,14 +436,14 @@ module axi_full_core#(
 	// 		axi_awaddr <= 1'b0;                                             
 	// 	end                                                              
 	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
-	// 		axi_awaddr	<=	block_targert_addr[fifo_is_busy_next];
+	// 		axi_awaddr	<=	block_target_addr[fifo_is_busy_next];
 	// 	end                                                              
 	// 	else begin                                                           
 	// 		axi_awaddr <= axi_awaddr;
 	// 	end                                        
 	// end
 
-	assign	axi_awaddr	=	axi_awvalid ? block_targert_addr[fifo_is_busy_next] : 0;
+	assign	axi_awaddr	=	axi_awvalid ? block_target_addr[fifo_is_busy_next] : 0;
 
 	//--------------------
 	//Write Data Channel
@@ -932,10 +949,6 @@ module axi_full_core#(
 					state_next	=	STA_SCALAR_MUL_WR;
 				end
 			end
-
-			STA_DECRYPTION: begin
-				
-			end
 			default: begin
 				state_next	= IDLE_WAIT;
 			end
@@ -984,7 +997,7 @@ module axi_full_core#(
 				scalar_mul_const_valid	[j]	<=	0;
 			end
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
-				block_targert_addr[j]	<=	0;
+				block_target_addr[j]	<=	0;
 			end
 		end
 		else begin
@@ -1000,8 +1013,9 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
+							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_ENCRYPTION_WR) begin
@@ -1034,7 +1048,6 @@ module axi_full_core#(
 					end
 					if(state_next == STA_ENCRYPTION) begin
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
-						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end
@@ -1058,7 +1071,8 @@ module axi_full_core#(
 						task_cmd[block_lowest_zero_bit]					<=	STA_DECRYPTION[1:0];
 						task_req[block_lowest_zero_bit]					<=	1;
 						block_is_busy_next 								<=	block_lowest_zero_bit;
-						block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 8;//target wr address = loop_counter * 2048 / 8
+						block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 8;//target wr address = loop_counter * 2048 / 8
+						loop_counter									<=	loop_counter + 1;
 					end
 
 					if(state_next == STA_DECRYPTION_WR) begin
@@ -1086,7 +1100,6 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_DECRYPTION) begin
-						loop_counter			<=	loop_counter + 1;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end
@@ -1111,8 +1124,9 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_HOMOMORPHIC_ADD[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
+							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
+						loop_counter									<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
@@ -1145,7 +1159,6 @@ module axi_full_core#(
 					end
 					if(state_next == STA_HOMOMORPHIC_ADD) begin
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
-						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end
@@ -1170,8 +1183,9 @@ module axi_full_core#(
 							task_cmd[block_lowest_zero_bit]					<=	STA_SCALAR_MUL[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_targert_addr[block_lowest_zero_bit]		<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
+							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_SCALAR_MUL_WR) begin
@@ -1204,7 +1218,6 @@ module axi_full_core#(
 					end
 					if(state_next == STA_SCALAR_MUL) begin
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
-						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end

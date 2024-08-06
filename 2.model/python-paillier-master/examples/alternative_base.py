@@ -34,6 +34,19 @@ def data_seperate_printf(data,nbit,n,order):#0 reverse,1 normal
         print('--------------------------------------------------',end='\n',file=RESULT_LOG)
     print('\n',file=RESULT_LOG)
 
+def data_seperate_printf_new(data,nbit,n,order,file_path):#0 reverse,1 normal
+    RESULT_LOG = open(file_path,'w').close()
+    RESULT_LOG = open(file_path,'a',encoding="utf-8")
+    if order==0:
+        for i in range(n):
+            # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+    else:
+        for i in range(n-1,-1,-1):
+            # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
+            print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
+    print('\n')
+
 def data_seperate_printf_byte(data,nbit,n,order):#0 reverse,1 normal
     RESULT_LOG = open("result_log.txt",'a',encoding="utf-8")
     if order==0:
@@ -94,6 +107,14 @@ def decrypt_example():
 
     lamda = math.lcm(private_key.p - 1, private_key.q - 1)
     mu = paillier.invert(lamda, public_key.n)
+    
+    file_path = '1.RTL/data/ram_lamda.txt'
+    data_seperate_printf_new(lamda,128,4096//128,0,file_path)
+    file_path = '1.RTL/data/ram_mu.txt'
+    data_seperate_printf_new(mu,128,4096//128,0,file_path)
+    file_path = '1.RTL/data/ram_N.txt'
+    data_seperate_printf_new(public_key.n,128,4096//128,0,file_path)
+
     # data_seperate_printf(lamda,128, 4096//128,1)
     # data_seperate_printf(mu,128, 4096//128,1)
 

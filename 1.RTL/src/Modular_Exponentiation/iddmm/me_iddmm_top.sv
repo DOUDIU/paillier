@@ -299,6 +299,11 @@ always@(posedge clk or negedge rst_n) begin
         ram_y_wr_addr       <=  ram_y_wr_addr + 1;
         ram_y_wr_data       <=  me_y;
     end
+    else begin
+        ram_y_wr_en         <=  0;
+        ram_y_wr_addr       <=  0-1;
+        ram_y_wr_data       <=  0;
+    end
 end
 
 always@(posedge clk)begin

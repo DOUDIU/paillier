@@ -40,112 +40,143 @@ module paillier_top#(
     ,   output  reg [K-1:0]     enc_out_data
     ,   output  reg             enc_out_valid
 );
-wire    [K-1    :   0]      PAILLIER_N              [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_LAMDA          [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_MU             [N-1:0] ;
-assign  PAILLIER_N          =       {
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'hc1df05419c6057e26ebad2d3abd7123c,
-    128'hdd612c4cf0c09d1881f83b3ea46ad2f1,
-    128'h239e21d0a3a778cfbfa9f4f46a0f355c,
-    128'h3c57d0305706482133aa5b0aa7d96179,
-    128'h8442d0c0a2d7fd48359690c361c66fa0,
-    128'hdc7131e9dcf83e11cab3812b22861546,
-    128'ha5be250c5ab7d671d5e6129b0ef708e1,
-    128'h5d2d0ed5bde948bf5c4339c0d7e45b9,
-    128'hc3ac4ef3c50af15fbd37492f126c5a51,
-    128'h8af725228255ab1b6ecab2f668149e3f,
-    128'hf74e3cd371e7fadf3edb24476ca0632f,
-    128'ha53d0af0840ed39b736a5f08339a21e3,
-    128'h5a53aa612f73dabd6864bf2dc85b296b,
-    128'h4e2a2bddcdabdae21b8c938d1c95d327,
-    128'h8213cc126746497a511d8d29aea5ac13,
-    128'hd2c5de79b62fb1a1a8e12114c110a8bf
-};
-assign  PAILLIER_LAMDA      =       {
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h436ef6b2a5b234d453095476258275a,
-    128'h5ddb27eb69685c7566ffd4c424f7311b,
-    128'h80c6386324f2f1ee41624dac4516976b,
-    128'hbe877965398b4459c3e7e0967e156bdb,
-    128'haf65a05d3b313797d4a4aa1a822023d1,
-    128'h68f7549036e401596e254b27e4eca76b,
-    128'h4662be05d5734d02798500678b74acb6,
-    128'hfa8fb6a0fc6e93ecc8201762004b17c6,
-    128'hc87a633e8503b841094f1f5baab06a61,
-    128'h66d1a8e340e439163593638cc15a3187,
-    128'h7e9e758c0864992908dd063b948b169,
-    128'h327642949ead9756b21f08a6749c10b2,
-    128'h43f36cda2c56d178b3c3ff826a75dd35,
-    128'hfb451c71423c33e6aeb494f635b9f560,
-    128'ha90f9762979adcaad390ed52dbfaabe0,
-    128'h38b447c60bcd5d05003e898d29037548
-};
-assign  PAILLIER_MU         =       {
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'h0,
-    128'hc8fa4d3f1579f2835d860978c22712b,
-    128'h7072c23b499b6f2cdbe724bd831e21e,
-    128'ha4f9178eceede09ed4889f17c206d201,
-    128'h95549e59aa3df84ad851b880ecc9790,
-    128'h4399d7cae69b0d762f6276e1e66cbc5b,
-    128'h6490ec1e76391f41b36e84d4600dd63d,
-    128'h17b9431521e828c5c485ad1f39534ede,
-    128'h35b681988102ff6c65c3f8ffe40f73fb,
-    128'h18e27c929806a8eafd9232f16de429b8,
-    128'h49714ab662761d00a5a5d762bc34bfe3,
-    128'h82f682192794746d0f05d01c6b8d0aa3,
-    128'hb497a69a08d510d21e25f30c0490e61a,
-    128'he8d504a8bc1324c016eadbcf82fd07c7,
-    128'h429e0dbf233c58e6810a01dd18acb824,
-    128'h1d6a644ef3e3d82937f292eb570acb1f,
-    128'ha051299ebbfec549aaf7fd05cc118918
-};
+localparam ADDR_W   =   $clog2(N);
 
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_lamda.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_lamda.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_lamda(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (me_addr            )
+    ,   .rd_data        (ram_lamda_rd_data  )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mu.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mu.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mu(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_mu_rd_data     )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_N.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_N.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_N(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (ram_N_rd_addr      )
+    ,   .rd_data        (ram_N_rd_data      )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_y(
+        .clk            (clk                )
+    ,   .wr_en          (ram_y_wr_en        )
+    ,   .wr_addr        (ram_y_wr_addr      )
+    ,   .wr_data        (ram_y_wr_data      )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_y_rd_data      )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_me_result(
+        .clk            (clk                )
+    ,   .wr_en          (me_valid_0         )
+    ,   .wr_addr        (me_result_0_cnt    )
+    ,   .wr_data        (me_result_0        )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (ram_me_rd_addr     )
+    ,   .rd_data        (ram_me_rd_data     )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_result(
+        .clk            (clk                )
+    ,   .wr_en          (mm_valid_0         )
+    ,   .wr_addr        (mm_result_0_cnt    )
+    ,   .wr_data        (mm_result_0        )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (ram_mm_rd_addr     )
+    ,   .rd_data        (ram_mm_rd_data     )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_L_result(
+        .clk            (clk                )
+    ,   .wr_en          (L_valid            )
+    ,   .wr_addr        (L_result_cnt       )
+    ,   .wr_data        (L_result           )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_L_rd_data      )
+);
+
+reg     [ADDR_W-1       : 0]    ram_N_rd_addr           ;
+wire    [K-1            : 0]    ram_N_rd_data           ;
+
+
+wire    [K-1            : 0]    ram_lamda_rd_data       ;
+
+wire    [K-1            : 0]    ram_mu_rd_data          ;
+
+reg                             ram_y_wr_en             ;
+reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
+reg     [K-1            : 0]    ram_y_wr_data           ;
+wire    [K-1            : 0]    ram_y_rd_data           ;
+
+reg     [ADDR_W-1       : 0]    ram_me_rd_addr          ;
+wire    [K-1            : 0]    ram_me_rd_data          ;
+
+reg     [ADDR_W-1       : 0]    ram_mm_rd_addr          ;
+wire    [K-1            : 0]    ram_mm_rd_data          ;
+
+wire    [K-1            : 0]    ram_L_rd_data           ;
+
+
+
+reg     [K-1            : 0]    me_x_reg                ;
+reg     [K-1            : 0]    me_y_reg                ;
 reg                             me_start_0              ;
 reg     [$clog2(N)-1    : 0]    me_addr                 ;
 reg     [$clog2(N)-1    : 0]    me_addr_d1              ;
@@ -155,11 +186,11 @@ reg     [K-1            : 0]    me_y_0                  ;
 reg                             me_y_valid_0            ;
 wire    [K-1            : 0]    me_result_0             ;
 wire                            me_valid_0              ;
-
-reg     [K-1            : 0]    me_result_0_storage     [N-1:0] ;
 reg     [$clog2(N)-1    : 0]    me_result_0_cnt     =   0;
 
 
+reg     [K-1            : 0]    mm_x_reg                ;
+reg     [K-1            : 0]    mm_y_reg                ;
 reg                             mm_start_0              ;
 reg     [$clog2(N)-1    : 0]    mm_addr                 ;
 reg     [$clog2(N)-1    : 0]    mm_addr_d1              ;
@@ -169,8 +200,6 @@ reg                             mm_x_valid_0            ;
 reg                             mm_y_valid_0            ;
 wire    [K-1            : 0]    mm_result_0             ;
 wire                            mm_valid_0              ;
-
-reg     [K-1            : 0]    mm_result_0_storage     [N-1:0] ;
 reg     [$clog2(N)-1    : 0]    mm_result_0_cnt     =   0;
 
 reg                             L_start                 ;
@@ -182,25 +211,112 @@ reg                             L_data_valid            ;
 wire    [K-1            : 0]    L_result                ;
 wire                            L_valid                 ;
 
-reg     [K-1            : 0]    L_result_storage        [N-1:0] ;
 reg     [$clog2(N)-1    : 0]    L_result_cnt        =   0;
 
-//could be optimized begin
-reg     [K-1            : 0]    enc_tem_buf_for_m       [N-1:0] ;
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        for(int i = 0; i < N; i = i + 1) begin
-            enc_tem_buf_for_m[i]    <=  0;
-        end
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n | task_req)begin
+        ram_y_wr_en         <=  0;
+        ram_y_wr_addr       <=  0-1;
+        ram_y_wr_data       <=  0;
     end
     else if(enc_m_valid) begin
-        enc_tem_buf_for_m[N-1]    <=  enc_m_data;
-        for(int i = N-2; i >= 0; i = i - 1) begin
-            enc_tem_buf_for_m[i]    <=  enc_tem_buf_for_m[i+1];
-        end
+        ram_y_wr_en         <=  1;
+        ram_y_wr_addr       <=  ram_y_wr_addr + 1;
+        ram_y_wr_data       <=  enc_m_data;
+    end
+    else begin
+        ram_y_wr_en         <=  0;
+        ram_y_wr_addr       <=  0-1;
+        ram_y_wr_data       <=  0;
     end
 end
-//could be optimized end
+
+//---------------------------------------------------------------//
+always@(*) begin
+    case(state_now)
+        STA_ENCRYPTION_ME: begin
+            ram_N_rd_addr   =   me_addr;
+        end
+        STA_ENCRYPTION_MM_STEP0: begin
+            ram_N_rd_addr   =   mm_addr;
+        end
+        STA_DECRYPTION_L: begin
+            ram_N_rd_addr   =   L_addr;
+        end
+        default: begin
+            ram_N_rd_addr   =   0;
+        end
+    endcase
+end
+
+always@(*) begin
+    case(state_now)
+        STA_ENCRYPTION_MM_STEP1: begin
+            ram_me_rd_addr  =   mm_addr;
+        end
+        STA_DECRYPTION_L: begin
+            ram_me_rd_addr  =   L_addr;
+        end
+        default: begin
+            ram_me_rd_addr  =   0;
+        end
+    endcase
+end
+
+always@(*) begin
+    case(state_now)
+        STA_ENCRYPTION_MM_STEP1: begin
+            ram_mm_rd_addr  =   mm_addr;
+        end
+        default: begin
+            ram_mm_rd_addr  =   0;
+        end
+    endcase
+end
+
+always@(*) begin
+    case(state_now)
+        STA_ENCRYPTION_ME: begin
+            me_x_reg    =   me_x_0;
+            me_y_reg    =   ram_N_rd_data;
+        end
+        STA_DECRYPTION_ME: begin
+            me_x_reg    =   me_x_0;
+            me_y_reg    =   ram_lamda_rd_data;
+        end
+        default: begin
+            me_x_reg    =   me_x_0;
+            me_y_reg    =   me_y_0;
+        end
+    endcase
+end
+
+always@(*) begin
+    case(state_now) 
+        STA_ENCRYPTION_MM_STEP0: begin
+            mm_x_reg    =   ram_N_rd_data;
+            mm_y_reg    =   ram_y_rd_data;
+        end
+        STA_ENCRYPTION_MM_STEP1: begin
+            mm_x_reg    =   ram_me_rd_data;
+            mm_y_reg    =   (mm_addr_d1 == 0) ? (ram_mm_rd_data + 1) : ram_mm_rd_data;//some problem here, if overflow, the result will be wrong.
+        end
+        STA_DECRYPTION_MM: begin
+            mm_x_reg    =   ram_L_rd_data;
+            mm_y_reg    =   ram_mu_rd_data;
+        end
+        default: begin
+            mm_x_reg    =   mm_x_0;
+            mm_y_reg    =   mm_y_0;
+        end
+    endcase
+end
+
+always@(*) begin
+    L_x         =       (L_addr_d1 == 0) ? (ram_me_rd_data - 1) : ram_me_rd_data;//some problem here, if overflow, the result will be wrong.
+    L_y         =       ram_N_rd_data;
+end
+
 
 localparam  STA_IDLE                = 0,
             STA_ENCRYPTION_ME       = 1,
@@ -334,8 +450,6 @@ always@(posedge clk or negedge rst_n) begin
         L_addr              <=  0;
         L_addr_d1           <=  0;
         L_start             <=  0;
-        L_x                 <=  0;
-        L_y                 <=  0;
         L_data_valid        <=  0;
         L_result_cnt        <=  0;
 
@@ -375,7 +489,6 @@ always@(posedge clk or negedge rst_n) begin
                 me_x_0              <=      enc_r_data;
                 me_x_valid_0        <=      enc_r_valid;
                 if(me_addr_d1 < N - 1) begin
-                    me_y_0              <=  PAILLIER_N[me_addr];
                     me_y_valid_0        <=  1;
                 end
                 else begin
@@ -383,7 +496,6 @@ always@(posedge clk or negedge rst_n) begin
                     me_y_valid_0        <=  0;
                 end
                 if(me_valid_0) begin
-                    me_result_0_storage[me_result_0_cnt]    <=      me_result_0;
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
 
@@ -396,8 +508,6 @@ always@(posedge clk or negedge rst_n) begin
                 mm_start_0          <=  0;
                 mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
                 if(mm_addr_d1 < N - 1) begin
-                    mm_x_0              <=  PAILLIER_N[mm_addr];
-                    mm_y_0              <=  enc_tem_buf_for_m[mm_addr];
                     mm_x_valid_0        <=  1;
                     mm_y_valid_0        <=  1;
                 end
@@ -407,8 +517,6 @@ always@(posedge clk or negedge rst_n) begin
                 end
                 if(mm_valid_0) begin
                     mm_result_0_cnt     <=  mm_result_0_cnt + 1;
-                    //some problem here, if overflow, the result will be wrong.
-                    mm_result_0_storage[mm_result_0_cnt]    <=      mm_result_0_cnt == 0 ? (mm_result_0 + 1) : mm_result_0;
                 end
 
                 if(state_next   ==  STA_ENCRYPTION_MM_STEP1) begin
@@ -422,8 +530,6 @@ always@(posedge clk or negedge rst_n) begin
                     mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
                 end
                 if(mm_addr_d1 < N - 1) begin
-                    mm_x_0              <=  me_result_0_storage[mm_addr];
-                    mm_y_0              <=  mm_result_0_storage[mm_addr];
                     mm_x_valid_0        <=  1;
                     mm_y_valid_0        <=  1;
                 end
@@ -446,7 +552,6 @@ always@(posedge clk or negedge rst_n) begin
                 me_x_0              <=      dec_c_data;
                 me_x_valid_0        <=      dec_c_valid;
                 if(me_addr_d1 < N - 1) begin
-                    me_y_0              <=  PAILLIER_LAMDA[me_addr];
                     me_y_valid_0        <=  1;
                 end
                 else begin
@@ -454,8 +559,6 @@ always@(posedge clk or negedge rst_n) begin
                     me_y_valid_0        <=  0;
                 end
                 if(me_valid_0) begin
-                    //some problem here, if me_result_0[127:0] == 0, the result will be wrong.
-                    me_result_0_storage[me_result_0_cnt]    <=      mm_result_0_cnt == 0 ? me_result_0 - 1 : me_result_0;
                     me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
 
@@ -468,8 +571,6 @@ always@(posedge clk or negedge rst_n) begin
                 L_start             <=  0;
                 L_addr              <=  L_addr < N - 1 ? L_addr + 1 : L_addr;
                 if(L_addr_d1 < N - 1) begin
-                    L_x                 <=  me_result_0_storage[L_addr];
-                    L_y                 <=  PAILLIER_N[L_addr];
                     L_data_valid        <=  1;
                 end
                 else begin
@@ -478,7 +579,6 @@ always@(posedge clk or negedge rst_n) begin
 
                 if(L_valid) begin
                     L_result_cnt                        <=  L_result_cnt + 1;
-                    L_result_storage[L_result_cnt]      <=  L_result;
                 end
 
                 if(state_next   ==  STA_DECRYPTION_MM) begin
@@ -492,8 +592,6 @@ always@(posedge clk or negedge rst_n) begin
                     mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
                 end
                 if(mm_addr_d1 < N - 1) begin
-                    mm_x_0              <=  L_result_storage[mm_addr];
-                    mm_y_0              <=  PAILLIER_MU[mm_addr];
                     mm_x_valid_0        <=  1;
                     mm_y_valid_0        <=  1;
                 end
@@ -578,17 +676,17 @@ montgomery_iddmm_top #(
     ,   .rst_n          (rst_n          )
 
     ,   .mm_start       (mm_start_0     )
-    ,   .mm_x           (mm_x_0         )
+    ,   .mm_x           (mm_x_reg       )
     ,   .mm_x_valid     (mm_x_valid_0   )
-    ,   .mm_y           (mm_y_0         )
+    ,   .mm_y           (mm_y_reg       )
     ,   .mm_y_valid     (mm_y_valid_0   )
     ,   .mm_result      (mm_result_0    )
     ,   .mm_valid       (mm_valid_0     )
 
     ,   .me_start       (me_start_0     )
-    ,   .me_x           (me_x_0         )
+    ,   .me_x           (me_x_reg       )
     ,   .me_x_valid     (me_x_valid_0   )
-    ,   .me_y           (me_y_0         )
+    ,   .me_y           (me_y_reg       )
     ,   .me_y_valid     (me_y_valid_0   )
     ,   .me_result      (me_result_0    )
     ,   .me_valid       (me_valid_0     )

@@ -14,7 +14,7 @@ module dual_port_ram#(
 integer i;
     integer fp;
 
-reg     [RAM_WIDTH-1:0]     memory  [(1<<ADDR_LINE)-1 : 0];
+(* ram_style = "distributed" *) reg     [RAM_WIDTH-1:0]     memory  [(1<<ADDR_LINE)-1 : 0];
 reg     [RAM_WIDTH-1:0]     data_r;	
 reg                         rd_en_d1;
 

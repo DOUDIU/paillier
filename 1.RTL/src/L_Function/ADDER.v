@@ -139,7 +139,7 @@ adder_128  #(Block)
 
         
 endmodule
-
+/*
 module adder_128u#(
     parameter   WIDTH=128
 )(
@@ -181,7 +181,7 @@ module adder_128u#(
      end   
                
 endmodule
-
+*/
 module adder_128#(
     parameter   WIDTH=128
 )(

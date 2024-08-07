@@ -21,7 +21,7 @@
 
 
 module axi_full_core#(
-	 	parameter BLOCK_COUNT 	=	4
+	 	parameter BLOCK_COUNT 	=	18
 	,	parameter K 			=	128
 	,	parameter N				=	32
 	,	parameter TEST_TIMES 	=	100000

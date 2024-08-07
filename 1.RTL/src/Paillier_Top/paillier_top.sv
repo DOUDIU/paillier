@@ -110,29 +110,31 @@ dual_port_ram#(
     ,   .rd_data        (ram_y_rd_data      )
 );
 
-dual_port_ram#(
-        .filename       ("none")
+//The use of DRAM is intended for timing performance.
+dual_port_dram#(
+        .filename       ("none"             )
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
 )ram_me_result(
         .clk            (clk                )
-    ,   .wr_en          (me_valid_0         )
-    ,   .wr_addr        (me_result_0_cnt    )
-    ,   .wr_data        (me_result_0        )
+    ,   .wr_en          (ram_me_wr_en       )    
+    ,   .wr_addr        (ram_me_wr_addr     )    
+    ,   .wr_data        (ram_me_wr_data     )
     ,   .rd_en          (1                  )
     ,   .rd_addr        (ram_me_rd_addr     )
     ,   .rd_data        (ram_me_rd_data     )
 );
 
-dual_port_ram#(
-        .filename       ("none")
+//The use of DRAM is intended for timing performance.
+dual_port_dram#(
+        .filename       ("none"             )
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
 )ram_mm_result(
         .clk            (clk                )
-    ,   .wr_en          (mm_valid_0         )
-    ,   .wr_addr        (mm_result_0_cnt    )
-    ,   .wr_data        (mm_result_0        )
+    ,   .wr_en          (ram_mm_wr_en       )
+    ,   .wr_addr        (ram_mm_wr_addr     )
+    ,   .wr_data        (ram_mm_wr_data     )
     ,   .rd_en          (1                  )
     ,   .rd_addr        (ram_mm_rd_addr     )
     ,   .rd_data        (ram_mm_rd_data     )
@@ -165,9 +167,15 @@ reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
 reg     [K-1            : 0]    ram_y_wr_data           ;
 wire    [K-1            : 0]    ram_y_rd_data           ;
 
+reg     [K-1            : 0]    ram_me_wr_en            ;
+reg     [K-1            : 0]    ram_me_wr_addr          ;
+reg     [K-1            : 0]    ram_me_wr_data          ;
 reg     [ADDR_W-1       : 0]    ram_me_rd_addr          ;
 wire    [K-1            : 0]    ram_me_rd_data          ;
 
+reg     [K-1            : 0]    ram_mm_wr_en            ;
+reg     [K-1            : 0]    ram_mm_wr_addr          ;
+reg     [K-1            : 0]    ram_mm_wr_data          ;
 reg     [ADDR_W-1       : 0]    ram_mm_rd_addr          ;
 wire    [K-1            : 0]    ram_mm_rd_data          ;
 
@@ -224,13 +232,49 @@ always@(posedge clk or negedge rst_n) begin
         ram_y_wr_addr       <=  ram_y_wr_addr + 1;
         ram_y_wr_data       <=  enc_m_data;
     end
+end
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        ram_mm_wr_en        <=  0;
+        ram_mm_wr_addr      <=  0;
+        ram_mm_wr_data      <=  0;
+    end
     else begin
-        ram_y_wr_en         <=  0;
-        ram_y_wr_addr       <=  0-1;
-        ram_y_wr_data       <=  0;
+        ram_mm_wr_en        <=  mm_valid_0     ;
+        ram_mm_wr_addr      <=  mm_result_0_cnt;
+        case(state_now)
+            STA_ENCRYPTION_MM_STEP0: begin
+                //some problem here, if overflow, the result will be wrong.
+                ram_mm_wr_data  <=   (mm_result_0_cnt == 0) ? (mm_result_0 + 1) : mm_result_0;
+            end
+            default: begin
+                ram_mm_wr_data  <=   mm_result_0;
+            end
+        endcase
     end
 end
 
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        ram_me_wr_en        <=  0;
+        ram_me_wr_addr      <=  0;
+        ram_me_wr_data      <=  0;
+    end
+    else begin
+        ram_me_wr_en        <=  me_valid_0     ;
+        ram_me_wr_addr      <=  me_result_0_cnt;
+        case(state_now)
+            STA_DECRYPTION_ME: begin
+                //some problem here, if overflow, the result will be wrong.
+                ram_me_wr_data  <=   (me_result_0_cnt == 0) ? (me_result_0 - 1) : me_result_0;
+            end
+            default: begin
+                ram_me_wr_data  <=   me_result_0;
+            end
+        endcase
+    end
+end
 //---------------------------------------------------------------//
 always@(*) begin
     case(state_now)
@@ -299,7 +343,7 @@ always@(*) begin
         end
         STA_ENCRYPTION_MM_STEP1: begin
             mm_x_reg    =   ram_me_rd_data;
-            mm_y_reg    =   (mm_addr_d1 == 0) ? (ram_mm_rd_data + 1) : ram_mm_rd_data;//some problem here, if overflow, the result will be wrong.
+            mm_y_reg    =   ram_mm_rd_data;
         end
         STA_DECRYPTION_MM: begin
             mm_x_reg    =   ram_L_rd_data;
@@ -313,7 +357,7 @@ always@(*) begin
 end
 
 always@(*) begin
-    L_x         =       (L_addr_d1 == 0) ? (ram_me_rd_data - 1) : ram_me_rd_data;//some problem here, if overflow, the result will be wrong.
+    L_x         =       ram_me_rd_data;
     L_y         =       ram_N_rd_data;
 end
 

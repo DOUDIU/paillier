@@ -18,7 +18,7 @@
 // Additional Comments:
 // 
 //////////////////////////////////////////////////////////////////////////////////
-
+/*
 //return  r = a^-1 mod p
 module modular_inverse_optimize#(
 		parameter	K 	= 	128
@@ -464,7 +464,7 @@ right_shift_operation#(
 
 
 endmodule
-
+*/
 
 
 

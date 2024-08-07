@@ -71,15 +71,18 @@ assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m
 reg     [4              : 0]    state_now;
 reg     [4              : 0]    state_now_d1;
 reg     [4              : 0]    state_next;
-localparam  IDLE                        =   0,
-            STA_WR_ROU_XX               =   1,
-            STA_STORE_RESULT2           =   2,
-            STA_LOOP_STEP1              =   3,
-            STA_LOOP_STEP2              =   4,
-            STA_LOOP_STORE_THEN_JUMP    =   5,
-            STA_LOOP_STORE2             =   6,
-            STA_FINAL_MM                =   7,
-            STA_STORE_RESULT            =   8;
+
+typedef enum {
+    IDLE                        ,
+    STA_WR_ROU_XX               ,
+    STA_STORE_RESULT2           ,
+    STA_LOOP_STEP1              ,
+    STA_LOOP_STEP2              ,
+    STA_LOOP_STORE_THEN_JUMP    ,
+    STA_LOOP_STORE2             ,
+    STA_FINAL_MM                ,
+    STA_STORE_RESULT            
+} FSM_STATE;
 
 reg     [$clog2(K*N)    : 0]    loop_counter            ; 
 reg                             result_valid            ;

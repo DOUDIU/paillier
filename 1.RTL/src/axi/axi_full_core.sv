@@ -282,28 +282,25 @@ module axi_full_core#(
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
-	parameter [3:0] IDLE_WAIT 	= 	4'b0000,	// This state initiates AXI4Lite transaction 
-												// after the state machine changes state to INIT_WRITE 
-												// when there is 0 to 1 transition on INIT_AXI_TXN
-		INIT_WRITE   			= 	4'b0001, 	// This state initializes write transaction,
-												// once writes are done, the state machine 
-												// changes state to INIT_READ 
-		INIT_READ 				= 	4'b0010, 	// This state initializes read transaction
-												// once reads are done, the state machine 
-												// changes state to INIT_COMPARE 	
-		IDLE_RW 				= 	4'b0011,
-		STA_ENCRYPTION			=	4'b0100,
-		STA_DECRYPTION			=	4'b0101,
-		STA_HOMOMORPHIC_ADD		=	4'b0110,
-		STA_SCALAR_MUL			=	4'b0111,
-		STA_ENCRYPTION_RD		=	4'b1000,
-		STA_ENCRYPTION_WR 		=	4'b1001,
-		STA_DECRYPTION_RD		=	4'b1010,
-		STA_DECRYPTION_WR		=	4'b1011,
-		STA_HOMOMORPHIC_ADD_RD	=	4'b1100,
-		STA_HOMOMORPHIC_ADD_WR	=	4'b1101,
-		STA_SCALAR_MUL_RD		=	4'b1110,
-		STA_SCALAR_MUL_WR		=	4'b1111;
+
+	typedef enum {
+		IDLE_WAIT				,
+		INIT_WRITE				,
+		INIT_READ				,
+		IDLE_RW					,
+		STA_ENCRYPTION			,
+		STA_DECRYPTION			,
+		STA_HOMOMORPHIC_ADD		,
+		STA_SCALAR_MUL			,
+		STA_ENCRYPTION_RD		,
+		STA_ENCRYPTION_WR 		,
+		STA_DECRYPTION_RD		,
+		STA_DECRYPTION_WR		,
+		STA_HOMOMORPHIC_ADD_RD	,
+		STA_HOMOMORPHIC_ADD_WR	,
+		STA_SCALAR_MUL_RD		,
+		STA_SCALAR_MUL_WR		
+	} FSM_STATE;
 
 	reg [3:0] state_now;
 	reg [3:0] state_next;

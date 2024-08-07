@@ -361,17 +361,18 @@ always@(*) begin
     L_y         =       ram_N_rd_data;
 end
 
-
-localparam  STA_IDLE                = 0,
-            STA_ENCRYPTION_ME       = 1,
-            STA_ENCRYPTION_MM_STEP0 = 2,
-            STA_ENCRYPTION_MM_STEP1 = 3,
-            STA_DECRYPTION_ME       = 4,
-            STA_DECRYPTION_L        = 5,
-            STA_DECRYPTION_MM       = 6,
-            STA_HOMOMORPHIC_ADD     = 7,
-            STA_SCALAR_MUL          = 8,
-            STA_END                 = 9;
+typedef enum {
+    STA_IDLE                    ,
+    STA_ENCRYPTION_ME           ,
+    STA_ENCRYPTION_MM_STEP0     ,
+    STA_ENCRYPTION_MM_STEP1     ,
+    STA_DECRYPTION_ME           ,
+    STA_DECRYPTION_L            ,
+    STA_DECRYPTION_MM           ,
+    STA_HOMOMORPHIC_ADD         ,
+    STA_SCALAR_MUL              ,
+    STA_END                     
+} FSM_STATE;
 
 reg         [3:0]        state_now;
 reg         [3:0]        state_next;

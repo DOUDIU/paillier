@@ -247,12 +247,14 @@ always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
 end
 
-localparam  STA_IDLE                = 0,
-            STA_MM_X_ROU            = 1,
-            STA_MM_Y_ROU            = 2,
-            STA_MM_R1_R2            = 3,
-            STA_MM_R3_1             = 4,
-            STA_END                 = 5;
+typedef enum {
+    STA_IDLE        ,
+    STA_MM_X_ROU    ,
+    STA_MM_Y_ROU    ,
+    STA_MM_R1_R2    ,
+    STA_MM_R3_1     ,
+    STA_END         
+} FSM_STATE;
 
 reg     [3:0]   state_now;
 reg     [3:0]   state_next;

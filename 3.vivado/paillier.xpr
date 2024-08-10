@@ -45,7 +45,7 @@
     <Option Name="SimulatorGccVersionActiveHdl" Val="9.3.0"/>
     <Option Name="BoardPart" Val=""/>
     <Option Name="SourceMgmtMode" Val="DisplayOnly"/>
-    <Option Name="ActiveSimSet" Val="paillier_top_tb"/>
+    <Option Name="ActiveSimSet" Val="paillier_axi_top_tb"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
     <Option Name="IPOutputRepo" Val="$PCACHEDIR/ip"/>
@@ -59,7 +59,7 @@
     <Option Name="IPUserFilesDir" Val="$PIPUSERFILESDIR"/>
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
-    <Option Name="WTXSimLaunchSim" Val="665"/>
+    <Option Name="WTXSimLaunchSim" Val="673"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -373,6 +373,7 @@
       </Config>
     </FileSet>
     <FileSet Name="paillier_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/paillier_top_tb" RelGenDir="$PGENDIR/paillier_top_tb">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/paillier_top_tb_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -400,6 +401,7 @@
       </Config>
     </FileSet>
     <FileSet Name="paillier_axi_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/paillier_axi_top_tb" RelGenDir="$PGENDIR/paillier_axi_top_tb">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/paillier_axi_top_tb_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -441,6 +443,7 @@
       </Config>
     </FileSet>
     <FileSet Name="mmp_iddmm_sp_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/mmp_iddmm_sp_tb" RelGenDir="$PGENDIR/mmp_iddmm_sp_tb">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/mmp_iddmm_sp_tb_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -468,6 +471,7 @@
       </Config>
     </FileSet>
     <FileSet Name="me_iddmm_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/me_iddmm_top_tb" RelGenDir="$PGENDIR/me_iddmm_top_tb">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/me_iddmm_top_tb_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -495,6 +499,7 @@
       </Config>
     </FileSet>
     <FileSet Name="mm_iddmm_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/mm_iddmm_top_tb" RelGenDir="$PGENDIR/mm_iddmm_top_tb">
+      <Filter Type="Srcs"/>
       <File Path="$PPRDIR/mm_iddmm_top_tb_behav.wcfg">
         <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>

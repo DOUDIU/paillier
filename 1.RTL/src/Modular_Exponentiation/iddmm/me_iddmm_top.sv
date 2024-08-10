@@ -68,11 +68,7 @@ reg     [K-1    : 0]    yy                          ;
 
 assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
 
-reg     [4              : 0]    state_now;
-reg     [4              : 0]    state_now_d1;
-reg     [4              : 0]    state_next;
-
-typedef enum {
+typedef enum logic [3:0] {
     IDLE                        ,
     STA_WR_ROU_XX               ,
     STA_STORE_RESULT2           ,
@@ -83,6 +79,10 @@ typedef enum {
     STA_FINAL_MM                ,
     STA_STORE_RESULT            
 } FSM_STATE;
+
+FSM_STATE   state_now;
+FSM_STATE   state_now_d1;
+FSM_STATE   state_next;
 
 reg     [$clog2(K*N)    : 0]    loop_counter            ; 
 reg                             result_valid            ;

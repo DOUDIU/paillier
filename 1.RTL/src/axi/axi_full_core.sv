@@ -283,7 +283,7 @@ module axi_full_core#(
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
 
-	typedef enum {
+	typedef enum logic [3:0] {
 		IDLE_WAIT				,
 		INIT_WRITE				,
 		INIT_READ				,
@@ -302,8 +302,8 @@ module axi_full_core#(
 		STA_SCALAR_MUL_WR		
 	} FSM_STATE;
 
-	reg [3:0] state_now;
-	reg [3:0] state_next;
+	FSM_STATE	state_now;
+	FSM_STATE	state_next;
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals

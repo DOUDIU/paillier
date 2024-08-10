@@ -247,7 +247,7 @@ always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
 end
 
-typedef enum {
+typedef enum logic [2:0] {
     STA_IDLE        ,
     STA_MM_X_ROU    ,
     STA_MM_Y_ROU    ,
@@ -256,8 +256,8 @@ typedef enum {
     STA_END         
 } FSM_STATE;
 
-reg     [3:0]   state_now;
-reg     [3:0]   state_next;
+FSM_STATE  state_now;
+FSM_STATE  state_next;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin

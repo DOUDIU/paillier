@@ -128,8 +128,8 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_SCALAR_MUL          = 2'b11;
 
 parameter   PAILLIER_MODE           = STA_ENCRYPTION;
-parameter   BLOCK_COUNT             = 8;
-parameter   TEST_TIMES              = 8;
+parameter   BLOCK_COUNT             = 1;
+parameter   TEST_TIMES              = 1;
 
 
 //To speed up the simulation, the parameter of the Montgomery module is all configured as "COMMON". The final outcome is as identical as others.

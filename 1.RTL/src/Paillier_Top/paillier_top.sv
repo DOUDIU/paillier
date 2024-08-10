@@ -361,7 +361,7 @@ always@(*) begin
     L_y         =       ram_N_rd_data;
 end
 
-typedef enum {
+typedef enum logic [3:0] {
     STA_IDLE                    ,
     STA_ENCRYPTION_ME           ,
     STA_ENCRYPTION_MM_STEP0     ,
@@ -374,8 +374,8 @@ typedef enum {
     STA_END                     
 } FSM_STATE;
 
-reg         [3:0]        state_now;
-reg         [3:0]        state_next;
+FSM_STATE   state_now;
+FSM_STATE   state_next;
 
 
 always @(posedge clk or negedge rst_n) begin

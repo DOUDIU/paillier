@@ -17,7 +17,7 @@
 		// Global Reset Signal. This Signal is Active LOW
 		input wire  S_AXI_ARESETN,
 
-		tvip_axi_if         S_AXI_IF
+		tvip_axi_if         AXI_FULL_IF
 	);
 	import  tvip_axi_full_types_pkg::*;
 
@@ -80,19 +80,19 @@
 
 	// I/O Connections assignments
 
-	assign S_AXI_IF.AXI_AWREADY	= axi_awready;
-	assign S_AXI_IF.AXI_WREADY	= axi_wready;
-	assign S_AXI_IF.AXI_BRESP	= axi_bresp;
+	assign AXI_FULL_IF.AXI_AWREADY	= axi_awready;
+	assign AXI_FULL_IF.AXI_WREADY	= axi_wready;
+	assign AXI_FULL_IF.AXI_BRESP	= axi_bresp;
 	// assign S_AXI_BUSER	= axi_buser;
-	assign S_AXI_IF.AXI_BVALID	= axi_bvalid;
-	assign S_AXI_IF.AXI_ARREADY	= axi_arready;
-	assign S_AXI_IF.AXI_RDATA	= axi_rdata;
-	assign S_AXI_IF.AXI_RRESP	= axi_rresp;
-	assign S_AXI_IF.AXI_RLAST	= axi_rlast;
+	assign AXI_FULL_IF.AXI_BVALID	= axi_bvalid;
+	assign AXI_FULL_IF.AXI_ARREADY	= axi_arready;
+	assign AXI_FULL_IF.AXI_RDATA	= axi_rdata;
+	assign AXI_FULL_IF.AXI_RRESP	= axi_rresp;
+	assign AXI_FULL_IF.AXI_RLAST	= axi_rlast;
 	// assign S_AXI_RUSER	= axi_ruser;
-	assign S_AXI_IF.AXI_RVALID	= axi_rvalid;
-	assign S_AXI_IF.AXI_BID = S_AXI_IF.AXI_AWID;
-	assign S_AXI_IF.AXI_RID = S_AXI_IF.AXI_ARID;
+	assign AXI_FULL_IF.AXI_RVALID	= axi_rvalid;
+	assign AXI_FULL_IF.AXI_BID = AXI_FULL_IF.AXI_AWID;
+	assign AXI_FULL_IF.AXI_RID = AXI_FULL_IF.AXI_ARID;
 	assign  aw_wrap_size = (`TVIP_AXI_MAX_DATA_WIDTH/8 * (axi_awlen)); 
 	assign  ar_wrap_size = (`TVIP_AXI_MAX_DATA_WIDTH/8 * (axi_arlen)); 
 	assign  aw_wrap_en = ((axi_awaddr & aw_wrap_size) == aw_wrap_size)? 1'b1: 1'b0;
@@ -101,7 +101,7 @@
 	// Implement axi_awready generation
 
 	// axi_awready is asserted for one S_AXI_ACLK clock cycle when both
-	// S_AXI_IF.AXI_AWVALID and S_AXI_IF.AXI_WVALID are asserted. axi_awready is
+	// AXI_FULL_IF.AXI_AWVALID and AXI_FULL_IF.AXI_WVALID are asserted. axi_awready is
 	// de-asserted when reset is low.
 
 	always @( posedge S_AXI_ACLK ) begin
@@ -110,14 +110,14 @@
 			axi_awv_awr_flag <= 1'b0;
 		end 
 		else begin    
-			if (~axi_awready && S_AXI_IF.AXI_AWVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag) begin
+			if (~axi_awready && AXI_FULL_IF.AXI_AWVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag) begin
 				// slave is ready to accept an address and
 				// associated control signals
 				axi_awready <= 1'b1;
 				axi_awv_awr_flag  <= 1'b1; 
 				// used for generation of bresp() and bvalid
 			end
-			else if (S_AXI_IF.AXI_WLAST && axi_wready) begin        
+			else if (AXI_FULL_IF.AXI_WLAST && axi_wready) begin        
 				// preparing to accept next address after current write burst tx completion
 				axi_awv_awr_flag  <= 1'b0;
 			end
@@ -129,7 +129,7 @@
 	// Implement axi_awaddr latching
 
 	// This process is used to latch the address when both 
-	// S_AXI_IF.AXI_AWVALID and S_AXI_IF.AXI_WVALID are valid. 
+	// AXI_FULL_IF.AXI_AWVALID and AXI_FULL_IF.AXI_WVALID are valid. 
 
 	always @( posedge S_AXI_ACLK ) begin
 		if ( S_AXI_ARESETN == 1'b0 ) begin
@@ -139,15 +139,15 @@
 			axi_awlen <= 0;
 		end 
 	  	else begin    
-	      	if (~axi_awready && S_AXI_IF.AXI_AWVALID && ~axi_awv_awr_flag) begin
+	      	if (~axi_awready && AXI_FULL_IF.AXI_AWVALID && ~axi_awv_awr_flag) begin
 	          	// address latching 
-	          	axi_awaddr <= S_AXI_IF.AXI_AWADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0];  
-	           	axi_awburst <= S_AXI_IF.AXI_AWBURST; 
-	           	axi_awlen <= S_AXI_IF.AXI_AWLEN;     
+	          	axi_awaddr <= AXI_FULL_IF.AXI_AWADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0];  
+	           	axi_awburst <= AXI_FULL_IF.AXI_AWBURST; 
+	           	axi_awlen <= AXI_FULL_IF.AXI_AWLEN;     
 				// start address of transfer
 				axi_awlen_cntr <= 0;
 	        end   
-	      	else if((axi_awlen_cntr <= axi_awlen) && axi_wready && S_AXI_IF.AXI_WVALID) begin
+	      	else if((axi_awlen_cntr <= axi_awlen) && axi_wready && AXI_FULL_IF.AXI_WVALID) begin
 				axi_awlen_cntr <= axi_awlen_cntr + 1;
 				case (axi_awburst)
 					2'b00: begin// fixed burst
@@ -183,7 +183,7 @@
 	// Implement axi_wready generation
 
 	// axi_wready is asserted for one S_AXI_ACLK clock cycle when both
-	// S_AXI_IF.AXI_AWVALID and S_AXI_IF.AXI_WVALID are asserted. axi_wready is 
+	// AXI_FULL_IF.AXI_AWVALID and AXI_FULL_IF.AXI_WVALID are asserted. axi_wready is 
 	// de-asserted when reset is low. 
 
 	always @( posedge S_AXI_ACLK )
@@ -194,13 +194,13 @@
 	    end 
 	  else
 	    begin    
-	      if ( ~axi_wready && S_AXI_IF.AXI_WVALID && axi_awv_awr_flag)
+	      if ( ~axi_wready && AXI_FULL_IF.AXI_WVALID && axi_awv_awr_flag)
 	        begin
 	          // slave can accept the write data
 	          axi_wready <= 1'b1;
 	        end
 	      //else if (~axi_awv_awr_flag)
-	      else if (S_AXI_IF.AXI_WLAST && axi_wready)
+	      else if (AXI_FULL_IF.AXI_WLAST && axi_wready)
 	        begin
 	          axi_wready <= 1'b0;
 	        end
@@ -209,7 +209,7 @@
 	// Implement write response logic generation
 
 	// The write response and response valid signals are asserted by the slave 
-	// when axi_wready, S_AXI_IF.AXI_WVALID, axi_wready and S_AXI_IF.AXI_WVALID are asserted.  
+	// when axi_wready, AXI_FULL_IF.AXI_WVALID, axi_wready and AXI_FULL_IF.AXI_WVALID are asserted.  
 	// This marks the acceptance of address and indicates the status of 
 	// write transaction.
 
@@ -223,7 +223,7 @@
 	    end 
 	  else
 	    begin    
-	      if (axi_awv_awr_flag && axi_wready && S_AXI_IF.AXI_WVALID && ~axi_bvalid && S_AXI_IF.AXI_WLAST )
+	      if (axi_awv_awr_flag && axi_wready && AXI_FULL_IF.AXI_WVALID && ~axi_bvalid && AXI_FULL_IF.AXI_WLAST )
 	        begin
 	          axi_bvalid <= 1'b1;
 	          axi_bresp  <= 2'b0; 
@@ -231,7 +231,7 @@
 	        end                   
 	      else
 	        begin
-	          if (S_AXI_IF.AXI_BREADY && axi_bvalid) 
+	          if (AXI_FULL_IF.AXI_BREADY && axi_bvalid) 
 	          //check if bready is asserted while bvalid is high) 
 	          //(there is a possibility that bready is always asserted high)   
 	            begin
@@ -243,9 +243,9 @@
 	// Implement axi_arready generation
 
 	// axi_arready is asserted for one S_AXI_ACLK clock cycle when
-	// S_AXI_IF.AXI_ARVALID is asserted. axi_awready is 
+	// AXI_FULL_IF.AXI_ARVALID is asserted. axi_awready is 
 	// de-asserted when reset (active low) is asserted. 
-	// The read address is also latched when S_AXI_IF.AXI_ARVALID is 
+	// The read address is also latched when AXI_FULL_IF.AXI_ARVALID is 
 	// asserted. axi_araddr is reset to zero on reset assertion.
 
 	always @( posedge S_AXI_ACLK )
@@ -257,12 +257,12 @@
 	    end 
 	  else
 	    begin    
-	      if (~axi_arready && S_AXI_IF.AXI_ARVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag)
+	      if (~axi_arready && AXI_FULL_IF.AXI_ARVALID && ~axi_awv_awr_flag && ~axi_arv_arr_flag)
 	        begin
 	          axi_arready <= 1'b1;
 	          axi_arv_arr_flag <= 1'b1;
 	        end
-	      else if (axi_rvalid && S_AXI_IF.AXI_RREADY && axi_arlen_cntr == axi_arlen)
+	      else if (axi_rvalid && AXI_FULL_IF.AXI_RREADY && axi_arlen_cntr == axi_arlen)
 	      // preparing to accept next address after current read completion
 	        begin
 	          axi_arv_arr_flag  <= 1'b0;
@@ -276,7 +276,7 @@
 	// Implement axi_araddr latching
 
 	//This process is used to latch the address when both 
-	//S_AXI_IF.AXI_ARVALID and S_AXI_IF.AXI_RVALID are valid. 
+	//AXI_FULL_IF.AXI_ARVALID and AXI_FULL_IF.AXI_RVALID are valid. 
 	always @( posedge S_AXI_ACLK )
 	begin
 	  if ( S_AXI_ARESETN == 1'b0 )
@@ -290,17 +290,17 @@
 	    end 
 	  else
 	    begin    
-	      if (~axi_arready && S_AXI_IF.AXI_ARVALID && ~axi_arv_arr_flag)
+	      if (~axi_arready && AXI_FULL_IF.AXI_ARVALID && ~axi_arv_arr_flag)
 	        begin
 	          // address latching 
-	          axi_araddr <= S_AXI_IF.AXI_ARADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0]; 
-	          axi_arburst <= S_AXI_IF.AXI_ARBURST; 
-	          axi_arlen <= S_AXI_IF.AXI_ARLEN;     
+	          axi_araddr <= AXI_FULL_IF.AXI_ARADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0]; 
+	          axi_arburst <= AXI_FULL_IF.AXI_ARBURST; 
+	          axi_arlen <= AXI_FULL_IF.AXI_ARLEN;     
 	          // start address of transfer
 	          axi_arlen_cntr <= 0;
 	          axi_rlast <= 1'b0;
 	        end   
-	      else if((axi_arlen_cntr <= axi_arlen) && axi_rvalid && S_AXI_IF.AXI_RREADY)        
+	      else if((axi_arlen_cntr <= axi_arlen) && axi_rvalid && AXI_FULL_IF.AXI_RREADY)        
 	        begin
 	         
 	          axi_arlen_cntr <= axi_arlen_cntr + 1;
@@ -344,7 +344,7 @@
 	        begin
 	          axi_rlast <= 1'b1;
 	        end          
-	      else if (S_AXI_IF.AXI_RREADY)   
+	      else if (AXI_FULL_IF.AXI_RREADY)   
 	        begin
 	          axi_rlast <= 1'b0;
 	        end          
@@ -353,7 +353,7 @@
 	// Implement axi_arvalid generation
 
 	// axi_rvalid is asserted for one S_AXI_ACLK clock cycle when both 
-	// S_AXI_IF.AXI_ARVALID and axi_arready are asserted. The slave registers 
+	// AXI_FULL_IF.AXI_ARVALID and axi_arready are asserted. The slave registers 
 	// data are available on the axi_rdata bus at this instance. The 
 	// assertion of axi_rvalid marks the validity of read data on the 
 	// bus and axi_rresp indicates the status of read transaction.axi_rvalid 
@@ -375,7 +375,7 @@
 	          axi_rresp  <= 2'b0; 
 	          // 'OKAY' response
 	        end   
-	      else if (axi_rvalid && S_AXI_IF.AXI_RREADY)
+	      else if (axi_rvalid && AXI_FULL_IF.AXI_RREADY)
 	        begin
 	          axi_rvalid <= 1'b0;
 	        end            
@@ -400,7 +400,7 @@
 			wire mem_rden;
 			wire mem_wren;
 		
-			assign mem_wren = axi_wready && S_AXI_IF.AXI_WVALID ;
+			assign mem_wren = axi_wready && AXI_FULL_IF.AXI_WVALID ;
 
 			assign mem_rden = axi_arv_arr_flag ; //& ~axi_rvalid
 			
@@ -409,11 +409,11 @@
 				wire [8-1:0] data_out;
 
 				//assigning 8 bit data
-				assign data_in  = S_AXI_IF.AXI_WDATA[(mem_byte_index*8+7) -: 8];
+				assign data_in  = AXI_FULL_IF.AXI_WDATA[(mem_byte_index*8+7) -: 8];
 				assign data_out = byte_ram[mem_byte_index][mem_address];
 
 				always @( posedge S_AXI_ACLK ) begin
-					if (mem_wren && S_AXI_IF.AXI_WSTRB[mem_byte_index]) begin
+					if (mem_wren && AXI_FULL_IF.AXI_WSTRB[mem_byte_index]) begin
 						byte_ram[mem_byte_index][mem_address] <= data_in;
 					end   
 				end
@@ -443,7 +443,7 @@
 
 	reg [$clog2(TEST_TIMES):0] paillier_wr_cnt = 0;
 	always @(posedge S_AXI_ACLK) begin
-		if (S_AXI_IF.AXI_AWVALID && S_AXI_IF.AXI_AWREADY) begin
+		if (AXI_FULL_IF.AXI_AWVALID && AXI_FULL_IF.AXI_AWREADY) begin
 			paillier_wr_cnt <= paillier_wr_cnt + 1;
 		end
 	end
@@ -532,7 +532,7 @@ endgenerate
 		reg [4095:0] memory_data_actual = 0;
 		reg [4095:0] memory_data_expect = 0;
 		wait(paillier_wr_cnt == TEST_TIMES);
-		wait(S_AXI_IF.AXI_WREADY & S_AXI_IF.AXI_WVALID & S_AXI_IF.AXI_WLAST);
+		wait(AXI_FULL_IF.AXI_WREADY & AXI_FULL_IF.AXI_WVALID & AXI_FULL_IF.AXI_WLAST);
 		@(posedge S_AXI_ACLK);//Wait until the last result is written.
 
 		fp_result = $fopen(file_path_result, "r");

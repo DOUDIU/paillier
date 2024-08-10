@@ -18,4 +18,13 @@
         `define TVIP_AXI_BURST_LEN 32
     `endif
 
+    `ifndef TVIP_AXI_LITE_MAX_ADDRESS_WIDTH
+        `define TVIP_AXI_LITE_MAX_ADDRESS_WIDTH  4
+    `endif
+
+    `ifndef TVIP_AXI_LITE_MAX_DATA_WIDTH
+        `define TVIP_AXI_LITE_MAX_DATA_WIDTH 32
+    `endif
+
+
 `endif

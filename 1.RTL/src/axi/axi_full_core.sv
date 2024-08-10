@@ -37,7 +37,7 @@ module axi_full_core#(
     // Global Reset Singal. This Signal is Active Low
     ,   input wire  M_AXI_ARESETN
 
-	,	tvip_axi_if         M_AXI_IF
+	,	tvip_axi_if         AXI_FULL_IF
 
 //----------------------------------------------------
 // paillier control interface
@@ -215,49 +215,49 @@ module axi_full_core#(
 	// I/O Connections assignments
 
 	//I/O Connections. Write Address (AW)
-	assign M_AXI_IF.AXI_AWID	= 'b0;
+	assign AXI_FULL_IF.AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign M_AXI_IF.AXI_AWADDR	= C_M_TARGET_WR_ADDR + axi_awaddr;
+	assign AXI_FULL_IF.AXI_AWADDR	= C_M_TARGET_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_IF.AXI_AWLEN	= `TVIP_AXI_BURST_LEN - 1;
+	assign AXI_FULL_IF.AXI_AWLEN	= `TVIP_AXI_BURST_LEN - 1;
 	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign M_AXI_IF.AXI_AWSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
+	assign AXI_FULL_IF.AXI_AWSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
-	assign M_AXI_IF.AXI_AWBURST	= 2'b01;
+	assign AXI_FULL_IF.AXI_AWBURST	= 2'b01;
 	assign M_AXI_AWLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
-	assign M_AXI_IF.AXI_AWCACHE	= 4'b0010;
-	assign M_AXI_IF.AXI_AWPROT	= 3'h0;
-	assign M_AXI_IF.AXI_AWQOS	= 4'h0;
+	assign AXI_FULL_IF.AXI_AWCACHE	= 4'b0010;
+	assign AXI_FULL_IF.AXI_AWPROT	= 3'h0;
+	assign AXI_FULL_IF.AXI_AWQOS	= 4'h0;
 	assign M_AXI_AWUSER	= 'b1;
-	assign M_AXI_IF.AXI_AWVALID	= axi_awvalid;
+	assign AXI_FULL_IF.AXI_AWVALID	= axi_awvalid;
 	//Write Data(W)
-	assign M_AXI_IF.AXI_WDATA	= axi_wdata;
+	assign AXI_FULL_IF.AXI_WDATA	= axi_wdata;
 	//All bursts are complete and aligned in this example
-	assign M_AXI_IF.AXI_WSTRB	= {(`TVIP_AXI_MAX_DATA_WIDTH/8){1'b1}};
-	assign M_AXI_IF.AXI_WLAST	= axi_wlast;
+	assign AXI_FULL_IF.AXI_WSTRB	= {(`TVIP_AXI_MAX_DATA_WIDTH/8){1'b1}};
+	assign AXI_FULL_IF.AXI_WLAST	= axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
-	assign M_AXI_IF.AXI_WVALID	= axi_wvalid;
+	assign AXI_FULL_IF.AXI_WVALID	= axi_wvalid;
 	//Write Response (B)
-	assign M_AXI_IF.AXI_BREADY	= axi_bready;
+	assign AXI_FULL_IF.AXI_BREADY	= axi_bready;
 	//Read Address (AR)
-	assign M_AXI_IF.AXI_ARID	= 'b0;
-	assign M_AXI_IF.AXI_ARADDR	= C_M_TARGET_RD_ADDR + axi_araddr;
+	assign AXI_FULL_IF.AXI_ARID	= 'b0;
+	assign AXI_FULL_IF.AXI_ARADDR	= C_M_TARGET_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign M_AXI_IF.AXI_ARLEN	= `TVIP_AXI_BURST_LEN - 1;
+	assign AXI_FULL_IF.AXI_ARLEN	= `TVIP_AXI_BURST_LEN - 1;
 	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign M_AXI_IF.AXI_ARSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
+	assign AXI_FULL_IF.AXI_ARSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
-	assign M_AXI_IF.AXI_ARBURST	= 2'b01;
+	assign AXI_FULL_IF.AXI_ARBURST	= 2'b01;
 	assign M_AXI_ARLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
 	assign M_AXI_ARCACHE	= 4'b0010;
 	assign M_AXI_ARPROT	= 3'h0;
-	assign M_AXI_IF.AXI_ARQOS	= 4'h0;
+	assign AXI_FULL_IF.AXI_ARQOS	= 4'h0;
 	assign M_AXI_ARUSER	= 'b1;
-	assign M_AXI_IF.AXI_ARVALID	= axi_arvalid;
+	assign AXI_FULL_IF.AXI_ARVALID	= axi_arvalid;
 	//Read and Read Response (R)
-	assign M_AXI_IF.AXI_RREADY	= axi_rready;
+	assign AXI_FULL_IF.AXI_RREADY	= axi_rready;
 	//Burst size in bytes
 	assign burst_size_bytes	= `TVIP_AXI_BURST_LEN * `TVIP_AXI_MAX_DATA_WIDTH / 8;
 	// assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
@@ -285,7 +285,7 @@ module axi_full_core#(
 		end                                                              
 	    /* Once asserted, VALIDs cannot be deasserted, so axi_awvalid      
 	    must wait until transaction is accepted */                         
-	    else if (M_AXI_IF.AXI_AWREADY && axi_awvalid) begin                                                            
+	    else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin                                                            
 	        axi_awvalid <= 1'b0;                                           
 		end                                                              
 	    else begin                                                             
@@ -299,7 +299,7 @@ module axi_full_core#(
 	// 	if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                            
 	// 		axi_awaddr <= 1'b0;                                             
 	// 	end                                                              
-	// 	else if (M_AXI_IF.AXI_AWREADY && axi_awvalid) begin
+	// 	else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
 	// 		axi_awaddr	<=	block_target_addr[fifo_is_busy_next];
 	// 	end                                                              
 	// 	else begin                                                           
@@ -333,7 +333,7 @@ module axi_full_core#(
 
 	//Forward movement occurs when the write channel is valid and ready
 
-	assign wnext = M_AXI_IF.AXI_WREADY & axi_wvalid;                                   
+	assign wnext = AXI_FULL_IF.AXI_WREADY & axi_wvalid;                                   
 	                                                                                    
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
@@ -342,7 +342,7 @@ module axi_full_core#(
 		end                                                                           
 		// If previously not valid, start next transaction                              
 		//else if (~axi_wvalid && start_single_burst_write) begin                      
-		else if (~axi_wvalid && M_AXI_IF.AXI_AWREADY && axi_awvalid) begin                                                                         
+		else if (~axi_wvalid && AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin                                                                         
 			axi_wvalid <= 1'b1;                                                         
 		end                                                                           
 		/* If WREADY and too many writes, throttle WVALID                               
@@ -410,7 +410,7 @@ module axi_full_core#(
 	// 	else if (wnext && axi_wlast) begin
 	// 	 	rd_rdy[fifo_is_busy_next] <= 0;
 	// 	end
-	// 	else if (M_AXI_IF.AXI_AWREADY && axi_awvalid) begin
+	// 	else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
 	// 		rd_rdy[fifo_is_busy_next] <= 1;
 	// 	end
 	// 	else if (wnext) begin         
@@ -451,8 +451,8 @@ module axi_full_core#(
 			axi_bready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge bresp with axi_bready by the master           
-	    // when M_AXI_IF.AXI_BVALID is asserted by slave                           
-	    else if (M_AXI_IF.AXI_BVALID && ~axi_bready) begin                                                             
+	    // when AXI_FULL_IF.AXI_BVALID is asserted by slave                           
+	    else if (AXI_FULL_IF.AXI_BVALID && ~axi_bready) begin                                                             
 			axi_bready <= 1'b1;                                             
 		end                                                               
 	    // deassert after one clock cycle                                   
@@ -467,7 +467,7 @@ module axi_full_core#(
 	                                                                        
 	                                                                        
 	//Flag any write response errors                                        
-	assign write_resp_error = axi_bready & M_AXI_IF.AXI_BVALID & M_AXI_IF.AXI_BRESP[1]; 
+	assign write_resp_error = axi_bready & AXI_FULL_IF.AXI_BVALID & AXI_FULL_IF.AXI_BRESP[1]; 
 
 
 	//----------------------------
@@ -488,7 +488,7 @@ module axi_full_core#(
 		else if (~axi_arvalid && start_single_burst_read) begin                                                          
 			axi_arvalid <= 1'b1;                                         
 		end                                                            
-		else if (M_AXI_IF.AXI_ARREADY && axi_arvalid) begin                                                          
+		else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin                                                          
 			axi_arvalid <= 1'b0;                                         
 		end                                                            
 		else begin                                                        
@@ -502,7 +502,7 @@ module axi_full_core#(
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
 	        axi_araddr <= 'b0;                                           
 		end                                                            
-	    else if (M_AXI_IF.AXI_ARREADY && axi_arvalid) begin
+	    else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin
 			case(state_now)
 				STA_ENCRYPTION_RD: begin
 					axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
@@ -532,7 +532,7 @@ module axi_full_core#(
 	//--------------------------------
 
 	// Forward movement occurs when the channel is valid and ready   
-	assign rnext = M_AXI_IF.AXI_RVALID && axi_rready;                            
+	assign rnext = AXI_FULL_IF.AXI_RVALID && axi_rready;                            
 
 
 	// Burst length counter. Uses extra counter register bit to indicate    
@@ -560,9 +560,9 @@ module axi_full_core#(
 			axi_rready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge rdata/rresp with axi_rready by the master     
-	    // when M_AXI_IF.AXI_RVALID is asserted by slave                           
-	    else if (M_AXI_IF.AXI_RVALID) begin                                      
-			if (M_AXI_IF.AXI_RLAST && axi_rready) begin                                  
+	    // when AXI_FULL_IF.AXI_RVALID is asserted by slave                           
+	    else if (AXI_FULL_IF.AXI_RVALID) begin                                      
+			if (AXI_FULL_IF.AXI_RLAST && axi_rready) begin                                  
 	            axi_rready <= 1'b0;                  
 			end                                    
 			else begin                                 
@@ -573,7 +573,7 @@ module axi_full_core#(
 	end                                            
                                                                       
 	//Flag any read response errors                                         
-	assign read_resp_error = axi_rready & M_AXI_IF.AXI_RVALID & M_AXI_IF.AXI_RRESP[1];  
+	assign read_resp_error = axi_rready & AXI_FULL_IF.AXI_RVALID & AXI_FULL_IF.AXI_RRESP[1];  
 
 
 	//----------------------------------
@@ -625,7 +625,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                                                 
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
-		else if (M_AXI_IF.AXI_AWREADY && axi_awvalid) begin
+		else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
 			write_burst_counter <= write_burst_counter + 1'b1;
 		end
 		else if(writes_done)begin                                                                                                  
@@ -639,7 +639,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                                                                 
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
-		else if (M_AXI_IF.AXI_ARREADY && axi_arvalid) begin                                    
+		else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin                                    
 			read_burst_counter <= read_burst_counter + 1'b1;
 		end                                                                                                   
 		else if(reads_done)begin                                                                                                  
@@ -890,10 +890,10 @@ module axi_full_core#(
 				STA_ENCRYPTION_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
-					if(M_AXI_IF.AXI_RVALID && axi_rready) begin
-						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	M_AXI_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
+						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	M_AXI_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_r_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin
@@ -947,8 +947,8 @@ module axi_full_core#(
 				STA_DECRYPTION_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
-					if(M_AXI_IF.AXI_RVALID && axi_rready) begin
-						dec_c_data	[block_is_busy_next]	<=	M_AXI_IF.AXI_RDATA;
+					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
+						dec_c_data	[block_is_busy_next]	<=	AXI_FULL_IF.AXI_RDATA;
 						dec_c_valid	[block_is_busy_next]	<=	1;
 					end
 					else begin
@@ -1001,10 +1001,10 @@ module axi_full_core#(
 				STA_HOMOMORPHIC_ADD_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
-					if(M_AXI_IF.AXI_RVALID && axi_rready) begin
-						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	M_AXI_IF.AXI_RDATA : 0;
+					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
+						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						homo_add_c1_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
-						homo_add_c2			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_IF.AXI_RDATA : 0;
+						homo_add_c2			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						homo_add_c2_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
 					end
 					else begin
@@ -1060,10 +1060,10 @@ module axi_full_core#(
 				STA_SCALAR_MUL_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
-					if(M_AXI_IF.AXI_RVALID && axi_rready) begin
-						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_IF.AXI_RDATA : 0;
+					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
+						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						scalar_mul_c1_valid		[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						scalar_mul_const		[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	M_AXI_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						scalar_mul_const		[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						scalar_mul_const_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin
@@ -1116,7 +1116,7 @@ module axi_full_core#(
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
 		else if (start_single_burst_write)
 			burst_write_active <= 1'b1;
-		else if (M_AXI_IF.AXI_BVALID && axi_bready)
+		else if (AXI_FULL_IF.AXI_BVALID && axi_bready)
 			burst_write_active <= 0;
 	end                                                                                                       
 	 // Check for last write completion.
@@ -1129,7 +1129,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			writes_done <= 1'b0;
 		//The writes_done should be associated with a bready response
-		else if (M_AXI_IF.AXI_BVALID && (write_burst_counter == 1) && axi_bready)
+		else if (AXI_FULL_IF.AXI_BVALID && (write_burst_counter == 1) && axi_bready)
 			writes_done <= 1'b1;
 		else                                                                                                    
 			writes_done <= 0;                                                                           
@@ -1145,7 +1145,7 @@ module axi_full_core#(
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
 		else if (start_single_burst_read)                                                                       
 			burst_read_active <= 1'b1;                                                                            
-		else if (M_AXI_IF.AXI_RVALID && axi_rready && M_AXI_IF.AXI_RLAST)                                                     
+		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && AXI_FULL_IF.AXI_RLAST)                                                     
 			burst_read_active <= 0;                                                                               
 	end                                                                                                     
 
@@ -1160,7 +1160,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			reads_done <= 1'b0;
 		//The reads_done should be associated with a rready response
-		else if (M_AXI_IF.AXI_RVALID && axi_rready && (read_index == `TVIP_AXI_BURST_LEN-1) && (read_burst_counter == 1))
+		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && (read_index == `TVIP_AXI_BURST_LEN-1) && (read_burst_counter == 1))
 			reads_done <= 1'b1;                                                                                   
 		else                                                                                                    
 			reads_done <= 0;                                                                             

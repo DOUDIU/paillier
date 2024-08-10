@@ -12,12 +12,6 @@
 		// The master requires a target slave base address.
     // The master will initiate read and write transactions on the slave with base address specified here as a parameter.
 		parameter  C_M_TARGET_SLAVE_BASE_ADDR	= 32'h40000000,
-		// Width of M_AXI address bus. 
-    // The master generates the read and write addresses of width specified as C_M_AXI_ADDR_WIDTH.
-		parameter integer C_M_AXI_ADDR_WIDTH	= 32,
-		// Width of M_AXI data bus. 
-    // The master issues write data and accept read data where the width of the data bus is C_M_AXI_DATA_WIDTH
-		parameter integer C_M_AXI_DATA_WIDTH	= 32,
 		// Transaction number is the number of write 
     // and read transactions the master will perform as a part of this example memory test.
 		parameter integer C_M_TRANSACTIONS_NUM	= 4
@@ -29,66 +23,14 @@
 
 		// Initiate AXI transactions
 		input wire  INIT_AXI_TXN,
-		// Asserts when ERROR is detected
-		output reg  ERROR,
-		// Asserts when AXI transactions is complete
-		output wire  TXN_DONE,
 		// AXI clock signal
 		input wire  M_AXI_ACLK,
 		// AXI active low reset signal
 		input wire  M_AXI_ARESETN,
-		// Master Interface Write Address Channel ports. Write address (issued by master)
-		output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR,
-		// Write channel Protection type.
-    // This signal indicates the privilege and security level of the transaction,
-    // and whether the transaction is a data access or an instruction access.
-		output wire [2 : 0] M_AXI_AWPROT,
-		// Write address valid. 
-    // This signal indicates that the master signaling valid write address and control information.
-		output wire  M_AXI_AWVALID,
-		// Write address ready. 
-    // This signal indicates that the slave is ready to accept an address and associated control signals.
-		input wire  M_AXI_AWREADY,
-		// Master Interface Write Data Channel ports. Write data (issued by master)
-		output wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA,
-		// Write strobes. 
-    // This signal indicates which byte lanes hold valid data.
-    // There is one write strobe bit for each eight bits of the write data bus.
-		output wire [C_M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB,
-		// Write valid. This signal indicates that valid write data and strobes are available.
-		output wire  M_AXI_WVALID,
-		// Write ready. This signal indicates that the slave can accept the write data.
-		input wire  M_AXI_WREADY,
-		// Master Interface Write Response Channel ports. 
-    // This signal indicates the status of the write transaction.
-		input wire [1 : 0] M_AXI_BRESP,
-		// Write response valid. 
-    // This signal indicates that the channel is signaling a valid write response
-		input wire  M_AXI_BVALID,
-		// Response ready. This signal indicates that the master can accept a write response.
-		output wire  M_AXI_BREADY,
-		// Master Interface Read Address Channel ports. Read address (issued by master)
-		output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR,
-		// Protection type. 
-    // This signal indicates the privilege and security level of the transaction, 
-    // and whether the transaction is a data access or an instruction access.
-		output wire [2 : 0] M_AXI_ARPROT,
-		// Read address valid. 
-    // This signal indicates that the channel is signaling valid read address and control information.
-		output wire  M_AXI_ARVALID,
-		// Read address ready. 
-    // This signal indicates that the slave is ready to accept an address and associated control signals.
-		input wire  M_AXI_ARREADY,
-		// Master Interface Read Data Channel ports. Read data (issued by slave)
-		input wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA,
-		// Read response. This signal indicates the status of the read transfer.
-		input wire [1 : 0] M_AXI_RRESP,
-		// Read valid. This signal indicates that the channel is signaling the required read data.
-		input wire  M_AXI_RVALID,
-		// Read ready. This signal indicates that the master can accept the read data and response information.
-		output wire  M_AXI_RREADY
-	);
 
+		tvip_axi_if AXI_LITE_IF
+	);
+	import  tvip_axi_full_types_pkg::*;
 	// function called clogb2 that returns an integer which has the
 	// value of the ceiling of the log base 2
 
@@ -135,12 +77,12 @@
 	//write response acceptance
 	reg  	axi_bready;
 	//write address
-	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;
 	//write data
-	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
-	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata_buf;
+	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	axi_wdata;
+	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	axi_wdata_buf;
 	//read addresss
-	reg [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
+	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_araddr;
 	//Asserts when there is a write response error
 	wire  	write_resp_error;
 	//Asserts when there is a read response error
@@ -164,7 +106,7 @@
 	//index counter to track the number of read transaction issued
 	reg [TRANS_NUM_BITS : 0] 	read_index;
 	//Expected read data used to compare with the read data.
-	reg [C_M_AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
+	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	expected_rdata;
 	//Flag marks the completion of comparison of the read data with the expected read data
 	reg  	compare_done;
 	//This flag is asserted when there is a mismatch of the read data with the expected read data.
@@ -182,26 +124,26 @@
 	// I/O Connections assignments
 
 	//Adding the offset address to the base addr of the slave
-	assign M_AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr;
+	assign AXI_LITE_IF.AXI_AWADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_awaddr;
 	//AXI 4 write data
-	// assign M_AXI_WDATA	= axi_wdata;
-	assign M_AXI_WDATA	= (PAILLIER_MODE << 1) | axi_wdata_buf;
-	assign M_AXI_AWPROT	= 3'b000;
-	assign M_AXI_AWVALID	= axi_awvalid;
+	// assign AXI_LITE_IF.AXI_WDATA	= axi_wdata;
+	assign AXI_LITE_IF.AXI_WDATA	= (PAILLIER_MODE << 1) | axi_wdata_buf;
+	assign AXI_LITE_IF.AXI_AWPROT	= 3'b000;
+	assign AXI_LITE_IF.AXI_AWVALID	= axi_awvalid;
 	//Write Data(W)
-	assign M_AXI_WVALID	= axi_wvalid;
+	assign AXI_LITE_IF.AXI_WVALID	= axi_wvalid;
 	//Set all byte strobes in this example
-	assign M_AXI_WSTRB	= 4'b1111;
+	assign AXI_LITE_IF.AXI_WSTRB	= 4'b1111;
 	//Write Response (B)
-	assign M_AXI_BREADY	= axi_bready;
+	assign AXI_LITE_IF.AXI_BREADY	= axi_bready;
 	//Read Address (AR)
-	assign M_AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_araddr;
-	assign M_AXI_ARVALID	= axi_arvalid;
-	assign M_AXI_ARPROT	= 3'b001;
+	assign AXI_LITE_IF.AXI_ARADDR	= C_M_TARGET_SLAVE_BASE_ADDR + axi_araddr;
+	assign AXI_LITE_IF.AXI_ARVALID	= axi_arvalid;
+	assign AXI_LITE_IF.AXI_ARPROT	= 3'b001;
 	//Read and Read Response (R)
-	assign M_AXI_RREADY	= axi_rready;
+	assign AXI_LITE_IF.AXI_RREADY	= axi_rready;
 	//Example design I/O
-	assign TXN_DONE	= compare_done;
+	// assign TXN_DONE	= compare_done;
 	assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 
@@ -261,8 +203,8 @@
 	          begin                                                                
 	            axi_awvalid <= 1'b1;                                               
 	          end                                                                  
-	     //Address accepted by interconnect/slave (issue of M_AXI_AWREADY by slave)
-	        else if (M_AXI_AWREADY && axi_awvalid)                                 
+	     //Address accepted by interconnect/slave (issue of AXI_LITE_IF.AXI_AWREADY by slave)
+	        else if (AXI_LITE_IF.AXI_AWREADY && axi_awvalid)                                 
 	          begin                                                                
 	            axi_awvalid <= 1'b0;                                               
 	          end                                                                  
@@ -283,7 +225,7 @@
 		else if (start_single_write) begin
 			write_index <= write_index + 1;
 		end
-		else if (M_AXI_BVALID && axi_bready) begin
+		else if (AXI_LITE_IF.AXI_BVALID && axi_bready) begin
 			write_index <= 0;
 		end
 	end
@@ -308,8 +250,8 @@
 	       begin                                                                     
 	         axi_wvalid <= 1'b1;                                                     
 	       end                                                                       
-	     //Data accepted by interconnect/slave (issue of M_AXI_WREADY by slave)      
-	     else if (M_AXI_WREADY && axi_wvalid)                                        
+	     //Data accepted by interconnect/slave (issue of AXI_LITE_IF.AXI_WREADY by slave)      
+	     else if (AXI_LITE_IF.AXI_WREADY && axi_wvalid)                                        
 	       begin                                                                     
 	        axi_wvalid <= 1'b0;                                                      
 	       end                                                                       
@@ -338,8 +280,8 @@
 	        axi_bready <= 1'b0;                                            
 	      end                                                              
 	    // accept/acknowledge bresp with axi_bready by the master          
-	    // when M_AXI_BVALID is asserted by slave                          
-	    else if (M_AXI_BVALID && ~axi_bready)                              
+	    // when AXI_LITE_IF.AXI_BVALID is asserted by slave                          
+	    else if (AXI_LITE_IF.AXI_BVALID && ~axi_bready)                              
 	      begin                                                            
 	        axi_bready <= 1'b1;                                            
 	      end                                                              
@@ -354,7 +296,7 @@
 	  end                                                                  
 	                                                                       
 	//Flag write errors                                                    
-	assign write_resp_error = (axi_bready & M_AXI_BVALID & M_AXI_BRESP[1]);
+	assign write_resp_error = (axi_bready & AXI_LITE_IF.AXI_BVALID & AXI_LITE_IF.AXI_BRESP[1]);
 
 
 	//----------------------------
@@ -392,8 +334,8 @@
 	      begin                                                                        
 	        axi_arvalid <= 1'b1;                                                       
 	      end                                                                          
-	    //RAddress accepted by interconnect/slave (issue of M_AXI_ARREADY by slave)    
-	    else if (M_AXI_ARREADY && axi_arvalid)                                         
+	    //RAddress accepted by interconnect/slave (issue of AXI_LITE_IF.AXI_ARREADY by slave)    
+	    else if (AXI_LITE_IF.AXI_ARREADY && axi_arvalid)                                         
 	      begin                                                                        
 	        axi_arvalid <= 1'b0;                                                       
 	      end                                                                          
@@ -418,8 +360,8 @@
 	        axi_rready <= 1'b0;                                             
 	      end                                                               
 	    // accept/acknowledge rdata/rresp with axi_rready by the master     
-	    // when M_AXI_RVALID is asserted by slave                           
-	    else if (M_AXI_RVALID && ~axi_rready)                               
+	    // when AXI_LITE_IF.AXI_RVALID is asserted by slave                           
+	    else if (AXI_LITE_IF.AXI_RVALID && ~axi_rready)                               
 	      begin                                                             
 	        axi_rready <= 1'b1;                                             
 	      end                                                               
@@ -432,7 +374,7 @@
 	  end                                                                   
 	                                                                        
 	//Flag write errors                                                     
-	assign read_resp_error = (axi_rready & M_AXI_RVALID & M_AXI_RRESP[1]);  
+	assign read_resp_error = (axi_rready & AXI_LITE_IF.AXI_RVALID & AXI_LITE_IF.AXI_RRESP[1]);  
 
 
 	//--------------------------------
@@ -452,7 +394,7 @@
 		end
 		// Signals a new write address/ write data is
 		// available by user logic
-		else if (M_AXI_AWREADY && axi_awvalid) begin
+		else if (AXI_LITE_IF.AXI_AWREADY && axi_awvalid) begin
 			// axi_awaddr <= axi_awaddr + 32'h00000004;
 			axi_awaddr <= 0;
 		end
@@ -465,7 +407,7 @@
 	// 	end
 	// 	// Signals a new write address/ write data is
 	// 	// available by user logic
-	// 	else if (M_AXI_WREADY && axi_wvalid) begin
+	// 	else if (AXI_LITE_IF.AXI_WREADY && axi_wvalid) begin
 	// 		// axi_wdata <= C_M_START_DATA_VALUE + write_index;
 	// 		axi_wdata <= (C_M_START_DATA_VALUE & (~1)) | axi_wdata_buf;
 	// 	end
@@ -478,7 +420,7 @@
 		end
 		// Signals a new write address/ write data is
 		// available by user logic
-		else if (M_AXI_ARREADY && axi_arvalid) begin
+		else if (AXI_LITE_IF.AXI_ARREADY && axi_arvalid) begin
 			axi_araddr <= axi_araddr + 32'h00000004;
 		end
 	end
@@ -491,7 +433,7 @@
 			end                                                   
 			// Signals a new write address/ write data is         
 			// available by user logic                            
-			else if (M_AXI_RVALID && axi_rready) begin                                                 
+			else if (AXI_LITE_IF.AXI_RVALID && axi_rready) begin                                                 
 				expected_rdata <= C_M_START_DATA_VALUE + read_index;
 			end                                                   
 		end
@@ -507,7 +449,7 @@
 				start_single_read  <= 1'b0;                                                 
 				read_issued   <= 1'b0;                                                      
 				compare_done  <= 1'b0;                                                      
-				ERROR <= 1'b0;
+				// ERROR <= 1'b0;
 				axi_wdata_buf	<=	0;
 			end                                                                           
 			else begin                                                                         
@@ -520,7 +462,7 @@
 						if ( init_txn_pulse == 1'b1 ) begin
 							mst_exec_state  <= INIT_WRITE_START;
 							axi_wdata_buf 	<= 1;
-							ERROR <= 1'b0;
+							// ERROR <= 1'b0;
 							compare_done <= 1'b0;
 						end
 						else begin
@@ -539,7 +481,7 @@
 						end
 						else begin
 							mst_exec_state  <= INIT_WRITE_START;
-							if (~axi_awvalid && ~axi_wvalid && ~M_AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
+							if (~axi_awvalid && ~axi_wvalid && ~AXI_LITE_IF.AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
 								start_single_write <= 1'b1;
 								write_issued  <= 1'b1;
 							end
@@ -562,7 +504,7 @@
 						end
 						else begin
 							mst_exec_state  <= INIT_WRITE_END;
-							if (~axi_awvalid && ~axi_wvalid && ~M_AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
+							if (~axi_awvalid && ~axi_wvalid && ~AXI_LITE_IF.AXI_BVALID && ~last_write && ~start_single_write && ~write_issued) begin
 								start_single_write <= 1'b1;
 								write_issued  <= 1'b1;
 							end
@@ -586,7 +528,7 @@
 						else begin                                                                
 							mst_exec_state  <= INIT_READ;                                      
 																								
-							if (~axi_arvalid && ~M_AXI_RVALID && ~last_read && ~start_single_read && ~read_issued) begin                                                            
+							if (~axi_arvalid && ~AXI_LITE_IF.AXI_RVALID && ~last_read && ~start_single_read && ~read_issued) begin                                                            
 								start_single_read <= 1'b1;                                     
 								read_issued  <= 1'b1;                                          
 							end                                                              
@@ -603,7 +545,7 @@
 						// This state is responsible to issue the state of comparison          
 						// of written data with the read data. If no error flags are set,      
 						// compare_done signal will be asseted to indicate success.            
-						ERROR <= error_reg; 
+						// ERROR <= error_reg; 
 						mst_exec_state <= IDLE;                                    
 						compare_done <= 1'b1;                                              
 					end
@@ -623,10 +565,10 @@
 			last_write <= 1'b0;
 		end
 		//The last write should be associated with a write address ready response       
-		else if ((write_index == C_M_TRANSACTIONS_NUM) && M_AXI_AWREADY) begin
+		else if ((write_index == C_M_TRANSACTIONS_NUM) && AXI_LITE_IF.AXI_AWREADY) begin
 			last_write <= 1'b1;
 		end
-		else if (M_AXI_BVALID && axi_bready) begin
+		else if (AXI_LITE_IF.AXI_BVALID && axi_bready) begin
 			last_write <= 1'b0;
 		end
 	end                                                                               
@@ -641,7 +583,7 @@
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                         
 			writes_done <= 1'b0;
 		//The writes_done should be associated with a bready response                 
-		else if (last_write && M_AXI_BVALID && axi_bready)                              
+		else if (last_write && AXI_LITE_IF.AXI_BVALID && axi_bready)                              
 			writes_done <= 1'b1;                                                          
 		else                                                                            
 			writes_done <= 1'b0;                                                   
@@ -659,7 +601,7 @@
 	      last_read <= 1'b0;                                                            
 	                                                                                    
 	    //The last read should be associated with a read address ready response         
-	    else if ((read_index == C_M_TRANSACTIONS_NUM) && (M_AXI_ARREADY) )              
+	    else if ((read_index == C_M_TRANSACTIONS_NUM) && (AXI_LITE_IF.AXI_ARREADY) )              
 	      last_read <= 1'b1;                                                            
 	    else                                                                            
 	      last_read <= last_read;                                                       
@@ -677,7 +619,7 @@
 	      reads_done <= 1'b0;                                                           
 	                                                                                    
 	    //The reads_done should be associated with a read ready response                
-	    else if (last_read && M_AXI_RVALID && axi_rready)                               
+	    else if (last_read && AXI_LITE_IF.AXI_RVALID && axi_rready)                               
 	      reads_done <= 1'b1;                                                           
 	    else                                                                            
 	      reads_done <= reads_done;                                                     
@@ -694,7 +636,7 @@
 	    read_mismatch <= 1'b0;                                                          
 	                                                                                    
 	    //The read data when available (on axi_rready) is compared with the expected data
-	    else if ((M_AXI_RVALID && axi_rready) && (M_AXI_RDATA != expected_rdata))         
+	    else if ((AXI_LITE_IF.AXI_RVALID && axi_rready) && (AXI_LITE_IF.AXI_RDATA != expected_rdata))         
 	      read_mismatch <= 1'b1;                                                        
 	    else                                                                            
 	      read_mismatch <= read_mismatch;                                               

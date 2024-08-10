@@ -2,36 +2,10 @@
 
 module paillier_axi_top_tb();
 
-//AXI-LITE  parameter definition
-    parameter integer C_S_AXI_DATA_WIDTH	= 32    ;
-    parameter integer C_S_AXI_ADDR_WIDTH	= 4     ;
-
-//AXI-LITE interface
-    reg                                     M_AXI_ACLK              ;
-    reg                                     M_AXI_ARESETN           ;
-    wire                                    S_LITE_AXI_ACLK         ;
-    wire                                    S_LITE_AXI_ARESETN      ;
-
-    wire [C_S_AXI_ADDR_WIDTH-1 : 0]         S_LITE_AXI_AWADDR       ;
-    wire [2 : 0]                            S_LITE_AXI_AWPROT       ;
-    wire                                    S_LITE_AXI_AWVALID      ;
-    wire                                    S_LITE_AXI_AWREADY      ;
-    wire [C_S_AXI_DATA_WIDTH-1 : 0]         S_LITE_AXI_WDATA        ;
-    wire [(C_S_AXI_DATA_WIDTH/8)-1 : 0]     S_LITE_AXI_WSTRB        ;
-    wire                                    S_LITE_AXI_WVALID       ;
-    wire                                    S_LITE_AXI_WREADY       ;
-    wire [1 : 0]                            S_LITE_AXI_BRESP        ;
-    wire                                    S_LITE_AXI_BVALID       ;
-    wire                                    S_LITE_AXI_BREADY       ;
-    wire [C_S_AXI_ADDR_WIDTH-1 : 0]         S_LITE_AXI_ARADDR       ;
-    wire [2 : 0]                            S_LITE_AXI_ARPROT       ;
-    wire                                    S_LITE_AXI_ARVALID      ;
-    wire                                    S_LITE_AXI_ARREADY      ;
-    wire [C_S_AXI_DATA_WIDTH-1 : 0]         S_LITE_AXI_RDATA        ;
-    wire [1 : 0]                            S_LITE_AXI_RRESP        ;
-    wire                                    S_LITE_AXI_RVALID       ;
-    wire                                    S_LITE_AXI_RREADY       ;
-
+reg                                     M_AXI_ACLK              ;
+reg                                     M_AXI_ARESETN           ;
+wire                                    S_LITE_AXI_ACLK         ;
+wire                                    S_LITE_AXI_ARESETN      ;
 
 localparam _DATA_WIDTH_ = 32;
 localparam _PERIOD_ = 5;
@@ -71,8 +45,8 @@ parameter   PAILLIER_MODE           = STA_ENCRYPTION;
 parameter   BLOCK_COUNT             = 1;
 parameter   TEST_TIMES              = 1;
 
-tvip_axi_if AXI_IF (M_AXI_ACLK, M_AXI_ARESETN);
-
+tvip_axi_if AXI_FULL_IF(M_AXI_ACLK, M_AXI_ARESETN);
+tvip_axi_if AXI_LITE_IF(S_LITE_AXI_ACLK, S_LITE_AXI_ARESETN);
 
 //To speed up the simulation, the parameter of the Montgomery module is all configured as "COMMON". The final outcome is as identical as others.
 paillier_axi_top#(
@@ -95,42 +69,19 @@ paillier_axi_top#(
         // Base address of targeted slave
 	,   .C_M_TARGET_SLAVE_BASE_RD_ADDR  (64'h0_0000_0000)
 	,   .C_M_TARGET_SLAVE_BASE_WR_ADDR  (64'h0_0000_0000)
-//----------------------------------------------------
-// parameter of AXI-LITE slave port
-		// Width of S_AXI data bus
-	,   .C_S_AXI_DATA_WIDTH	            ( C_S_AXI_DATA_WIDTH )
-		// Width of S_AXI address bus
-	,	.C_S_AXI_ADDR_WIDTH             ( C_S_AXI_ADDR_WIDTH )
 )paillier_axi_top_inst(
 //----------------------------------------------------
 // AXI-FULL master port
-        .M_AXI_ACLK             (M_AXI_ACLK     	)
-    ,   .M_AXI_ARESETN          (M_AXI_ARESETN  	)
+        .M_AXI_ACLK             (M_AXI_ACLK         )
+    ,   .M_AXI_ARESETN          (M_AXI_ARESETN      )
 
-    ,   .M_AXI_IF               (AXI_IF       	    )
+    ,   .AXI_FULL_IF            (AXI_FULL_IF        )
 //----------------------------------------------------
 // AXI-LITE slave port
     ,   .S_AXI_ACLK             (S_LITE_AXI_ACLK    )
     ,   .S_AXI_ARESETN          (S_LITE_AXI_ARESETN )
-    ,   .S_AXI_AWADDR           (S_LITE_AXI_AWADDR  )
-    ,   .S_AXI_AWPROT           (S_LITE_AXI_AWPROT  )
-    ,   .S_AXI_AWVALID          (S_LITE_AXI_AWVALID )
-    ,   .S_AXI_AWREADY          (S_LITE_AXI_AWREADY )
-    ,   .S_AXI_WDATA            (S_LITE_AXI_WDATA   )
-    ,   .S_AXI_WSTRB            (S_LITE_AXI_WSTRB   )
-    ,   .S_AXI_WVALID           (S_LITE_AXI_WVALID  )
-    ,   .S_AXI_WREADY           (S_LITE_AXI_WREADY  )
-    ,   .S_AXI_BRESP            (S_LITE_AXI_BRESP   )
-    ,   .S_AXI_BVALID           (S_LITE_AXI_BVALID  )
-    ,   .S_AXI_BREADY           (S_LITE_AXI_BREADY  )
-    ,   .S_AXI_ARADDR           (S_LITE_AXI_ARADDR  )
-    ,   .S_AXI_ARPROT           (S_LITE_AXI_ARPROT  )
-    ,   .S_AXI_ARVALID          (S_LITE_AXI_ARVALID )
-    ,   .S_AXI_ARREADY          (S_LITE_AXI_ARREADY )
-    ,   .S_AXI_RDATA            (S_LITE_AXI_RDATA   )
-    ,   .S_AXI_RRESP            (S_LITE_AXI_RRESP   )
-    ,   .S_AXI_RVALID           (S_LITE_AXI_RVALID  )
-    ,   .S_AXI_RREADY           (S_LITE_AXI_RREADY  )
+
+    ,   .AXI_LITE_IF            (AXI_LITE_IF        )
 );
 
 //Virtual AXI-FULL MEMORY 
@@ -138,10 +89,10 @@ Virtual_Axi_Full_Memory # (
         .PAILLIER_MODE          (PAILLIER_MODE      )
     ,   .TEST_TIMES             (TEST_TIMES         )
 )Virtual_Axi_Full_Memory_Inst (
-		.S_AXI_ACLK         	(M_AXI_ACLK     	)
-	,   .S_AXI_ARESETN      	(M_AXI_ARESETN  	)
+		.S_AXI_ACLK         	(M_AXI_ACLK         )
+	,   .S_AXI_ARESETN      	(M_AXI_ARESETN      )
 
-    ,   .S_AXI_IF           	(AXI_IF       	    )
+    ,   .AXI_FULL_IF           	(AXI_FULL_IF        )
 );
 
 
@@ -149,34 +100,14 @@ Virtual_Axi_Lite_Stimulation #(
         .PAILLIER_MODE              (PAILLIER_MODE          )
     ,   .C_M_START_DATA_VALUE       ()
     ,   .C_M_TARGET_SLAVE_BASE_ADDR (32'h00000000           )
-    ,   .C_M_AXI_ADDR_WIDTH         (C_S_AXI_ADDR_WIDTH     )
-    ,   .C_M_AXI_DATA_WIDTH         (C_S_AXI_DATA_WIDTH     )
     ,   .C_M_TRANSACTIONS_NUM       (1)
 )Virtual_Axi_Lite_Stimulation_inst(
         .INIT_AXI_TXN               (INIT_AXI_TXN           )
-    ,   .ERROR                      ()
-    ,   .TXN_DONE                   ()
+
     ,   .M_AXI_ACLK                 (S_LITE_AXI_ACLK        )
     ,   .M_AXI_ARESETN              (S_LITE_AXI_ARESETN     )
-    ,   .M_AXI_AWADDR               (S_LITE_AXI_AWADDR      )
-    ,   .M_AXI_AWPROT               (S_LITE_AXI_AWPROT      )
-    ,   .M_AXI_AWVALID              (S_LITE_AXI_AWVALID     )
-    ,   .M_AXI_AWREADY              (S_LITE_AXI_AWREADY     )
-    ,   .M_AXI_WDATA                (S_LITE_AXI_WDATA       )
-    ,   .M_AXI_WSTRB                (S_LITE_AXI_WSTRB       )
-    ,   .M_AXI_WVALID               (S_LITE_AXI_WVALID      )
-    ,   .M_AXI_WREADY               (S_LITE_AXI_WREADY      )
-    ,   .M_AXI_BRESP                (S_LITE_AXI_BRESP       )
-    ,   .M_AXI_BVALID               (S_LITE_AXI_BVALID      )
-    ,   .M_AXI_BREADY               (S_LITE_AXI_BREADY      )
-    ,   .M_AXI_ARADDR               (S_LITE_AXI_ARADDR      )
-    ,   .M_AXI_ARPROT               (S_LITE_AXI_ARPROT      )
-    ,   .M_AXI_ARVALID              (S_LITE_AXI_ARVALID     )
-    ,   .M_AXI_ARREADY              (S_LITE_AXI_ARREADY     )
-    ,   .M_AXI_RDATA                (S_LITE_AXI_RDATA       )
-    ,   .M_AXI_RRESP                (S_LITE_AXI_RRESP       )
-    ,   .M_AXI_RVALID               (S_LITE_AXI_RVALID      )
-    ,   .M_AXI_RREADY               (S_LITE_AXI_RREADY      )
+    
+    ,   .AXI_LITE_IF                (AXI_LITE_IF            )
 );
 
 

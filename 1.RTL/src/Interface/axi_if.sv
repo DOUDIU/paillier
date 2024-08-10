@@ -1,11 +1,11 @@
-`ifndef AXI_FULL_IF_SV
-`define AXI_FULL_IF_SV
+`ifndef AXI_IF_SV
+`define AXI_IF_SV
     interface tvip_axi_if (
         input var AXI_ACLK,
         input var AXI_ARESETN
     );
 
-    import  tvip_axi_full_types_pkg::*;
+    import  tvip_axi_types_pkg::*;
 
     //  Write Address Channel
     logic                 AXI_AWVALID   ;

@@ -27,8 +27,8 @@ module axi_full_core#(
 	,	parameter TEST_TIMES 	=	100000
 
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_RD_ADDR	= 0
-	,   parameter  C_M_TARGET_WR_ADDR	= 0
+	,   parameter  TARGET_RD_ADDR	= 0
+	,   parameter  TARGET_WR_ADDR	= 0
 )(
 //----------------------------------------------------
 // AXI-FULL master port
@@ -75,7 +75,7 @@ module axi_full_core#(
     ,	input			[K-1:0]       	rd_dout                 	[0 : BLOCK_COUNT - 1]
     ,	input			[$clog2(N):0] 	rd_cnt                  	[0 : BLOCK_COUNT - 1]
 );
-	import  tvip_axi_full_types_pkg::*;
+	import  tvip_axi_types_pkg::*;
 	integer		i,j,k;
 	genvar		o,p,q;
 
@@ -217,7 +217,7 @@ module axi_full_core#(
 	//I/O Connections. Write Address (AW)
 	assign AXI_FULL_IF.AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign AXI_FULL_IF.AXI_AWADDR	= C_M_TARGET_WR_ADDR + axi_awaddr;
+	assign AXI_FULL_IF.AXI_AWADDR	= TARGET_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign AXI_FULL_IF.AXI_AWLEN	= `TVIP_AXI_BURST_LEN - 1;
 	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
@@ -242,7 +242,7 @@ module axi_full_core#(
 	assign AXI_FULL_IF.AXI_BREADY	= axi_bready;
 	//Read Address (AR)
 	assign AXI_FULL_IF.AXI_ARID	= 'b0;
-	assign AXI_FULL_IF.AXI_ARADDR	= C_M_TARGET_RD_ADDR + axi_araddr;
+	assign AXI_FULL_IF.AXI_ARADDR	= TARGET_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
 	assign AXI_FULL_IF.AXI_ARLEN	= `TVIP_AXI_BURST_LEN - 1;
 	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used

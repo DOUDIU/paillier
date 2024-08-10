@@ -17,8 +17,8 @@ module paillier_axi_top#(
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave
-	,   parameter  C_M_TARGET_RD_ADDR = 64'h0_0000_0000
-	,   parameter  C_M_TARGET_WR_ADDR = 64'h1_0000_0000
+	,   parameter  TARGET_RD_ADDR   = 64'h0_0000_0000
+	,   parameter  TARGET_WR_ADDR   = 64'h1_0000_0000
 )(
 //----------------------------------------------------
 // AXI-LITE slave port
@@ -88,8 +88,8 @@ axi_full_core #(
 
     //----------------------------------------------------
     // AXI-FULL parameters
-	,   .C_M_TARGET_WR_ADDR     (C_M_TARGET_WR_ADDR     )
-	,   .C_M_TARGET_RD_ADDR     (C_M_TARGET_RD_ADDR     )
+	,   .TARGET_WR_ADDR         (TARGET_WR_ADDR         )
+	,   .TARGET_RD_ADDR         (TARGET_RD_ADDR         )
 )u_axi_full_core(
 //----------------------------------------------------
 // paillier control interface

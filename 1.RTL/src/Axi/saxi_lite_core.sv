@@ -15,7 +15,7 @@
 
 		tvip_axi_if		AXI_LITE_IF
 	);
-	import  tvip_axi_full_types_pkg::*;
+	import  tvip_axi_types_pkg::*;
 
 	// AXI4LITE signals
 	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;

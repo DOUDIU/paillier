@@ -1,7 +1,7 @@
-`ifndef AXI_FULL_TYPES_PKG_SV
-`define AXI_FULL_TYPES_PKG_SV
-package tvip_axi_full_types_pkg;
-    `include  "axi_full_defines.svh"
+`ifndef AXI_TYPES_PKG_SV
+`define AXI_TYPES_PKG_SV
+package tvip_axi_types_pkg;
+    `include  "axi_defines.svh"
 
     typedef logic [`TVIP_AXI_MAX_ID_WIDTH-1:0]      tvip_axi_id;
     typedef logic [`TVIP_AXI_MAX_ADDRESS_WIDTH-1:0] tvip_axi_address;

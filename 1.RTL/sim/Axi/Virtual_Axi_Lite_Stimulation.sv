@@ -30,7 +30,7 @@
 
 		tvip_axi_if AXI_LITE_IF
 	);
-	import  tvip_axi_full_types_pkg::*;
+	import  tvip_axi_types_pkg::*;
 	// function called clogb2 that returns an integer which has the
 	// value of the ceiling of the log base 2
 

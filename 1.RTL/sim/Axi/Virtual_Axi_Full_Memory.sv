@@ -19,7 +19,7 @@
 
 		tvip_axi_if         AXI_FULL_IF
 	);
-	import  tvip_axi_full_types_pkg::*;
+	import  tvip_axi_types_pkg::*;
 
 	// AXI4FULL signals
 	reg [`TVIP_AXI_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;

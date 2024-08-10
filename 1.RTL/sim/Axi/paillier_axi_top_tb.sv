@@ -2,21 +2,13 @@
 
 module paillier_axi_top_tb();
 
-//AXI-FULL parameter definition
-    parameter integer AXI_ID_WIDTH	        = 1     ;
-    parameter integer AXI_DATA_WIDTH	    = 128   ;
-    parameter integer AXI_ADDR_WIDTH	    = 36    ;
-    parameter integer AXI_AWUSER_WIDTH	    = 0     ;
-    parameter integer AXI_ARUSER_WIDTH	    = 0     ;
-    parameter integer AXI_WUSER_WIDTH	    = 0     ;
-    parameter integer AXI_RUSER_WIDTH	    = 0     ;
-    parameter integer AXI_BUSER_WIDTH	    = 0     ;
-
 //AXI-LITE  parameter definition
     parameter integer C_S_AXI_DATA_WIDTH	= 32    ;
     parameter integer C_S_AXI_ADDR_WIDTH	= 4     ;
 
 //AXI-LITE interface
+    reg                                     M_AXI_ACLK              ;
+    reg                                     M_AXI_ARESETN           ;
     wire                                    S_LITE_AXI_ACLK         ;
     wire                                    S_LITE_AXI_ARESETN      ;
 
@@ -40,58 +32,6 @@ module paillier_axi_top_tb();
     wire                                    S_LITE_AXI_RVALID       ;
     wire                                    S_LITE_AXI_RREADY       ;
 
-//AXI-FULL interface
-    reg                                     M_AXI_ACLK      ;
-    reg                                     M_AXI_ARESETN   ;
-
-    wire [AXI_ID_WIDTH-1 : 0]               M_AXI_AWID      ;
-    wire [AXI_ADDR_WIDTH-1 : 0]             M_AXI_AWADDR    ;
-    wire [7 : 0]                            M_AXI_AWLEN     ;
-    wire [2 : 0]                            M_AXI_AWSIZE    ;
-    wire [1 : 0]                            M_AXI_AWBURST   ;
-    wire                                    M_AXI_AWLOCK    ;
-    wire [3 : 0]                            M_AXI_AWCACHE   ;
-    wire [2 : 0]                            M_AXI_AWPROT    ;
-    wire [3 : 0]                            M_AXI_AWQOS     ;
-    wire [3 : 0]                            S_AXI_AWREGION  ;
-    wire [AXI_AWUSER_WIDTH-1 : 0]           M_AXI_AWUSER    ;
-    wire                                    M_AXI_AWVALID   ;
-    wire                                    M_AXI_AWREADY   ;
-
-    wire [AXI_DATA_WIDTH-1 : 0]             M_AXI_WDATA     ;
-    wire [(AXI_DATA_WIDTH/8)-1 : 0]         M_AXI_WSTRB     ;
-    wire                                    M_AXI_WLAST     ;
-    wire [AXI_WUSER_WIDTH-1 : 0]            M_AXI_WUSER     ;
-    wire                                    M_AXI_WVALID    ;
-    wire                                    M_AXI_WREADY    ;
-
-    wire [AXI_ID_WIDTH-1 : 0]               M_AXI_BID       ;
-    wire [1 : 0]                            M_AXI_BRESP     ;
-    wire [AXI_BUSER_WIDTH-1 : 0]            M_AXI_BUSER     ;
-    wire                                    M_AXI_BVALID    ;
-    wire                                    M_AXI_BREADY    ;
-
-    wire [AXI_ID_WIDTH-1 : 0]               M_AXI_ARID      ;
-    wire [AXI_ADDR_WIDTH-1 : 0]             M_AXI_ARADDR    ;
-    wire [7 : 0]                            M_AXI_ARLEN     ;
-    wire [2 : 0]                            M_AXI_ARSIZE    ;
-    wire [1 : 0]                            M_AXI_ARBURST   ;
-    wire                                    M_AXI_ARLOCK    ;
-    wire [3 : 0]                            M_AXI_ARCACHE   ;
-    wire [2 : 0]                            M_AXI_ARPROT    ;
-    wire [3 : 0]                            M_AXI_ARQOS     ;
-    wire [3 : 0]                            S_AXI_ARREGION  ;
-    wire [AXI_ARUSER_WIDTH-1 : 0]           M_AXI_ARUSER    ;
-    wire                                    M_AXI_ARVALID   ;
-    wire                                    M_AXI_ARREADY   ;
-
-    wire [AXI_ID_WIDTH-1 : 0]               M_AXI_RID       ;
-    wire [AXI_DATA_WIDTH-1 : 0]             M_AXI_RDATA     ;
-    wire [1 : 0]                            M_AXI_RRESP     ;
-    wire                                    M_AXI_RLAST     ;
-    wire [AXI_RUSER_WIDTH-1 : 0]            M_AXI_RUSER     ;
-    wire                                    M_AXI_RVALID    ;
-    wire                                    M_AXI_RREADY    ;
 
 localparam _DATA_WIDTH_ = 32;
 localparam _PERIOD_ = 5;

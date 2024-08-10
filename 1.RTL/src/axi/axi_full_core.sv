@@ -75,7 +75,7 @@ module axi_full_core#(
     ,	input			[K-1:0]       	rd_dout                 	[0 : BLOCK_COUNT - 1]
     ,	input			[$clog2(N):0] 	rd_cnt                  	[0 : BLOCK_COUNT - 1]
 );
-	import  tvip_axi_types_pkg::*;
+	import  tvip_axi_full_types_pkg::*;
 	integer		i,j,k;
 	genvar		o,p,q;
 

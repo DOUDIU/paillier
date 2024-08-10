@@ -1,5 +1,5 @@
-`ifndef AXI_DEFINES_SVH
-`define AXI_DEFINES_SVH
+`ifndef AXI_LITE_DEFINES_SVH
+`define AXI_LITE_DEFINES_SVH
 
     `ifndef TVIP_AXI_MAX_ID_WIDTH
         `define TVIP_AXI_MAX_ID_WIDTH 32

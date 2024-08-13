@@ -139,7 +139,7 @@ adder_128  #(Block)
 
         
 endmodule
-/*
+
 module adder_128u#(
     parameter   WIDTH=128
 )(
@@ -181,42 +181,46 @@ module adder_128u#(
      end   
                
 endmodule
-*/
 module adder_128#(
     parameter   WIDTH=128
 )(
-    input                           clk,
-    input                           rst_n,
-    input  signed   [WIDTH+1:0]     add_a,
-    input  signed   [WIDTH+1:0]     add_b,
-    input                           cin,
-    input                           vld_in,
-    input                           mode,
-    output reg      [WIDTH+2:0]     sum,
-    output reg                      vld_out
-);
+            input                   clk,
+            input                   rst_n,
+            input  signed [WIDTH+1:0]       add_a,
+            input  signed [WIDTH+1:0]       add_b,
+            input                   cin,
+            input                   vld_in,
+            input                   mode,
+            output reg  [WIDTH+2:0]       sum,
+            output reg                 vld_out
+        );
         
         
-    always@(posedge clk or negedge rst_n)begin
+     always@(posedge clk or negedge rst_n)begin
         if(!rst_n)begin
             sum<=0;
             vld_out<=0;
         end
-    else if(vld_in)begin
-            case(mode)
-                1:begin
-                    sum         <=  add_a+add_b+cin;
-                    vld_out     <=  1;
-                end
-                0:begin
-                    sum         <=  add_a-add_b-cin;
-                    vld_out     <=  1;
-                end
-            endcase
+        else if(vld_in)begin
+            vld_out     <=1;
+            if(mode)    
+                sum <=    add_a+add_b+cin;
+            else        
+                sum <=    add_a-add_b-cin;
+//            case(mode)
+//                1:begin
+//                    sum <=    add_a+add_b+cin;
+//                    vld_out     <=1;
+//                end
+//                0:begin
+//                    sum <=    add_a-add_b-cin;
+//                    vld_out     <=1;
+//                end
+//            endcase
         end
         else begin
             vld_out     <=0;
         end
-    end   
-
+     end   
+               
 endmodule

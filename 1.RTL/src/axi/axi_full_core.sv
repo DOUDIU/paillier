@@ -79,51 +79,55 @@ module axi_full_core#(
 	integer		i,j,k;
 	genvar		o,p,q;
 
+	typedef enum logic [1:0]{
+		PAILLIER_ENCRYPTION         ,
+		PAILLIER_DECRYPTION         ,
+		PAILLIER_HOMOMORPHIC_ADD    ,
+		PAILLIER_SCALAR_MUL         
+	}PAILLIER_MODE;
+
 	// Add user definition here
 	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter;// tha max value = TEST_TIMES * 4
-	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter_d1;// tha max value = TEST_TIMES * 4
 
 	reg		[BLOCK_COUNT - 1 : 0]			block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	block_is_busy_next;
 	reg		[`TVIP_AXI_MAX_ADDRESS_WIDTH-1	 : 0]	block_target_addr	[0:BLOCK_COUNT-1];
-	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
-	wire									all_block_is_busy;
+	reg 	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
+	reg 									all_block_is_busy;
 
-	reg 	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
+	wire 	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
 	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_is_busy_next;
-	wire									all_fifo_is_empty;
-	wire	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
-
+	reg 									all_fifo_is_empty;
+	reg 	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
 
 	reg		[1 : 0]							single_task_read_cnt;
 
-	always @(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 		if (M_AXI_ARESETN == 0) begin
-			loop_counter_d1 <= 0;
+			block_lowest_zero_bit 	<=	0;
+			all_block_is_busy 		<= 	0;
 		end
 		else begin
-			loop_counter_d1 <= loop_counter;
+			block_lowest_zero_bit 	<=	find_lowest_zero_bit(block_is_busy);
+			all_block_is_busy 		<= 	&block_is_busy;
 		end
 	end
 
-	// user definition ends
-	assign 	all_block_is_busy = &block_is_busy;
-	assign 	block_lowest_zero_bit = find_lowest_zero_bit(block_is_busy);
-
+	generate
+		for(o=0; o<BLOCK_COUNT; o=o+1) begin
+			assign fifo_is_full[o] 	=	(rd_cnt[o] >= N - 1);
+		end
+	endgenerate
 	always @(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 		if (M_AXI_ARESETN == 0) begin
-			for(i=0; i<BLOCK_COUNT; i=i+1) begin
-				fifo_is_full[i] <= 0;
-			end
+			all_fifo_is_empty		<=	0;
+			fifo_lowest_zero_bit 	<=	0;
 		end
 		else begin
-			for(i=0; i<BLOCK_COUNT; i=i+1) begin
-				fifo_is_full[i] <= (rd_cnt[i] >= N - 1);
-			end
+			all_fifo_is_empty 		<=	&(~fifo_is_full);
+			fifo_lowest_zero_bit 	<=	find_lowest_zero_bit(~fifo_is_full);
 		end
 	end
-	assign 	all_fifo_is_empty = &(~fifo_is_full);
-	assign	fifo_lowest_zero_bit = find_lowest_zero_bit(~fifo_is_full);
 
 	// function called clogb2 that returns an integer which has the
 	//value of the ceiling of the log base 2
@@ -152,9 +156,6 @@ module axi_full_core#(
 
 	typedef enum logic [3:0] {
 		IDLE_WAIT				,
-		INIT_WRITE				,
-		INIT_READ				,
-		IDLE_RW					,
 		STA_ENCRYPTION			,
 		STA_DECRYPTION			,
 		STA_HOMOMORPHIC_ADD		,
@@ -818,7 +819,7 @@ module axi_full_core#(
 			end
 		endcase
 	end
-
+	
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
@@ -874,12 +875,10 @@ module axi_full_core#(
 				STA_ENCRYPTION: begin
 					if(state_next == STA_ENCRYPTION_RD) begin
 						if(single_task_read_cnt == 0) begin
-							task_cmd[block_lowest_zero_bit]					<=	STA_ENCRYPTION[1:0];
+							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
-						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_ENCRYPTION_WR) begin
@@ -890,6 +889,7 @@ module axi_full_core#(
 				STA_ENCRYPTION_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
+					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
 						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
@@ -911,6 +911,7 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_ENCRYPTION) begin
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
@@ -932,11 +933,9 @@ module axi_full_core#(
 
 				STA_DECRYPTION: begin
 					if(state_next == STA_DECRYPTION_RD) begin
-						task_cmd[block_lowest_zero_bit]					<=	STA_DECRYPTION[1:0];
+						task_cmd[block_lowest_zero_bit]					<=	PAILLIER_DECRYPTION;
 						task_req[block_lowest_zero_bit]					<=	1;
 						block_is_busy_next 								<=	block_lowest_zero_bit;
-						block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 8;//target wr address = loop_counter * 2048 / 8
-						loop_counter									<=	loop_counter + 1;
 					end
 
 					if(state_next == STA_DECRYPTION_WR) begin
@@ -947,6 +946,7 @@ module axi_full_core#(
 				STA_DECRYPTION_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
+					block_target_addr[block_is_busy_next]	<=	loop_counter << 8;//target wr address = loop_counter * 2048 / 8
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
 						dec_c_data	[block_is_busy_next]	<=	AXI_FULL_IF.AXI_RDATA;
 						dec_c_valid	[block_is_busy_next]	<=	1;
@@ -964,6 +964,7 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_DECRYPTION) begin
+						loop_counter			<=	loop_counter + 1;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
 				end
@@ -985,12 +986,10 @@ module axi_full_core#(
 				STA_HOMOMORPHIC_ADD: begin
 					if(state_next == STA_HOMOMORPHIC_ADD_RD) begin
 						if(single_task_read_cnt == 0) begin
-							task_cmd[block_lowest_zero_bit]					<=	STA_HOMOMORPHIC_ADD[1:0];
+							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_HOMOMORPHIC_ADD;
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
-						loop_counter									<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
@@ -1001,6 +1000,7 @@ module axi_full_core#(
 				STA_HOMOMORPHIC_ADD_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
+					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
 						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						homo_add_c1_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
@@ -1022,6 +1022,7 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_HOMOMORPHIC_ADD) begin
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
@@ -1044,12 +1045,10 @@ module axi_full_core#(
 				STA_SCALAR_MUL: begin
 					if(state_next == STA_SCALAR_MUL_RD) begin
 						if(single_task_read_cnt == 0) begin
-							task_cmd[block_lowest_zero_bit]					<=	STA_SCALAR_MUL[1:0];
+							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_SCALAR_MUL;
 							task_req[block_lowest_zero_bit]					<=	1;
 							block_is_busy_next 								<=	block_lowest_zero_bit;
-							block_target_addr[block_lowest_zero_bit]		<=	loop_counter_d1 << 9;//target wr address = loop_counter * 4096 / 8
 						end
-						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 					end
 
 					if(state_next == STA_SCALAR_MUL_WR) begin
@@ -1060,6 +1059,7 @@ module axi_full_core#(
 				STA_SCALAR_MUL_RD: begin
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
+					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
 						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						scalar_mul_c1_valid		[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
@@ -1081,6 +1081,7 @@ module axi_full_core#(
 						end
 					end
 					if(state_next == STA_SCALAR_MUL) begin
+						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end

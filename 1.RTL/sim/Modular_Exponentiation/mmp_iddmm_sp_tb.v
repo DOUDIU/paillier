@@ -73,7 +73,7 @@ begin
     #(PERIOD*2) rst_n  =  1;
 end
 //---------------------------------------------------------------------------------------------------
-parameter MULT_METHOD  = "VEDIC8"   ;// | COMMON | TRADITION 10 | VEDIC8    8 |
+parameter MULT_METHOD  = "TRADITION";// | COMMON | TRADITION 10 | VEDIC8    8 |
 parameter ADD1_METHOD  = "COMMON"   ;// | COMMON | 3-2_PIPE1 1  | 3-2_PIPE2 2 |
 parameter ADD2_METHOD  = "COMMON"   ;// | COMMON | 3-2_DELAY2   |             |
 //---------------------------------------------------------------------------------------------------

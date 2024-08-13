@@ -5,11 +5,9 @@
 *   Author      :helrori2011@gmail.com
 *   Timing      :
 */
-module simple_p12adder256_3_2
-#(
+module simple_p12adder256_3_2#(
     parameter STAGE = 1 //1 OR 2
-)
-(
+)(
     input   wire            clk,
 
     input   wire [255:0]    ain ,
@@ -40,7 +38,8 @@ generate
         end
         assign full_sum={h2,s2_h,s2_l};
 
-    end else if(STAGE==1)begin:stage1
+    end 
+    else if(STAGE==1)begin:stage1
 
         reg  [127:0]a_h,b_h,s_l;
         reg  c_l,ffc;

@@ -7,6 +7,9 @@ reg                 M_AXI_ARESETN       ;
 wire                S_LITE_AXI_ACLK     ;
 wire                S_LITE_AXI_ARESETN  ;
 
+tvip_axi_if AXI_FULL_IF(M_AXI_ACLK, M_AXI_ARESETN);
+tvip_axi_if AXI_LITE_IF(S_LITE_AXI_ACLK, S_LITE_AXI_ARESETN);
+
 localparam _DATA_WIDTH_ = 32;
 localparam _PERIOD_ = 5;
 initial begin
@@ -44,9 +47,6 @@ localparam  STA_ENCRYPTION          = 2'b00,
 parameter   PAILLIER_MODE           = STA_ENCRYPTION;
 parameter   BLOCK_COUNT             = 1;
 parameter   TEST_TIMES              = 1;
-
-tvip_axi_if AXI_FULL_IF(M_AXI_ACLK, M_AXI_ARESETN);
-tvip_axi_if AXI_LITE_IF(S_LITE_AXI_ACLK, S_LITE_AXI_ARESETN);
 
 //To speed up the simulation, the parameter of the Montgomery module is all configured as "COMMON". The final outcome is as identical as others.
 paillier_axi_top#(

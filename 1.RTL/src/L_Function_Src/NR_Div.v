@@ -48,8 +48,8 @@ parameter   Block   =   128
                      Work    =   4'd4,
                      Work_ext=   4'd5,
                      Post    =   4'd6,
-                     Post2    =   4'd8,
-                     Done    =   4'd7;
+                     Post2    =  4'd7,
+                     Done    =   4'd8;
                      
     reg             [3:0]           state_c,state_n;
     
@@ -134,9 +134,6 @@ parameter   Block   =   128
                     state_n =   Work_ext;
             end
             Post:begin
-//                if( data_cnt==Mcnt)
-//                    state_n     =   Done;
-//                else 
                     state_n     =   Post2;
             end
             Post2:begin
@@ -173,114 +170,104 @@ parameter   Block   =   128
         end else begin
             case(state_c)
                 Idle:begin
-                    data_cnt<=0;
-                    addra_d<=0;
-                    addra_n<=0;
-                    add_a<=0;
-                    add_b<=0;
+                    data_cnt        <=  0;
+                    addra_d         <=  0;
+                    addra_n         <=  0;
+                    add_a           <=  0;
+                    add_b           <=  0;
                 end
                 DIN:begin
                     if(data_vld_in)begin
-                        wea_n<=1;
-                        wea_d<=1;
-                        dina_n<=dividend_in;
-                        addra_n<=addra_n+1;
-                        addra_d<=addra_d+1;
-                        data_cnt<=data_cnt+1;
-                        h1<={dividend_in[127],h1[31:1]};
-//                        h1[addra_n]<=dividend_in[127];
+                        wea_n       <=  1;
+                        wea_d       <=  1;
+                        dina_n      <=  dividend_in;
+                        addra_n     <=  addra_n+1;
+                        addra_d     <=  addra_d+1;
+                        data_cnt    <=  data_cnt+1;
+                        h1          <=  {dividend_in[127],h1[31:1]};
                         if(data_cnt<Mcnt)
-                            dina_d     <=   divisor_in;
+                            dina_d  <=  divisor_in;
                         else
-                            dina_d  <=128'b0;
+                            dina_d  <=  128'b0;
                     end
                     else begin
-                        wea_n<=0;
-                        wea_d<=0;
+                        wea_n       <=  0;
+                        wea_d       <=  0;
                     end
                 end
                 READ:begin
-                    data_cnt<=0;
-                    shift<=M-cnt-1;
-                    cin<=0;
+                    data_cnt        <=  0;
+                    shift           <=  M-cnt-1;
+                    cin             <=  0;
                     if(cnt>0)begin
                         addra_n<=31;
                         if(sum[Block+1])
-                            mode<=1;
+                            mode    <=  1;
                         else
-                            mode<=0;
+                            mode    <=  0;
                     end
-                    
                 end
                 Init:begin
                     if(data_cnt==0)begin
-                        add_a<={2'b0,doutb_n[126:0],1'b0};
-                        add_b<={2'b0,doutb_d};
-                        data_cnt<=data_cnt+1;
-                        cin<=0;
-                        vld_in<=1;
+                        add_a       <=  {2'b0,doutb_n[126:0],1'b0};
+                        add_b       <=  {2'b0,doutb_d};
+                        data_cnt    <=  data_cnt+1;
+                        cin         <=  0;
+                        vld_in      <=  1;
                    end
                    else if(data_cnt>0)begin
                         if(data_cnt==Ncnt-1)begin
-                           add_a<=cnt==0?{mode,doutb_n[127:0],h1[32-data_cnt]}:{mode,doutb_n[127:0],h[0]};
-//                            add_a<=cnt==0?{mode,doutb_n[127:0],h[1]}:{mode,doutb_n[127:0],h[0]};
-                           add_b<={2'b0,doutb_d};
-                           data_cnt<=data_cnt+1;
-                           vld_in<=1;
+                           add_a    <=  cnt==0?{mode,doutb_n[127:0],h1[32-data_cnt]}:{mode,doutb_n[127:0],h[0]};
+                           add_b    <=  {2'b0,doutb_d};
+                           data_cnt <=  data_cnt+1;
+                           vld_in   <=  1;
                        end
                        else begin
-                           add_a<=cnt==0?{2'b0,doutb_n[126:0],h1[32-data_cnt]}:{2'b0,doutb_n[126:0],h[0]};
-//                            add_a<=cnt==0?{2'b0,doutb_n[126:0],h[1]}:{2'b0,doutb_n[126:0],h[0]};
-                           add_b<={2'b0,doutb_d};
-                           data_cnt<=data_cnt+1;
-                           vld_in<=1;
+                           add_a    <=  cnt==0?{2'b0,doutb_n[126:0],h1[32-data_cnt]}:{2'b0,doutb_n[126:0],h[0]};
+                           add_b    <=  {2'b0,doutb_d};
+                           data_cnt <=  data_cnt+1;
+                           vld_in   <=  1;
                        end 
                     end  
-                    wea_n<=vld_out;
-                    dina_n<=sum[Block-1:0];
-                    addra_n<=32-data_cnt;
-                    cin<=data_cnt>1?sum[Block]:cin;  
-                    h<={sum[Block-1],h[31:1]};                 
+                    wea_n       <=  vld_out;
+                    dina_n      <=  sum[Block-1:0];
+                    addra_n     <=  32-data_cnt;
+                    cin         <=  data_cnt>1?sum[Block]:cin;  
+                    h           <=  {sum[Block-1],h[31:1]};                 
                 end
                 Work:begin
-                    vld_in<=0;
-                    wea_n<=vld_out;
-                    q2[shift]<=mode?1:0;
+                    vld_in      <=  0;
+                    wea_n       <=  vld_out;
+                    q2[shift]   <=  mode?1:0;
                     if(cnt==0)
-                        q1[shift]<=1;
+                        q1[shift]<= 1;
                     else
-                        q1[shift]<=mode?0:1;                     
+                        q1[shift]<= mode?0:1;                     
                 end
                 Work_ext:begin
-                    cnt<=vld_out?cnt+1:cnt;
-                    vld_in<=0;
-                    wea_n<=vld_out;
-                    dina_n<=sum[Block-1:0];
-                    addra_n<=32-data_cnt; 
+                    cnt         <=  vld_out?cnt+1:cnt;
+                    vld_in      <=  0;
+                    wea_n       <=  vld_out;
+                    dina_n      <=  sum[Block-1:0];
+                    addra_n     <=  32-data_cnt; 
                     if(data_cnt==32)begin
-                        data_cnt<=0;
+                        data_cnt<=  0;
                     end                   
                 end
                 Post:begin
-                   mode<=0;
-                   vld_in<=data_cnt=='d16 ? 0 : 1;
-                   add_a<={2'b0,q1[data_cnt*128+:128]};
-                   add_b<={2'b0,q2[data_cnt*128+:128]};
-                   data_cnt<=data_cnt+1;
-                   cin<=((sum[Block+1]||sum[Block]||sum[Block+2]) &&(data_cnt==0))? 1 :(sum[Block+1]||sum[Block]||sum[Block+2]);
-                   valid_out<=data_cnt=='d1 ? 1 : 0;
+                   mode             <=  0;
+                   vld_in           <=  data_cnt=='d16 ? 0 : 1;
+                   add_a            <=  {2'b0,q1[data_cnt*128+:128]};
+                   add_b            <=  {2'b0,q2[data_cnt*128+:128]};
+                   data_cnt         <=  data_cnt+1;
+                   cin              <=  ((sum[Block+1]||sum[Block]||sum[Block+2]) &&(data_cnt==0))? 1 :(sum[Block+1]||sum[Block]||sum[Block+2]);
+                   valid_out        <=  data_cnt=='d1 ? 1 : 0;
                 end
                 Post2:begin
                     vld_in<=0;
-//                    vld_in<=data_cnt=='d16 ? 0 : 1;
-//                    add_a<={2'b0,q1[data_cnt*128+:128]};
-//                    add_b<={2'b0,q2[data_cnt*128+:128]};
-//                    data_cnt<=data_cnt+1;
-//                    cin<=(sum[Block+1]||sum[Block]||sum[Block+2]);
-//                    valid_out<=data_cnt=='d1 ? 1 : 0;
                 end
                 Done:begin
-                    data_cnt<=0;
+                    data_cnt            <=  0;
                 end
                 default:;
             endcase
@@ -331,11 +318,10 @@ parameter   Block   =   128
             end
             else begin
                 quotient_out    <=  quotient_out;
-                data_vld_out    <=  data_vld_out;
+                data_vld_out    <=  0;
             end
         end
-    end
-    
+    end   
     
 
 blk_mem_gen_0 Dividend (

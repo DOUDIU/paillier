@@ -689,19 +689,19 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-NR_Div L_Func(
-        .clk            (clk            )
-    ,   .rst_n          (rst_n          )
+// NR_Div L_Func(
+//         .clk            (clk            )
+//     ,   .rst_n          (rst_n          )
 
-    ,   .valid_in       (L_start        )
+//     ,   .valid_in       (L_start        )
 
-    ,   .x              (L_x            )
-    ,   .y              (L_y            )
-    ,   .data_vld_in    (L_data_valid   )
+//     ,   .dividend_in    (L_x            )
+//     ,   .divisor_in     (L_y            )
+//     ,   .data_vld_in    (L_data_valid   )
 
-    ,   .qblock         (L_result       )
-    ,   .data_vld_out   (L_valid        )
-);
+//     ,   .quotient_out   (L_result       )
+//     ,   .data_vld_out   (L_valid        )
+// );
 
 montgomery_iddmm_top #(
         .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily

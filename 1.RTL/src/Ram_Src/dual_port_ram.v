@@ -19,18 +19,18 @@ reg     [RAM_WIDTH-1:0]     data_r;
 reg                         rd_en_d1;
 
 initial begin
-    fp = $fopen(filename, "r");
-    if((fp == 0) & (filename != "none")) begin
-        $display("Error opening file: %s", filename);
-        $finish;
-    end
-    $fclose(fp);
     if(filename == "none") begin
         for(i = 0; i < (1<<ADDR_LINE); i = i + 1) begin
             memory[i]  <=  0;
         end
     end
     else begin
+        fp = $fopen(filename, "r");
+        if(fp == 0) begin
+            $display("Error opening file: %s", filename);
+            $finish;
+        end
+        $fclose(fp);
         $readmemh(filename, memory);
     end
 end
@@ -79,18 +79,18 @@ reg     [RAM_WIDTH-1:0]     data_r;
 reg                         rd_en_d1;
 
 initial begin
-    fp = $fopen(filename, "r");
-    if((fp == 0) & (filename != "none")) begin
-        $display("Error opening file: %s", filename);
-        $finish;
-    end
-    $fclose(fp);
     if(filename == "none") begin
         for(i = 0; i < (1<<ADDR_LINE); i = i + 1) begin
             memory[i]  <=  0;
         end
     end
     else begin
+        fp = $fopen(filename, "r");
+        if(fp == 0) begin
+            $display("Error opening file: %s", filename);
+            $finish;
+        end
+        $fclose(fp);
         $readmemh(filename, memory);
     end
 end

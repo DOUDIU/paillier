@@ -22,86 +22,113 @@ module iddmm_top#(
     ,   output      [K-1        :0]     task_res
 );
 
-reg     [K-1:0]                 m1;
+wire    [K-1        :0]     a               ;
+wire    [K-1        :0]     x               ;
+wire    [K-1        :0]     y               ;
+wire    [K-1        :0]     p               ;
+wire    [ADDR_W     :0]     rd_data_addr    ;
+wire                        clear_a_en      ;
+wire    [ADDR_W-1   :0]     clear_a_addr    ;
+wire    [ADDR_W     :0]     j_cnt           ;
+wire                        finish_reg_flag ;
 
-always@(posedge clk)begin 
-    if (wr_ena) begin 
-        m1<=wr_m1; 
-    end 
-    else begin 
-        m1<=m1;
-    end 
-end
+assign  finish_reg_flag = (wr_ena !=0) && (wr_addr == N-1);
 
+iddmm_ctrl iddmm_ctrl(
+        .clk                (clk                )
+    ,   .rst_n              (rst_n              )
 
+    ,   .task_req           (task_req           )
+    ,   .task_end           (task_end           )
+    ,   .task_grant         (task_grant         )
+    ,   .task_res           (task_res           )
 
+    ,   .finish_reg_flag    (finish_reg_flag    )
 
+    ,   .j_cnt              (j_cnt              )
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-simple_ram#(
-        .width              ( K                 )
-    ,   .widthad            ( ADDR_W + 1        )//0-63,0-32 will be used
-)simple_ram_x(//caution:>>>>> addr32 must be 0 <<<<<
-        .clk                ( clk               )
-    ,   .wraddress          ( {1'd0,wr_addr}    )//0-31
-    ,   .wren               ( wr_ena[0]         )
-    ,   .data               ( wr_x              )
-    ,   .rdaddress          ()//0-32 will be read out
-    ,   .q                  ()
+    ,   .rd_data_addr       (rd_data_addr       )
+    ,   .rd_a_data          (a                  )
+    ,   .clear_a_en         (clear_a_en         )
+    ,   .clear_a_addr       (clear_a_addr       )
 );
-simple_ram#(
-        .width              ( K                 )
-    ,   .widthad            ( ADDR_W            )
+
+//fully pipelined calculation architecture
+iddmm_cal iddmm_cal_inst(
+        .clk                (clk                )
+    ,   .rst_n              (rst_n              )
+    ,   .j_cnt              (j_cnt              )
+    ,   .a                  (a                  )
+    ,   .x                  (x                  )
+    ,   .y                  (y                  )
+    ,   .p                  (p                  )
+    ,   .p1                 (wr_m1              )
+
+    ,   .wr_a_en            (wr_a_en            )
+    ,   .wr_a_addr          (wr_a_addr          )
+    ,   .wr_a_data          (wr_a_data          )
+);
+
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)+1        )
+)simple_ram_x(
+        .clk                (clk                )
+    ,   .wr_en              (wr_ena[0]          )
+    ,   .wr_addr            ({1'd0,wr_addr}     )
+    ,   .wr_data            (wr_x               )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_data            (x                  )
+);
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)          )
 )simple_ram_y(
-        .clk                ( clk               )
-    ,   .wraddress          ( wr_addr           )
-    ,   .wren               ( wr_ena[1]         )
-    ,   .data               ( wr_y              )
-    ,   .rdaddress          ()
-    ,   .q                  ()
+        .clk                (clk                )
+    ,   .wr_en              (wr_ena[1]          )
+    ,   .wr_addr            (wr_addr            )
+    ,   .wr_data            (wr_y               )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_data            (y                  )
 );
-simple_ram#(
-        .width              ( K                 )
-    ,   .widthad            ( ADDR_W            )
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)          )
 )simple_ram_m(
-        .clk                ( clk               )
-    ,   .wraddress          ( wr_addr           )
-    ,   .wren               ( wr_ena[2]         )
-    ,   .data               ( wr_m              )
-    ,   .rdaddress          ()
-    ,   .q                  ()
+        .clk                (clk                )
+    ,   .wr_en              (wr_ena[2]          )
+    ,   .wr_addr            (wr_addr            )
+    ,   .wr_data            (wr_m               )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_data            (p                  )
 );
-simple_ram#(
-        .width              ( K                 )
-    ,   .widthad            ( ADDR_W            )
-)simple_ram_a(//a(0)~a(n-1)
-        .clk                ( clk               )
-    ,   .wraddress          ()
-    ,   .wren               ()
-    ,   .data               ()
-    ,   .rdaddress          ()
-    ,   .q                  ()
-);
+wire                        wr_a_en  ;
+wire    [ADDR_W     :0]     wr_a_addr;
+wire    [K-1        :0]     wr_a_data;
 
+assign  wr_a_en     =   clear_a_en ? wr_a_en   : 1;
+assign  wr_a_addr   =   clear_a_en ? wr_a_addr : clear_a_addr;
+assign  wr_a_data   =   clear_a_en ? wr_a_data : 0;
+
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)          )
+)dual_port_ram_a(
+        .clk                (clk                )
+    ,   .wr_en              (wr_a_en            )
+    ,   .wr_addr            (wr_a_addr          )
+    ,   .wr_data            (wr_a_data          )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_data            (a                  )
+);
 
 
 endmodule

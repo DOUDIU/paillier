@@ -8,7 +8,7 @@
 // (* use_dsp = "no" *)
 module mmp_iddmm_mul128#(
     parameter LATENCY = 4 ,
-    parameter METHOD  = "COMMON" // 一种乘法器实现方法对应一种LATENCY大小，默认COMMON时，LATENCY大小任意
+    parameter METHOD  = "TRADITION" // 一种乘法器实现方法对应一种LATENCY大小，默认COMMON时，LATENCY大小任意
 )(
     input   wire             clk           ,
     input   wire             rst_n         ,

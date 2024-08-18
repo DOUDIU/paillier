@@ -18,7 +18,7 @@ module mmp_iddmm_sp#(
         parameter MULT_METHOD  = "TRADITION"    // "COMMON"    :use * ,MULT_LATENCY arbitrarily
                                                 // "TRADITION" :MULT_LATENCY=9                
                                                 // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
-    ,   parameter ADD1_METHOD  = "3-2_PIPE1"    // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
+    ,   parameter ADD1_METHOD  = "COMMON"       // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
                                                 // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
                                                 // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
                                                 // 
@@ -48,7 +48,7 @@ module mmp_iddmm_sp#(
 localparam MULT_LATENCY =   MULT_METHOD == "COMMON"      ? 0 :
                             MULT_METHOD == "TRADITION"   ? 10:
                             MULT_METHOD == "VEDIC8"      ? 8 :'dx;
-localparam ADD1_LATENCY =   ADD1_METHOD == "COMMON"      ? 0 :
+localparam ADD1_LATENCY =   ADD1_METHOD == "COMMON"      ? 2 :
                             ADD1_METHOD == "3-2_PIPE1"   ? 1 : 
                             ADD1_METHOD == "3-2_PIPE2"   ? 2 :'dx;
 

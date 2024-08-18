@@ -91,6 +91,48 @@ def encode_and_encrypt_example():
     print("Checking the decrypted number is what we started with")
     assert abs(2.1 ** 20 - decrypted_but_encoded.decode()) < 1e-12
 
+def mod_inv(a,m):
+    print('start')
+    if math.gcd(a,m)!=1:
+        return None
+    u1,u2,u3 = 1,0,a
+    v1,v2,v3 = 0,1,m
+    while v3!=0:
+        q = u3//v3
+        v1,v2,v3,u1,u2,u3 = (u1-q*v1),(u2-q*v2),(u3-q*v3),v1,v2,v3
+    return u1%m
+
+#(L(c^lamda mod n^2) * mu) mod n
+def decrypt_fpga_example( n, lamba, mu, cyphertext):
+    tem = 2 ** public_key.n
+    print("tem = 0x{:x}".format(tem))
+    n_inverse = mod_inv(public_key.n, tem)
+    print('n_inverse result: 0x{:x}'.format(n_inverse))
+
+    result_step1 = paillier.powmod(cyphertext, lamba, n ** 2) - 1
+    result_step2 = paillier.mulmod(result_step1, n_inverse, 2 ** n)
+    decrypt_text = paillier.mulmod(result_step2, mu, n)
+
+    print('optimized decrypion result: 0x{:x}'.format(decrypt_text))
+
+#CRT
+def decrypt_crt_example( p, q, g,cyphertext):
+    """Precomputed"""
+    p_inverse = paillier.invert(p, 2 ** p)
+    q_inverse = paillier.invert(q, 2 ** q)
+    hp=paillier.invert(paillier.mulmod(paillier.powmod(g, p-1, p * p) - 1,p_inverse,2 ** p),  p)
+    hq=paillier.invert(paillier.mulmod(paillier.powmod(g, q-1, q * q) - 1,q_inverse,2 ** q),  q)
+    """Precomputed"""
+
+    """
+    Mp=mulmod(mulmod(powmod(cyphertext, p-1, p * p) - 1, p_inverse, 2 ** p), hp, p)
+    Mq=mulmod(mulmod(powmod(cyphertext, q-1, q * q) - 1, q_inverse, 2 ** q), hq, q)
+    u = mulmod(Mq - Mp, p_inverse, q)
+    decrypt_text = Mp + (u * p)
+    """
+    decrypt_text = paillier.mulmod(paillier.mulmod(paillier.powmod(cyphertext, p-1, p * p) - 1, p_inverse, 2 ** p), hp, p)  +  (paillier.mulmod(paillier.mulmod(paillier.mulmod(paillier.powmod(cyphertext, q-1, q * q) - 1, q_inverse, 2 ** q), hq, q) - paillier.mulmod(paillier.mulmod(paillier.powmod(cyphertext, p-1, p * p) - 1, p_inverse, 2 ** p), hp, p), p_inverse, q))
+
+    return decrypt_text
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_example():
@@ -108,22 +150,24 @@ def decrypt_example():
     lamda = math.lcm(private_key.p - 1, private_key.q - 1)
     mu = paillier.invert(lamda, public_key.n)
     
-    file_path = '1.RTL/data/ram_lamda.txt'
-    data_seperate_printf_new(lamda,128,4096//128,0,file_path)
-    file_path = '1.RTL/data/ram_mu.txt'
-    data_seperate_printf_new(mu,128,4096//128,0,file_path)
-    file_path = '1.RTL/data/ram_N.txt'
-    data_seperate_printf_new(public_key.n,128,4096//128,0,file_path)
+    # file_path = '1.RTL/data/ram_lamda.txt'
+    # data_seperate_printf_new(lamda,128,4096//128,0,file_path)
+    # file_path = '1.RTL/data/ram_mu.txt'
+    # data_seperate_printf_new(mu,128,4096//128,0,file_path)
+    # file_path = '1.RTL/data/ram_N.txt'
+    # data_seperate_printf_new(public_key.n,128,4096//128,0,file_path)
 
     # data_seperate_printf(lamda,128, 4096//128,1)
     # data_seperate_printf(mu,128, 4096//128,1)
+    # data_seperate_printf(encrypted.ciphertext(False),128, 4096//128,1)
 
     a = paillier.powmod(encrypted.ciphertext(False), lamda, public_key.nsquare)
-    # data_seperate_printf(encrypted.ciphertext(False),128, 4096//128,1)
     b = (a - 1) // public_key.n
     c = b * mu % public_key.n
     print("Decrypted: 0x{:x}".format(c))
     print('official decrypted: 0x{:x}'.format(decrypted_but_encoded.decode()))
+
+    decrypt_fpga_example(public_key.n, lamda, mu, encrypted.ciphertext(False))
 
     # print("Checking the decrypted number is what we started with")
     assert abs(original_data - decrypted_but_encoded.decode()) < 1e-12
@@ -281,8 +325,6 @@ def scalar_negative_multiplication_example():
 
     print("Checking the decrypted number is what we started with")
     assert abs((a * const_scalar) - decrypted_but_encoded.decode()) < 1e-15
-
-
 
 def data_record_for_encryption(file_name_m,file_name_r,file_name_encrypted,counts):
     RESULT_LOG = open(file_name_m,'w').close() #clear the file

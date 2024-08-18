@@ -217,31 +217,23 @@ def mont_iddmm(xx,yy,p,nbit,n):
     for i in range(n):
         c = 0
         for j in range(n+1):
-            s = a[j]+x_[j]*y_[i]
+            s = x_[j]*y_[i]
+
+            s = a[j]+s
             s = mm(s,2*k)
-            if j==0:
-                q = mm(s,k)*mm(p1,k)%beta
             if j==n:
                 s = s+carry
+
+            if j==0:
+                q = mm(s,k)*mm(p1,k)%beta#如果只要低128位，只需要36个dsp
+
             r   = q*p_[j]
-            buf0= s+r+c
+
+            buf0 = s + c + r
             u   =  mm(buf0,k)
             c   = (buf0>>k)
             if j>0:
                 a[j-1] = u
-
-            RESULT_LOG = open("iddmm_log.txt",'a',encoding="utf-8")
-            print('--------------------------------------------------',end='\n',file=RESULT_LOG)
-            print('i,j:{},{}'.format(i,j),end='\n',file=RESULT_LOG)
-            print('a[{}]=128\'h{:x},'.format(j,a[j]),end='\n',file=RESULT_LOG)
-            print('s=256\'h{:x},'.format(s),end='\n',file=RESULT_LOG)
-            print('q=128\'h{:x},'.format(q),end='\n',file=RESULT_LOG)
-            print('r=256\'h{:x},'.format(r),end='\n',file=RESULT_LOG)
-            print('buf0=257\'h{:x},'.format(buf0),end='\n',file=RESULT_LOG)
-            print('c=128\'h{:x},'.format(c),end='\n',file=RESULT_LOG)
-            print('u=128\'h{:x},'.format(u),end='\n',file=RESULT_LOG)
-            if j>0:
-                print('a[{}]=128\'h{:x},'.format(j-1,u),end='\n',file=RESULT_LOG)
         carry = c&1
     a[n] = carry
     res = a

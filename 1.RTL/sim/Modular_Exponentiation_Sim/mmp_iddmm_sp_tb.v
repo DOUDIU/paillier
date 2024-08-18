@@ -311,48 +311,6 @@ endtask
 initial begin
     match_test;
     $finish;
-
-    // $display("---------------------------------------------");
-    // `ifdef _VIEW_WAVEFORM_
-    // $dumpfile("wave.vcd");      
-    // $dumpvars(0,mmp_iddmm_sp_tb);  
-    // #(100)
-    // run_iddmm;
-    // `else
-    // while(1)begin
-    //     match_test;
-    // end
-    // `endif
-    // $display("---------------------------------------------");
-    // #(1000)
-    // $finish;
-end
-
-wire    [255:0] result_tem;
-reg     [127:0] a_in;
-reg     [127:0] b_in;
-mmp_iddmm_mul128#(
-    .LATENCY  ( MULT_METHOD     ),
-    .METHOD   ( MULT_METHOD     )   
-)mmp_iddmm_mul128xy(
-    .clk      ( clk             ),
-    .rst_n    ( rst_n           ),
-    .a_in     ( a_in            ),//128
-    .b_in     ( b_in            ),//128
-    .c_out    ( result_tem      ) //256
-);
-
-initial begin
-    a_in    =   0;
-    b_in    =   0;
-    #300
-    a_in    =   128'h7c6053749b40c110ad0a6f4fcf590380;
-    b_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
-    for (i = 0;i<3 ;i=i+1 ) begin
-        @(posedge clk);
-    end
-    a_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
-    b_in    =   128'h521a7d1da2e1be1e587881feef5a37a5;
 end
 
 

@@ -28,16 +28,12 @@ wire    [K-1        :0]     y               ;
 wire    [K-1        :0]     p               ;
 wire    [ADDR_W     :0]     rd_data_addr_i  ;
 wire    [ADDR_W     :0]     rd_data_addr_j  ;
-wire                        clear_a_en      ;
-wire    [ADDR_W-1   :0]     clear_a_addr    ;
+wire    [ADDR_W-1   :0]     i_cnt           ;
 wire    [ADDR_W     :0]     j_cnt           ;
-wire                        finish_reg_flag ;
 
-wire                        wr_a_en  ;
-wire    [ADDR_W     :0]     wr_a_addr;
-wire    [K-1        :0]     wr_a_data;
-
-assign  finish_reg_flag = (wr_ena !=0) && (wr_addr == N-1);
+wire                        wr_a_en         ;
+wire    [ADDR_W     :0]     wr_a_addr       ;
+wire    [K-1        :0]     wr_a_data       ;
 
 iddmm_ctrl iddmm_ctrl(
         .clk                (clk                )
@@ -45,25 +41,22 @@ iddmm_ctrl iddmm_ctrl(
 
     ,   .task_req           (task_req           )
     ,   .task_end           (task_end           )
-    ,   .task_grant         (task_grant         )
-    ,   .task_res           (task_res           )
 
-    ,   .finish_reg_flag    (finish_reg_flag    )
-
+    ,   .i_cnt              (i_cnt              )
     ,   .j_cnt              (j_cnt              )
 
     ,   .rd_data_addr_i     (rd_data_addr_i     )
     ,   .rd_data_addr_j     (rd_data_addr_j     )
-    ,   .rd_a_data          (a                  )
-    ,   .clear_a_en         (clear_a_en         )
-    ,   .clear_a_addr       (clear_a_addr       )
 );
 
 //fully pipelined calculation architecture
-iddmm_cal iddmm_cal_inst(
+iddmm_cal iddmm_cal(
         .clk                (clk                )
     ,   .rst_n              (rst_n              )
+
+    ,   .i_cnt              (i_cnt              )
     ,   .j_cnt              (j_cnt              )
+
     ,   .a                  (a                  )
     ,   .x                  (x                  )
     ,   .y                  (y                  )
@@ -121,9 +114,9 @@ dual_port_ram#(
     ,   .ADDR_LINE          ($clog2(N)+1        )
 )dual_port_ram_a(
         .clk                (clk                )
-    ,   .wr_en              (!clear_a_en ? wr_a_en   : 1)
-    ,   .wr_addr            (!clear_a_en ? wr_a_addr : clear_a_addr)
-    ,   .wr_data            (!clear_a_en ? wr_a_data : 0)
+    ,   .wr_en              (wr_a_en            )
+    ,   .wr_addr            (wr_a_addr          )
+    ,   .wr_data            (wr_a_data          )
     ,   .rd_en              (1                  )
     ,   .rd_addr            (rd_data_addr_j     )
     ,   .rd_data            (a                  )

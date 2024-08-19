@@ -9,19 +9,13 @@ module iddmm_ctrl#(
     ,   input                           rst_n
 
     ,   input                           task_req
-    ,   output                          task_end
-    ,   output                          task_grant
-    ,   output      [K-1        :0]     task_res
+    ,   input                           task_end
 
-    ,   input                           finish_reg_flag
-
+    ,   output  reg [ADDR_W-1   :0]     i_cnt
     ,   output  reg [ADDR_W     :0]     j_cnt
 
     ,   output      [ADDR_W     :0]     rd_data_addr_i
     ,   output      [ADDR_W     :0]     rd_data_addr_j
-    ,   input       [K-1        :0]     rd_a_data
-    ,   output  reg                     clear_a_en
-    ,   output  reg [K-1        :0]     clear_a_addr
 );
 
 reg         [ADDR_W-1   :0]     i_cnt_reg;
@@ -32,7 +26,6 @@ assign      rd_data_addr_j  =   j_cnt_reg;
 
 typedef enum logic [3:0] {
     STA_IDLE                    ,
-    STA_WAIT_WR_DONE            ,
     STA_START                   ,
     STA_OUTPUT_AND_CLEAR_A                                
 } FSM_STATE;
@@ -53,18 +46,16 @@ always@(*) begin
     case(state_next)
         STA_IDLE: begin
             if(task_req) begin
-                state_next  =   STA_WAIT_WR_DONE;
-            end
-        end
-        STA_WAIT_WR_DONE: begin
-            if(finish_reg_flag) begin
                 state_next  =   STA_START;
             end
         end
         STA_START: begin
+            if((i_cnt_reg == N - 1) && (j_cnt_reg == N)) begin
+                state_next  =   STA_OUTPUT_AND_CLEAR_A;
+            end
         end
         STA_OUTPUT_AND_CLEAR_A: begin
-            if(clear_a_addr == K-1) begin
+            if(task_end) begin
                 state_next  =   STA_IDLE;
             end
         end
@@ -79,11 +70,12 @@ always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         i_cnt_reg       <=  0;
         j_cnt_reg       <=  0;
+        i_cnt           <=  0;
         j_cnt           <=  0;
-        clear_a_en      <=  0;
-        clear_a_addr    <=  0;
     end
     else begin
+        i_cnt           <=  i_cnt_reg;
+        j_cnt           <=  j_cnt_reg;
         case(state_next)
             STA_IDLE: begin
                 i_cnt_reg       <=  0;
@@ -92,12 +84,10 @@ always@(posedge clk or negedge rst_n) begin
             STA_START: begin
                 i_cnt_reg       <=  j_cnt_reg == N ? i_cnt_reg + 1 : i_cnt_reg;
                 j_cnt_reg       <=  j_cnt_reg == N ? 0 : j_cnt_reg + 1;
-
-                j_cnt           <=  j_cnt_reg;
             end
             STA_OUTPUT_AND_CLEAR_A: begin
-                i_cnt_reg       <=  i_cnt_reg;
-                j_cnt_reg       <=  j_cnt_reg + 1;
+                i_cnt_reg       <=  0;
+                j_cnt_reg       <=  0;
             end
             default: begin
                 i_cnt_reg       <=  0;

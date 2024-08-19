@@ -26,11 +26,16 @@ wire    [K-1        :0]     a               ;
 wire    [K-1        :0]     x               ;
 wire    [K-1        :0]     y               ;
 wire    [K-1        :0]     p               ;
-wire    [ADDR_W     :0]     rd_data_addr    ;
+wire    [ADDR_W     :0]     rd_data_addr_i  ;
+wire    [ADDR_W     :0]     rd_data_addr_j  ;
 wire                        clear_a_en      ;
 wire    [ADDR_W-1   :0]     clear_a_addr    ;
 wire    [ADDR_W     :0]     j_cnt           ;
 wire                        finish_reg_flag ;
+
+wire                        wr_a_en  ;
+wire    [ADDR_W     :0]     wr_a_addr;
+wire    [K-1        :0]     wr_a_data;
 
 assign  finish_reg_flag = (wr_ena !=0) && (wr_addr == N-1);
 
@@ -47,7 +52,8 @@ iddmm_ctrl iddmm_ctrl(
 
     ,   .j_cnt              (j_cnt              )
 
-    ,   .rd_data_addr       (rd_data_addr       )
+    ,   .rd_data_addr_i     (rd_data_addr_i     )
+    ,   .rd_data_addr_j     (rd_data_addr_j     )
     ,   .rd_a_data          (a                  )
     ,   .clear_a_en         (clear_a_en         )
     ,   .clear_a_addr       (clear_a_addr       )
@@ -79,7 +85,7 @@ dual_port_ram#(
     ,   .wr_addr            ({1'd0,wr_addr}     )
     ,   .wr_data            (wr_x               )
     ,   .rd_en              (1                  )
-    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_addr            (rd_data_addr_j     )
     ,   .rd_data            (x                  )
 );
 dual_port_ram#(
@@ -92,41 +98,34 @@ dual_port_ram#(
     ,   .wr_addr            (wr_addr            )
     ,   .wr_data            (wr_y               )
     ,   .rd_en              (1                  )
-    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_addr            (rd_data_addr_i     )
     ,   .rd_data            (y                  )
 );
 dual_port_ram#(
         .filename           ("none"             )
     ,   .RAM_WIDTH          (K                  )
-    ,   .ADDR_LINE          ($clog2(N)          )
+    ,   .ADDR_LINE          ($clog2(N)+1        )
 )simple_ram_m(
         .clk                (clk                )
     ,   .wr_en              (wr_ena[2]          )
-    ,   .wr_addr            (wr_addr            )
+    ,   .wr_addr            ({1'd0,wr_addr}     )
     ,   .wr_data            (wr_m               )
     ,   .rd_en              (1                  )
-    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_addr            (rd_data_addr_j     )
     ,   .rd_data            (p                  )
 );
-wire                        wr_a_en  ;
-wire    [ADDR_W     :0]     wr_a_addr;
-wire    [K-1        :0]     wr_a_data;
-
-assign  wr_a_en     =   clear_a_en ? wr_a_en   : 1;
-assign  wr_a_addr   =   clear_a_en ? wr_a_addr : clear_a_addr;
-assign  wr_a_data   =   clear_a_en ? wr_a_data : 0;
 
 dual_port_ram#(
         .filename           ("none"             )
     ,   .RAM_WIDTH          (K                  )
-    ,   .ADDR_LINE          ($clog2(N)          )
+    ,   .ADDR_LINE          ($clog2(N)+1        )
 )dual_port_ram_a(
         .clk                (clk                )
-    ,   .wr_en              (wr_a_en            )
-    ,   .wr_addr            (wr_a_addr          )
-    ,   .wr_data            (wr_a_data          )
+    ,   .wr_en              (!clear_a_en ? wr_a_en   : 1)
+    ,   .wr_addr            (!clear_a_en ? wr_a_addr : clear_a_addr)
+    ,   .wr_data            (!clear_a_en ? wr_a_data : 0)
     ,   .rd_en              (1                  )
-    ,   .rd_addr            (rd_data_addr       )
+    ,   .rd_addr            (rd_data_addr_j     )
     ,   .rd_data            (a                  )
 );
 

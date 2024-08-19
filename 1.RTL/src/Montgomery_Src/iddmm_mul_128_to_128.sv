@@ -56,7 +56,46 @@ reg[31:0]   x2y5, x2y4, x2y3, x2y2, x2y1, x2y0;
 reg[31:0]   x1y6, x1y5, x1y4, x1y3, x1y2, x1y1, x1y0;
 reg[31:0]   x0y7, x0y6, x0y5, x0y4, x0y3, x0y2, x0y1, x0y0;
 
-always @(posedge clk) begin
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        x7y0 <= 0;
+        x6y1 <= 0;
+        x6y0 <= 0;
+        x5y2 <= 0;
+        x5y1 <= 0;
+        x5y0 <= 0;
+        x4y3 <= 0;
+        x4y2 <= 0;
+        x4y1 <= 0;
+        x4y0 <= 0;
+        x3y4 <= 0;
+        x3y3 <= 0;
+        x3y2 <= 0;
+        x3y1 <= 0;
+        x3y0 <= 0;
+        x2y5 <= 0;
+        x2y4 <= 0;
+        x2y3 <= 0;
+        x2y2 <= 0;
+        x2y1 <= 0;
+        x2y0 <= 0;
+        x1y6 <= 0;
+        x1y5 <= 0;
+        x1y4 <= 0;
+        x1y3 <= 0;
+        x1y2 <= 0;
+        x1y1 <= 0;
+        x1y0 <= 0;
+        x0y7 <= 0;
+        x0y6 <= 0;
+        x0y5 <= 0;
+        x0y4 <= 0;
+        x0y3 <= 0;
+        x0y2 <= 0;
+        x0y1 <= 0;
+        x0y0 <= 0;
+    end
+    else begin
         x7y0 <= x7 * y0;
 
         x6y1 <= x6 * y1;
@@ -100,6 +139,7 @@ always @(posedge clk) begin
         x0y2 <= x0 * y2;
         x0y1 <= x0 * y1;
         x0y0 <= x0 * y0;
+    end
 end
 
 //  + ((x7y0 + x6y1 + x5y2 + x4y3 + x3y4 + x2y5 + x1y6+ x0y7) << 112)
@@ -122,34 +162,58 @@ reg [255:0] sum022, sum021, sum020;
 reg [255:0] sum011, sum010;
 reg [255:0] sum000;
 
-always @(posedge clk) begin
-    sum070 <= x7y0 + x0y7;
-    sum061 <= x6y1 + x1y6;
-    sum052 <= x5y2 + x2y5;
-    sum043 <= x4y3 + x3y4;
-    
-    sum060 <= x6y0 + x0y6;
-    sum051 <= x5y1 + x1y5;
-    sum042 <= x4y2 + x2y4;
-    sum033 <= x3y3;
-    
-    sum050 <= x5y0 + x0y5;
-    sum041 <= x4y1 + x1y4;
-    sum032 <= x3y2 + x2y3;
+always @(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        sum070 <= 0;
+        sum061 <= 0;
+        sum052 <= 0;
+        sum043 <= 0;
+        sum060 <= 0;
+        sum051 <= 0;
+        sum042 <= 0;
+        sum033 <= 0;
+        sum050 <= 0;
+        sum041 <= 0;
+        sum032 <= 0;
+        sum040 <= 0;
+        sum031 <= 0;
+        sum022 <= 0;
+        sum030 <= 0;
+        sum021 <= 0;
+        sum020 <= 0;
+        sum011 <= 0;
+        sum010 <= 0;
+        sum000 <= 0;
+    end
+    else begin
+        sum070 <= x7y0 + x0y7;
+        sum061 <= x6y1 + x1y6;
+        sum052 <= x5y2 + x2y5;
+        sum043 <= x4y3 + x3y4;
+        
+        sum060 <= x6y0 + x0y6;
+        sum051 <= x5y1 + x1y5;
+        sum042 <= x4y2 + x2y4;
+        sum033 <= x3y3;
+        
+        sum050 <= x5y0 + x0y5;
+        sum041 <= x4y1 + x1y4;
+        sum032 <= x3y2 + x2y3;
 
-    sum040 <= x4y0 + x0y4;
-    sum031 <= x3y1 + x1y3;
-    sum022 <= x2y2;
+        sum040 <= x4y0 + x0y4;
+        sum031 <= x3y1 + x1y3;
+        sum022 <= x2y2;
 
-    sum030 <= x3y0 + x0y3;
-    sum021 <= x2y1 + x1y2;
+        sum030 <= x3y0 + x0y3;
+        sum021 <= x2y1 + x1y2;
 
-    sum020 <= x2y0 + x0y2;
-    sum011 <= x1y1;
+        sum020 <= x2y0 + x0y2;
+        sum011 <= x1y1;
 
-    sum010 <= (x1y0 + x0y1) << 16;
+        sum010 <= (x1y0 + x0y1) << 16;
 
-    sum000 <= x0y0;
+        sum000 <= x0y0;
+    end
 end
 
 // round1

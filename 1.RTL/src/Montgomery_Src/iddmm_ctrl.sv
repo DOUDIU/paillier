@@ -17,16 +17,18 @@ module iddmm_ctrl#(
 
     ,   output  reg [ADDR_W     :0]     j_cnt
 
-    ,   output      [ADDR_W     :0]     rd_data_addr
+    ,   output      [ADDR_W     :0]     rd_data_addr_i
+    ,   output      [ADDR_W     :0]     rd_data_addr_j
     ,   input       [K-1        :0]     rd_a_data
-    ,   output                          clear_a_en
-    ,   output      [K-1        :0]     clear_a_addr
+    ,   output  reg                     clear_a_en
+    ,   output  reg [K-1        :0]     clear_a_addr
 );
 
 reg         [ADDR_W-1   :0]     i_cnt_reg;
 reg         [ADDR_W     :0]     j_cnt_reg;
 
-assign      rd_data_addr    =   j_cnt_reg;
+assign      rd_data_addr_i  =   i_cnt_reg;
+assign      rd_data_addr_j  =   j_cnt_reg;
 
 typedef enum logic [3:0] {
     STA_IDLE                    ,
@@ -75,8 +77,11 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        i_cnt_reg   <=  0;
-        j_cnt_reg   <=  0;
+        i_cnt_reg       <=  0;
+        j_cnt_reg       <=  0;
+        j_cnt           <=  0;
+        clear_a_en      <=  0;
+        clear_a_addr    <=  0;
     end
     else begin
         case(state_next)

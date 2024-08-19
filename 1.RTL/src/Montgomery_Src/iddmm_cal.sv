@@ -15,11 +15,12 @@ module iddmm_cal#(
     ,   input   [K-1        :0]     p1
 
     ,   output                      wr_a_en
-    ,   output  [ADDR_W-1   :0]     wr_a_addr
+    ,   output  [ADDR_W     :0]     wr_a_addr
     ,   output  [K-1        :0]     wr_a_data
 );
 integer i,j,k;
 
+wire    [127    :0] u                       ;
 wire    [127    :0] c                       ;
 reg                 carry                   ;
 
@@ -69,8 +70,11 @@ always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         s <= 0;
     end
+    else if(j_cnt_stage_0_d[8] == N)begin
+        s <= result_x_mul_y + a_stage_0_d[8] + carry_stage_0_d[8];
+    end
     else begin
-        s <= result_x_mul_y + a_stage_0_d[8] + (j_cnt_stage_0_d[i] == N ? carry_stage_0_d[8] : 0);
+        s <= result_x_mul_y + a_stage_0_d[8];
     end
 end
 
@@ -181,17 +185,17 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 //pipe stage 5 ( 1 cycle )
-reg     [255:0]     buf0;
-reg                 j_cnt_stage_5_d;
+reg     [256    :0] buf0;
+reg     [ADDR_W :0] j_cnt_stage_5_d;
 assign u = buf0[0  +:128];
-assign c = buf0[128+:128];
+assign c = buf0[128+:129];
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         buf0 <= 0;
     end
     else begin
-        buf0 <= result_q_mul_p + s_stage_4_d[8] + c;
+        buf0 <= result_q_mul_p + s_stage_4_d[8] + buf0[128+:129];
     end
 end
 
@@ -206,7 +210,7 @@ end
 
 //pipe stage 6 ( 1 cycle )
 reg                         wr_a_en_reg;
-reg     [ADDR_W-1   :0]     wr_a_addr_reg;
+reg     [ADDR_W     :0]     wr_a_addr_reg;
 reg     [K-1        :0]     wr_a_data_reg;
 
 assign  wr_a_en     =   wr_a_en_reg;
@@ -217,8 +221,8 @@ always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         carry <= 0;
     end
-    else begin
-        carry <= j_cnt_stage_5_d == N ? c[0] : 0;
+    else if(j_cnt_stage_5_d == N) begin
+        carry <= c[0];
     end
 end
 

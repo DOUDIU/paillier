@@ -55,7 +55,8 @@ task single_request();
         wr_m        <=  big_m[i*K +: K];
         wr_m1       <=  wr_m1_;
     end
-
+    
+    @(posedge clk);
     task_req    <=  1;
     @(posedge clk);
     task_req    <=  0;

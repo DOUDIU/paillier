@@ -18,6 +18,14 @@ module iddmm_cal#(
     ,   output                      wr_a_en
     ,   output  [ADDR_W     :0]     wr_a_addr
     ,   output  [K-1        :0]     wr_a_data
+
+    ,   output                      fifo_wr_en_a
+    ,   output  [K-1        :0]     fifo_wr_data_a
+    ,   output                      fifo_wr_en_sub
+    ,   output  [K-1        :0]     fifo_wr_data_sub
+
+    ,   output                      cal_done
+    ,   output                      cal_sign
 );
 integer i,j,k;
 
@@ -239,6 +247,8 @@ end
 
 //pipe stage 6 ( 1 cycle )
 reg     [K-1        :0]     p_stage_6_d;
+reg     [ADDR_W-1   :0]     i_cnt_stage_6_d;
+reg     [ADDR_W     :0]     j_cnt_stage_6_d;
 
 reg                         wr_a_en_reg;
 reg     [ADDR_W     :0]     wr_a_addr_reg;
@@ -246,10 +256,13 @@ reg     [K-1        :0]     wr_a_data_reg;
 
 assign  wr_a_en         =   wr_a_en_reg;
 assign  wr_a_addr       =   wr_a_addr_reg;
-assign  wr_a_data       =   wr_a_data_reg;
+assign  wr_a_data       =   i_cnt_stage_6_d == N - 1 ? 0 : wr_a_data_reg;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
+        carry <= 0;
+    end
+    else if((i_cnt_stage_5_d == 0) && (j_cnt_stage_5_d == 0)) begin
         carry <= 0;
     end
     else if(j_cnt_stage_5_d == N) begin
@@ -279,27 +292,121 @@ end
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         p_stage_6_d <= 0;
+        i_cnt_stage_6_d <= 0;
+        j_cnt_stage_6_d <= 0;
     end
     else begin
         p_stage_6_d <= p_stage_5_d;
+        i_cnt_stage_6_d <= i_cnt_stage_5_d;
+        j_cnt_stage_6_d <= j_cnt_stage_5_d;
     end
 end
 
 //pipe stage 7 ( 1 cycle )
-reg    [K-1        :0]     p_stage_7_d;
+reg     [K-1        :0]     p_stage_7_d;
+reg     [ADDR_W-1   :0]     i_cnt_stage_7_d;
+reg     [ADDR_W     :0]     j_cnt_stage_7_d;
+
+reg                         fifo_wr_en_a_reg;
+reg     [K-1        :0]     fifo_wr_data_a_reg;
+
+assign  fifo_wr_en_a    =   fifo_wr_en_a_reg;
+assign  fifo_wr_data_a  =   fifo_wr_data_a_reg;
+
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        p_stage_7_d <= 0;
+        fifo_wr_en_a_reg        <= 0;
+        fifo_wr_data_a_reg      <= 0;
+    end
+    else if(i_cnt_stage_6_d == N - 1) begin
+        fifo_wr_en_a_reg        <= wr_a_en_reg;
+        fifo_wr_data_a_reg      <= wr_a_data_reg;
     end
     else begin
-        p_stage_7_d <= p_stage_6_d;
+        fifo_wr_en_a_reg        <= 0;
+        fifo_wr_data_a_reg      <= 0;
     end
 end
 
-//pipe stage 8 ( n cycle )
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        p_stage_7_d <= 0;
+        i_cnt_stage_7_d <= 0;
+        j_cnt_stage_7_d <= 0;
+    end
+    else begin
+        p_stage_7_d <= p_stage_6_d;
+        i_cnt_stage_7_d <= i_cnt_stage_6_d;
+        j_cnt_stage_7_d <= j_cnt_stage_6_d;
+    end
+end
 
+//pipe stage 8 ( 1 cycle )
+wire                        unsigned_out;
+wire    [K-1        :0]     sub_result;
+reg                         cal_done_reg;
 
+reg     [ADDR_W-1   :0]     i_cnt_stage_8_d;
+reg     [ADDR_W     :0]     j_cnt_stage_8_d;
 
+assign  cal_done        =   cal_done_reg;
+assign  cal_sign        =   unsigned_out;
+
+iddmm_sub iddmm_sub(
+        .clk            (clk            )
+    ,   .rst_n          (rst_n          )
+    ,   .sub_addr       (wr_a_addr_reg  )
+    ,   .sub_a          (wr_a_data_reg  )
+    ,   .sub_b          (p_stage_7_d    )
+    ,   .carry_in       (carry          )
+    ,   .unsigned_out   (unsigned_out   )
+    ,   .sub_result     (sub_result     )
+);
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        cal_done_reg <= 0;
+    end
+    else if((i_cnt_stage_7_d == N - 1) && (j_cnt_stage_7_d == N - 1)) begin
+        cal_done_reg <= 1;
+    end
+    else begin
+        cal_done_reg <= 0;
+    end
+end
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        i_cnt_stage_8_d <= 0;
+        j_cnt_stage_8_d <= 0;
+    end
+    else begin
+        i_cnt_stage_8_d <= i_cnt_stage_7_d;
+        j_cnt_stage_8_d <= j_cnt_stage_7_d;
+    end
+end
+
+//pipe stage 9 ( 1 cycle )
+reg                         fifo_wr_en_sub_reg;
+reg     [K-1        :0]     fifo_wr_data_sub_reg;
+
+assign  fifo_wr_en_sub  =   fifo_wr_en_sub_reg;
+assign  fifo_wr_data_sub=   fifo_wr_data_sub_reg;
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        fifo_wr_en_sub_reg      <= 0;
+        fifo_wr_data_sub_reg    <= 0;
+    end
+    else if((i_cnt_stage_8_d == N - 1) && (j_cnt_stage_8_d != N)) begin
+        fifo_wr_en_sub_reg      <= 1;
+        fifo_wr_data_sub_reg    <= sub_result;
+    end
+    else begin
+        fifo_wr_en_sub_reg      <= 0;
+        fifo_wr_data_sub_reg    <= 0;
+    end
+end
 
 
 endmodule

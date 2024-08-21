@@ -24,17 +24,7 @@ wire               mm_valid     ;
 reg     [K*N-1  :   0]     MM_RESULT;
 
 mm_iddmm_top#(
-        .MULT_METHOD    ("COMMON"       )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                            // "TRADITION" :MULT_LATENCY=9                
-                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    ("COMMON"       )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                            // 
-    ,   .ADD2_METHOD    ("COMMON"       )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                            // 
-    ,   .K              (K              )
+        .K              (K              )
     ,   .N              (N              )
 )mm_iddmm_top_inst(
         .clk            (clk            )

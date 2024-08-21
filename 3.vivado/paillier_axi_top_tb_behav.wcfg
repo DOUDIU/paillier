@@ -1,0 +1,424 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<wave_config>
+   <wave_state>
+   </wave_state>
+   <db_ref_list>
+      <db_ref path="paillier_axi_top_tb_behav.wdb" id="1">
+         <top_modules>
+            <top_module name="glbl" />
+            <top_module name="paillier_axi_top_tb" />
+            <top_module name="tvip_axi_types_pkg" />
+         </top_modules>
+      </db_ref>
+   </db_ref_list>
+   <zoom_setting>
+      <ZoomStartTime time="23,908,006.600 ns"></ZoomStartTime>
+      <ZoomEndTime time="23,908,113.551 ns"></ZoomEndTime>
+      <Cursor1Time time="23,908,042.600 ns"></Cursor1Time>
+   </zoom_setting>
+   <column_width_setting>
+      <NameColumnWidth column_width="299"></NameColumnWidth>
+      <ValueColumnWidth column_width="90"></ValueColumnWidth>
+   </column_width_setting>
+   <WVObjectSize size="5" />
+   <wvobject fp_name="group200" type="group">
+      <obj_property name="label">paillier_control_signal</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/M_AXI_ACLK" type="logic">
+         <obj_property name="ElementShortName">M_AXI_ACLK</obj_property>
+         <obj_property name="ObjectShortName">M_AXI_ACLK</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/state_now" type="array">
+         <obj_property name="ElementShortName">state_now[3:0]</obj_property>
+         <obj_property name="ObjectShortName">state_now[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/state_next" type="array">
+         <obj_property name="ElementShortName">state_next[3:0]</obj_property>
+         <obj_property name="ObjectShortName">state_next[3:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/paillier_start" type="logic">
+         <obj_property name="ElementShortName">paillier_start</obj_property>
+         <obj_property name="ObjectShortName">paillier_start</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/paillier_mode" type="array">
+         <obj_property name="ElementShortName">paillier_mode[1:0]</obj_property>
+         <obj_property name="ObjectShortName">paillier_mode[1:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/paillier_finished" type="logic">
+         <obj_property name="ElementShortName">paillier_finished</obj_property>
+         <obj_property name="ObjectShortName">paillier_finished</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/block_is_busy" type="array">
+         <obj_property name="ElementShortName">block_is_busy[0:0]</obj_property>
+         <obj_property name="ObjectShortName">block_is_busy[0:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/all_block_is_busy" type="logic">
+         <obj_property name="ElementShortName">all_block_is_busy</obj_property>
+         <obj_property name="ObjectShortName">all_block_is_busy</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/block_lowest_zero_bit" type="array">
+         <obj_property name="ElementShortName">block_lowest_zero_bit[-1:0]</obj_property>
+         <obj_property name="ObjectShortName">block_lowest_zero_bit[-1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/loop_counter" type="array">
+         <obj_property name="ElementShortName">loop_counter[1:0]</obj_property>
+         <obj_property name="ObjectShortName">loop_counter[1:0]</obj_property>
+         <obj_property name="CustomSignalColor">#FFD700</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/single_task_read_cnt" type="array">
+         <obj_property name="ElementShortName">single_task_read_cnt[1:0]</obj_property>
+         <obj_property name="ObjectShortName">single_task_read_cnt[1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/read_index" type="array">
+         <obj_property name="ElementShortName">read_index[5:0]</obj_property>
+         <obj_property name="ObjectShortName">read_index[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/block_target_addr" type="array">
+         <obj_property name="ElementShortName">block_target_addr[0:0][35:0]</obj_property>
+         <obj_property name="ObjectShortName">block_target_addr[0:0][35:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject type="divider" fp_name="divider2675">
+         <obj_property name="label">FIFO</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/fifo_is_full" type="array">
+         <obj_property name="ElementShortName">fifo_is_full[0:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_is_full[0:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/all_fifo_is_empty" type="logic">
+         <obj_property name="ElementShortName">all_fifo_is_empty</obj_property>
+         <obj_property name="ObjectShortName">all_fifo_is_empty</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/fifo_lowest_zero_bit" type="array">
+         <obj_property name="ElementShortName">fifo_lowest_zero_bit[-1:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_lowest_zero_bit[-1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/fifo_is_busy_next" type="array">
+         <obj_property name="ElementShortName">fifo_is_busy_next[-1:0]</obj_property>
+         <obj_property name="ObjectShortName">fifo_is_busy_next[-1:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/rd_dout" type="array">
+         <obj_property name="ElementShortName">rd_dout[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_dout[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/rd_cnt" type="array">
+         <obj_property name="ElementShortName">rd_cnt[0:0][5:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_cnt[0:0][5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/rd_rdy" type="array">
+         <obj_property name="ElementShortName">rd_rdy[0:0]</obj_property>
+         <obj_property name="ObjectShortName">rd_rdy[0:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group199" type="group">
+      <obj_property name="label">AXI_LITE</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/paillier_axi_top_tb/S_LITE_AXI_ACLK" type="logic">
+         <obj_property name="ElementShortName">S_LITE_AXI_ACLK</obj_property>
+         <obj_property name="ObjectShortName">S_LITE_AXI_ACLK</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/S_LITE_AXI_ARESETN" type="logic">
+         <obj_property name="ElementShortName">S_LITE_AXI_ARESETN</obj_property>
+         <obj_property name="ObjectShortName">S_LITE_AXI_ARESETN</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/Virtual_Axi_Lite_Stimulation_inst/mst_exec_state" type="array">
+         <obj_property name="ElementShortName">mst_exec_state[2:0]</obj_property>
+         <obj_property name="ObjectShortName">mst_exec_state[2:0]</obj_property>
+         <obj_property name="Radix">BINARYRADIX</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/Virtual_Axi_Lite_Stimulation_inst/axi_wdata_buf" type="array">
+         <obj_property name="ElementShortName">axi_wdata_buf[31:0]</obj_property>
+         <obj_property name="ObjectShortName">axi_wdata_buf[31:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/Virtual_Axi_Lite_Stimulation_inst/write_index" type="array">
+         <obj_property name="ElementShortName">write_index[0:0]</obj_property>
+         <obj_property name="ObjectShortName">write_index[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/Virtual_Axi_Lite_Stimulation_inst/last_write" type="logic">
+         <obj_property name="ElementShortName">last_write</obj_property>
+         <obj_property name="ObjectShortName">last_write</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/Virtual_Axi_Lite_Stimulation_inst/writes_done" type="logic">
+         <obj_property name="ElementShortName">writes_done</obj_property>
+         <obj_property name="ObjectShortName">writes_done</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group204" type="group">
+      <obj_property name="label">AXI_FULL</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/M_AXI_ACLK" type="logic">
+         <obj_property name="ElementShortName">M_AXI_ACLK</obj_property>
+         <obj_property name="ObjectShortName">M_AXI_ACLK</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/M_AXI_ARESETN" type="logic">
+         <obj_property name="ElementShortName">M_AXI_ARESETN</obj_property>
+         <obj_property name="ObjectShortName">M_AXI_ARESETN</obj_property>
+      </wvobject>
+      <wvobject fp_name="group267" type="group">
+         <obj_property name="label">WR</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject type="divider" fp_name="divider250">
+            <obj_property name="label">WADDR</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWID" type="array">
+            <obj_property name="ElementShortName">AXI_AWID[31:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWID[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWADDR" type="array">
+            <obj_property name="ElementShortName">AXI_AWADDR[35:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWADDR[35:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/AXI_FULL_IF/AXI_AWVALID" type="logic">
+            <obj_property name="ElementShortName">AXI_AWVALID</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWVALID</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/AXI_FULL_IF/AXI_AWREADY" type="logic">
+            <obj_property name="ElementShortName">AXI_AWREADY</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWREADY</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWLEN" type="array">
+            <obj_property name="ElementShortName">AXI_AWLEN[7:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWLEN[7:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWSIZE" type="array">
+            <obj_property name="ElementShortName">AXI_AWSIZE[2:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWSIZE[2:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWBURST" type="array">
+            <obj_property name="ElementShortName">AXI_AWBURST[1:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWBURST[1:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWCACHE" type="array">
+            <obj_property name="ElementShortName">AXI_AWCACHE</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWCACHE</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWPROT" type="array">
+            <obj_property name="ElementShortName">AXI_AWPROT</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWPROT</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_AWQOS" type="array">
+            <obj_property name="ElementShortName">AXI_AWQOS[3:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_AWQOS[3:0]</obj_property>
+         </wvobject>
+         <wvobject type="divider" fp_name="divider250">
+            <obj_property name="label">WDATA</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_WVALID" type="logic">
+            <obj_property name="ElementShortName">AXI_WVALID</obj_property>
+            <obj_property name="ObjectShortName">AXI_WVALID</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_WREADY" type="logic">
+            <obj_property name="ElementShortName">AXI_WREADY</obj_property>
+            <obj_property name="ObjectShortName">AXI_WREADY</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_WDATA" type="array">
+            <obj_property name="ElementShortName">AXI_WDATA[127:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_WDATA[127:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_WSTRB" type="array">
+            <obj_property name="ElementShortName">AXI_WSTRB[15:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_WSTRB[15:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_WLAST" type="logic">
+            <obj_property name="ElementShortName">AXI_WLAST</obj_property>
+            <obj_property name="ObjectShortName">AXI_WLAST</obj_property>
+         </wvobject>
+         <wvobject type="divider" fp_name="divider254">
+            <obj_property name="label">WRESPONSE</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_BVALID" type="logic">
+            <obj_property name="ElementShortName">AXI_BVALID</obj_property>
+            <obj_property name="ObjectShortName">AXI_BVALID</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_BREADY" type="logic">
+            <obj_property name="ElementShortName">AXI_BREADY</obj_property>
+            <obj_property name="ObjectShortName">AXI_BREADY</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_BID" type="array">
+            <obj_property name="ElementShortName">AXI_BID[31:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_BID[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_BRESP" type="array">
+            <obj_property name="ElementShortName">AXI_BRESP[1:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_BRESP[1:0]</obj_property>
+         </wvobject>
+      </wvobject>
+      <wvobject fp_name="group268" type="group">
+         <obj_property name="label">RD</obj_property>
+         <obj_property name="DisplayName">label</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+         <wvobject type="divider" fp_name="divider255">
+            <obj_property name="label">RADDR</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARVALID" type="logic">
+            <obj_property name="ElementShortName">AXI_ARVALID</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARVALID</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARREADY" type="logic">
+            <obj_property name="ElementShortName">AXI_ARREADY</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARREADY</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARID" type="array">
+            <obj_property name="ElementShortName">AXI_ARID[31:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARID[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARADDR" type="array">
+            <obj_property name="ElementShortName">AXI_ARADDR[35:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARADDR[35:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARLEN" type="array">
+            <obj_property name="ElementShortName">AXI_ARLEN[7:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARLEN[7:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARSIZE" type="array">
+            <obj_property name="ElementShortName">AXI_ARSIZE[2:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARSIZE[2:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARBURST" type="array">
+            <obj_property name="ElementShortName">AXI_ARBURST[1:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARBURST[1:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARCACHE" type="array">
+            <obj_property name="ElementShortName">AXI_ARCACHE</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARCACHE</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARPROT" type="array">
+            <obj_property name="ElementShortName">AXI_ARPROT</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARPROT</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_ARQOS" type="array">
+            <obj_property name="ElementShortName">AXI_ARQOS[3:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_ARQOS[3:0]</obj_property>
+         </wvobject>
+         <wvobject type="divider" fp_name="divider256">
+            <obj_property name="label">RDATA</obj_property>
+            <obj_property name="DisplayName">label</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RVALID" type="logic">
+            <obj_property name="ElementShortName">AXI_RVALID</obj_property>
+            <obj_property name="ObjectShortName">AXI_RVALID</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RREADY" type="logic">
+            <obj_property name="ElementShortName">AXI_RREADY</obj_property>
+            <obj_property name="ObjectShortName">AXI_RREADY</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RID" type="array">
+            <obj_property name="ElementShortName">AXI_RID[31:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_RID[31:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RDATA" type="array">
+            <obj_property name="ElementShortName">AXI_RDATA[127:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_RDATA[127:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RRESP" type="array">
+            <obj_property name="ElementShortName">AXI_RRESP[1:0]</obj_property>
+            <obj_property name="ObjectShortName">AXI_RRESP[1:0]</obj_property>
+         </wvobject>
+         <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/AXI_FULL_IF/AXI_RLAST" type="logic">
+            <obj_property name="ElementShortName">AXI_RLAST</obj_property>
+            <obj_property name="ObjectShortName">AXI_RLAST</obj_property>
+         </wvobject>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group272" type="group">
+      <obj_property name="label">Paillier_Enc</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/task_cmd" type="array">
+         <obj_property name="ElementShortName">task_cmd[0:0][1:0]</obj_property>
+         <obj_property name="ObjectShortName">task_cmd[0:0][1:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/task_req" type="array">
+         <obj_property name="ElementShortName">task_req[0:0]</obj_property>
+         <obj_property name="ObjectShortName">task_req[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/task_end" type="array">
+         <obj_property name="ElementShortName">task_end[0:0]</obj_property>
+         <obj_property name="ObjectShortName">task_end[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_m_data" type="array">
+         <obj_property name="ElementShortName">enc_m_data[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_m_data[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_m_valid" type="array">
+         <obj_property name="ElementShortName">enc_m_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_m_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_r_data" type="array">
+         <obj_property name="ElementShortName">enc_r_data[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_r_data[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_r_valid" type="array">
+         <obj_property name="ElementShortName">enc_r_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_r_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/dec_c_data" type="array">
+         <obj_property name="ElementShortName">dec_c_data[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">dec_c_data[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/dec_c_valid" type="array">
+         <obj_property name="ElementShortName">dec_c_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">dec_c_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/homo_add_c1" type="array">
+         <obj_property name="ElementShortName">homo_add_c1[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">homo_add_c1[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/homo_add_c1_valid" type="array">
+         <obj_property name="ElementShortName">homo_add_c1_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">homo_add_c1_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/homo_add_c2" type="array">
+         <obj_property name="ElementShortName">homo_add_c2[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">homo_add_c2[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/homo_add_c2_valid" type="array">
+         <obj_property name="ElementShortName">homo_add_c2_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">homo_add_c2_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/scalar_mul_c1" type="array">
+         <obj_property name="ElementShortName">scalar_mul_c1[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">scalar_mul_c1[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/scalar_mul_c1_valid" type="array">
+         <obj_property name="ElementShortName">scalar_mul_c1_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">scalar_mul_c1_valid[0:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/scalar_mul_const" type="array">
+         <obj_property name="ElementShortName">scalar_mul_const[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">scalar_mul_const[0:0][127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/u_axi_full_core/scalar_mul_const_valid" type="array">
+         <obj_property name="ElementShortName">scalar_mul_const_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">scalar_mul_const_valid[0:0]</obj_property>
+      </wvobject>
+   </wvobject>
+   <wvobject fp_name="group3377" type="group">
+      <obj_property name="label">Paillier_Output</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_out_data" type="array">
+         <obj_property name="ElementShortName">enc_out_data[0:0][127:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_out_data[0:0][127:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_axi_top_tb/paillier_axi_top_inst/enc_out_valid" type="array">
+         <obj_property name="ElementShortName">enc_out_valid[0:0]</obj_property>
+         <obj_property name="ObjectShortName">enc_out_valid[0:0]</obj_property>
+         <obj_property name="isExpanded"></obj_property>
+      </wvobject>
+   </wvobject>
+</wave_config>

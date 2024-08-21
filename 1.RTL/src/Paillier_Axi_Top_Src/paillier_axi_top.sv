@@ -1,19 +1,9 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 24
+        parameter BLOCK_COUNT   = 25
     ,   parameter TEST_TIMES    = 18
 	,	parameter K             = 128
     ,   parameter N             = 32
-    ,   parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                // "TRADITION" :MULT_LATENCY=9                
-                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
-    ,   parameter ADD1_METHOD   = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
-                                                // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
-                                                // 
-    ,   parameter ADD2_METHOD   = "COMMON"      // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                // 
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave
@@ -154,17 +144,7 @@ saxi_lite_core u_saxi_lite_core(
 generate 
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
         paillier_top #( 
-                .MULT_METHOD                (MULT_METHOD                )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                                            // "TRADITION" :MULT_LATENCY=9                
-                                                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-            ,   .ADD1_METHOD                (ADD1_METHOD                )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                                                            // 
-            ,   .ADD2_METHOD                (ADD2_METHOD                )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                                            // 
-            ,   .K                          (K                          )
+                .K                          (K                          )
             ,   .N                          (N                          )
         )paillier_top_inst(
                 .clk                        (M_AXI_ACLK                 )

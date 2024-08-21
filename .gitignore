@@ -5,6 +5,7 @@
 
 3.vivado/*
 !3.vivado/*.xpr
+!3.vivado/*.wcfg
 
 4.questasim/*
 

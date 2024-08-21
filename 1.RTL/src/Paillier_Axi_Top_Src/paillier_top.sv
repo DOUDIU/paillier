@@ -1,15 +1,5 @@
 module paillier_top#(
-        parameter MULT_METHOD   = "TRADITION"   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                // "TRADITION" :MULT_LATENCY=9                
-                                                // "VEDIC8"    :VEDIC MULT, MULT_LATENCY=8 
-    ,   parameter ADD1_METHOD   = "3-2_PIPE1"   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                // "3-2_PIPE2" :classic pipeline adder,stage 2,ADD1_LATENCY=2
-                                                // "3-2_PIPE1" :classic pipeline adder,stage 1,ADD1_LATENCY=1
-                                                // 
-    ,   parameter ADD2_METHOD   = "3-2_DELAY2"  // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                // 
-    ,   parameter K             = 128
+        parameter K             = 128
     ,   parameter N             = 32
 )(
         input                   clk
@@ -704,17 +694,7 @@ end
 // );
 
 montgomery_iddmm_top #(
-        .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                            // "TRADITION" :MULT_LATENCY=9                
-                                            // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-    ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                            // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                            // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                            // 
-    ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                            // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                            // 
-    ,   .K              (K              )
+        .K              (K              )
     ,   .N              (N              )
 )montgomery_iddmm_top_inst(
         .clk            (clk            )

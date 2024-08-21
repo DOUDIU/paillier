@@ -48,7 +48,6 @@ parameter   PAILLIER_MODE           = STA_ENCRYPTION;
 parameter   BLOCK_COUNT             = 1;
 parameter   TEST_TIMES              = 1;
 
-//To speed up the simulation, the parameter of the Montgomery module is all configured as "COMMON". The final outcome is as identical as others.
 paillier_axi_top#(
         .BLOCK_COUNT                (BLOCK_COUNT            )
     ,   .TEST_TIMES                 (TEST_TIMES             )

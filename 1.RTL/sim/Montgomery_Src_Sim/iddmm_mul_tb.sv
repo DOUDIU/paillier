@@ -2,8 +2,8 @@ module iddmm_mul_tb();
 
 reg                 clk         = 0 ;
 reg                 rst_n       = 0 ;
-reg     [127:0]     mul_x           ;
-reg     [127:0]     mul_y           ;
+reg     [127:0]     mul_x       = 0 ;
+reg     [127:0]     mul_y       = 0 ;
 wire    [255:0]     result          ;
 wire    [127:0]     result_low128   ;
 
@@ -15,16 +15,13 @@ assign result_confirm = (mul_x * mul_y);//&((1<<64) - 1);
 integer i;
 
 task test_128_to_256();
-    mul_x   =   0;
-    mul_y   =   0;
-    wait(rst_n);
     @(posedge clk);
     @(posedge clk);
 
-    mul_x = $random;
-    mul_y = $random;
+    mul_x   <= $random;
+    mul_y   <= $random;
     //pending 9 clock cycle
-    for(i = 0; i < 10; i = i + 1)begin
+    for(i = 0; i < 7; i = i + 1)begin
         @(posedge clk);
     end
     assert((result == result_confirm) && (result_low128 == result_confirm[127:0]))
@@ -36,11 +33,12 @@ task test_128_to_256();
     $display("result_output : %x",result_low128);
 endtask
 
-
 initial begin
+    wait(rst_n);
     for(i = 0; i < 100; i = i + 1)begin
         test_128_to_256();
     end
+    $stop;
 end
 
 iddmm_mul_128_to_256 iddmm_mul_128_to_256_inst(

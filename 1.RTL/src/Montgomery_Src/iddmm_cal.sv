@@ -33,7 +33,7 @@ wire    [127    :0] u                       ;
 wire    [127    :0] c                       ;
 reg                 carry                   ;
 
-//pipe stage 0 ( 9 cycles )
+//pipe stage 0 ( 5 cycles )
 wire    [255        :0]     result_x_mul_y          ;
 reg     [127        :0]     p_stage_0_d     [0:8]   ;
 reg     [127        :0]     a_stage_0_d     [0:8]   ;
@@ -75,33 +75,48 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-//pipe stage 1 ( 1 cycle )
-reg     [255        :0]     s               ;
-reg     [127        :0]     p_stage_1_d     ;
-reg     [ADDR_W-1   :0]     i_cnt_stage_1_d ;
-reg     [ADDR_W     :0]     j_cnt_stage_1_d ;
-always@(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        s <= 0;
-    end
-    else if(j_cnt_stage_0_d[8] == N)begin
-        s <= result_x_mul_y + a_stage_0_d[8] + carry_stage_0_d[8];
-    end
-    else begin
-        s <= result_x_mul_y + a_stage_0_d[8];
-    end
-end
+//pipe stage 1 ( 2 cycles )
+reg     [255        :0]     s                   ;
+reg     [127        :0]     p_stage_1_d     [0:1];
+reg     [ADDR_W-1   :0]     i_cnt_stage_1_d [0:1];
+reg     [ADDR_W     :0]     j_cnt_stage_1_d [0:1];
+// always@(posedge clk or negedge rst_n) begin
+//     if(!rst_n) begin
+//         s <= 0;
+//     end
+//     else if(j_cnt_stage_0_d[8] == N)begin
+//         s <= result_x_mul_y + a_stage_0_d[8] + carry_stage_0_d[8];
+//     end
+//     else begin
+//         s <= result_x_mul_y + a_stage_0_d[8];
+//     end
+// end
+iddmm_adder1 iddmm_adder1(
+        .clk            (clk                )
+    ,   .rst_n          (rst_n              )
+    ,   .j_cnt          (j_cnt_stage_0_d[5] )
+    ,   .adder_a        (result_x_mul_y     )
+    ,   .adder_b        (a_stage_0_d[5]     )
+    ,   .carry_in       (carry_stage_0_d[5] )
+    ,   .adder_result   (s                  )
+);
+
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        p_stage_1_d <= 0;
-        i_cnt_stage_1_d <= 0;
-        j_cnt_stage_1_d <= 0;
+        p_stage_1_d[0] <= 0;
+        i_cnt_stage_1_d[0] <= 0;
+        j_cnt_stage_1_d[0] <= 0;
     end
     else begin
-        p_stage_1_d <= p_stage_0_d[8];
-        i_cnt_stage_1_d <= i_cnt_stage_0_d[8];
-        j_cnt_stage_1_d <= j_cnt_stage_0_d[8];
+        p_stage_1_d[0] <= p_stage_0_d[5];
+        i_cnt_stage_1_d[0] <= i_cnt_stage_0_d[5];
+        j_cnt_stage_1_d[0] <= j_cnt_stage_0_d[5];
+        for(i = 1; i < 2; i = i + 1)begin
+            p_stage_1_d[i] <= p_stage_1_d[i - 1];
+            i_cnt_stage_1_d[i] <= i_cnt_stage_1_d[i - 1];
+            j_cnt_stage_1_d[i] <= j_cnt_stage_1_d[i - 1];
+        end
     end
 end
 
@@ -130,9 +145,9 @@ always@(posedge clk or negedge rst_n) begin
         end
     end
     else begin
-        p_stage_2_d[0] <= p_stage_1_d;
-        i_cnt_stage_2_d[0] <= i_cnt_stage_1_d;
-        j_cnt_stage_2_d[0] <= j_cnt_stage_1_d;
+        p_stage_2_d[0] <= p_stage_1_d[1];
+        i_cnt_stage_2_d[0] <= i_cnt_stage_1_d[1];
+        j_cnt_stage_2_d[0] <= j_cnt_stage_1_d[1];
         s_stage_2_d[0] <= s;
         for(i = 1; i < 6; i = i + 1)begin
             p_stage_2_d[i] <= p_stage_2_d[i - 1];
@@ -177,7 +192,7 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-//pipe stage 4 ( 9 cycles )
+//pipe stage 4 ( 6 cycles )
 wire    [255        :0]     result_q_mul_p          ;
 reg     [255        :0]     s_stage_4_d     [0:8]   ;
 reg     [K-1        :0]     p_stage_4_d     [0:8]   ;
@@ -228,7 +243,7 @@ always@(posedge clk or negedge rst_n) begin
         buf0 <= 0;
     end
     else begin
-        buf0 <= result_q_mul_p + s_stage_4_d[8] + buf0[128+:129];
+        buf0 <= result_q_mul_p + s_stage_4_d[5] + buf0[128+:129];
     end
 end
 
@@ -239,9 +254,9 @@ always@(posedge clk or negedge rst_n) begin
         j_cnt_stage_5_d <= 0;
     end
     else begin
-        p_stage_5_d <= p_stage_4_d[8];
-        i_cnt_stage_5_d <= i_cnt_stage_4_d[8];
-        j_cnt_stage_5_d <= j_cnt_stage_4_d[8];
+        p_stage_5_d <= p_stage_4_d[5];
+        i_cnt_stage_5_d <= i_cnt_stage_4_d[5];
+        j_cnt_stage_5_d <= j_cnt_stage_4_d[5];
     end
 end
 

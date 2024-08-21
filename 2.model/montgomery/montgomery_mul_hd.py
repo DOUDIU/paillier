@@ -551,6 +551,15 @@ def data_seperate_printf_new(data,nbit,n,order,file_path):#0 reverse,1 normal
             print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
     print('\n')
 
+# def seperate_mul():
+#     n = 
+#     x = [0 for i in range(n)]
+#     y = [0 for i in range(n)]
+#     for i in range(n):
+#         x_[i] = mm(xx>>(i*k),k)
+#         y_[i] = mm(yy>>(i*k),k)
+
+
 if __name__=='__main__':
     # rsa_test()
     # montgomery_mul_test()

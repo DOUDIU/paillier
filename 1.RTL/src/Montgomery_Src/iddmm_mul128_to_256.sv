@@ -1,81 +1,80 @@
 /*
-X = x7x6x5x4x3x2x1
-Y = y7y6y5y4y3y2y1
-X*Y = (x7x6x5x4x3x2x1) * (y7y6y5y4y3y2y1)
-    = ((x7 << 112) + (x6 << 96) + (x5 << 80) + (x4 << 64) + (x3 << 48) + (x2 << 32) + (x1 << 16) + x0)
+X = x5x4x3x2x1x0
+Y = y7y6y5y4y3y2y1y0
+X*Y = (x5x4x3x2x1x0) * (y7y6y5y4y3y2y1y0)
+    = ((x5 << 120) + (x4 << 96) + (x3 << 72) + (x2 << 48) + (x1 << 24) + x0)
         * ((y7 << 112) + (y6 << 96) + (y5 << 80) + (y4 << 64) + (y3 << 48) + (y2 << 32) + (y1 << 16) + y0)
-    =  ((x7y7) << 224) 
-     + ((x7y6 + x6y7) << 208) 
-     + ((x7y5 + x6y6 + x5y7) << 192) 
-     + ((x7y4 + x6y5 + x5y6 + x4y7) << 176)
-     + ((x7y3 + x6y4 + x5y5 + x4y6 + x3y7) << 160)
-     + ((x7y2 + x6y3 + x5y4 + x4y5 + x3y6 + x2y7) << 144)
-     + ((x7y1 + x6y2 + x5y3 + x4y4 + x3y5 + x2y6 + x1y7) << 128)
-     + ((x7y0 + x6y1 + x5y2 + x4y3 + x3y4 + x2y5 + x1y6+ x0y7) << 112)
-     + ((x6y0 + x5y1 + x4y2 + x3y3 + x2y4 + x1y5 + x0y6) << 96)
-     + ((x5y0 + x4y1 + x3y2 + x2y3 + x1y4 + x0y5) << 80)
-     + ((x4y0 + x3y1 + x2y2 + x1y3 + x0y4) << 64)
-     + ((x3y0 + x2y1 + x1y2 + x0y3) << 48)
-     + ((x2y0 + x1y1 + x0y2) << 32)
-     + ((x1y0 + x0y1) << 16)
-     +x0y0
+    =  (
+        (x5y7) << 232
+    +   (x5y6) << 216
+    +   (x4y7) << 208
+    +   (x5y5) << 200
+    +   (x4y6) << 192
+
+    +   (x5y4 + x3y7) << 184
+    +   (x4y5) << 176
+    +   (x5y3 + x3y6) << 168
+    +   (x4y4 + x2y7) << 160
+    +   (x5y2 + x3y5) << 152
+
+    +   (x4y3 + x2y6) << 144
+    +   (x5y1 + x3y4 + x1y7) << 136
+    +   (x4y2 + x2y5) << 128
+
+
+    +   (x5y0 + x3y3 + x1y6) << 120
+    +   (x4y1 + x2y4 + x0y7) << 112
+    +   (x3y2 + x1y5) << 104
+
+    +   (x4y0 + x2y3 + x0y6) << 96
+    +   (x3y1 + x1y4) << 88
+    +   (x2y2 + x0y5) << 80
+    +   (x3y0 + x1y3) << 72
+
+    +   (x2y1 + x0y4) << 64
+    +   (x1y2) << 56
+    +   (x2y0 + x0y3) << 48
+    +   (x1y1) << 40
+    +   (x0y2) << 32
+    +   (x1y0) << 24
+    +   (x0y1) << 16
+    +   (x0y0)
+)
 */
 module iddmm_mul_128_to_256(
-        input               clk
-    ,   input               rst_n
+        input                           clk
+    ,   input                           rst_n
 
-    ,   input   [127    :0] x
-    ,   input   [127    :0] y
-    ,   output  [255    :0] result
+    ,   input           [127    :0]     x
+    ,   input           [127    :0]     y
+    ,   output  reg     [255    :0]     result
 );
+wire [7 :0]x5 = x[120   +: 8];
+wire [23:0]x4 = x[96    +:24];
+wire [23:0]x3 = x[72    +:24];
+wire [23:0]x2 = x[48    +:24];
+wire [23:0]x1 = x[24    +:24];
+wire [23:0]x0 = x[ 0    +:24];
 
-wire [15:0]x7 = x[127:112];
-wire [15:0]x6 = x[111:96];
-wire [15:0]x5 = x[95:80];
-wire [15:0]x4 = x[79:64];
-wire [15:0]x3 = x[63:48];
-wire [15:0]x2 = x[47:32];
-wire [15:0]x1 = x[31:16];
-wire [15:0]x0 = x[15:0];
+wire [15:0]y7 = y[127   :112];
+wire [15:0]y6 = y[111   : 96];
+wire [15:0]y5 = y[95    : 80];
+wire [15:0]y4 = y[79    : 64];
+wire [15:0]y3 = y[63    : 48];
+wire [15:0]y2 = y[47    : 32];
+wire [15:0]y1 = y[31    : 16];
+wire [15:0]y0 = y[15    :  0];
 
-wire [15:0]y7 = y[127:112];
-wire [15:0]y6 = y[111:96];
-wire [15:0]y5 = y[95:80];
-wire [15:0]y4 = y[79:64];
-wire [15:0]y3 = y[63:48];
-wire [15:0]y2 = y[47:32];
-wire [15:0]y1 = y[31:16];
-wire [15:0]y0 = y[15:0];
+reg[39:0]x5y7, x5y6, x5y5, x5y4, x5y3, x5y2, x5y1, x5y0;
+reg[39:0]x4y7, x4y6, x4y5, x4y4, x4y3, x4y2, x4y1, x4y0;
+reg[39:0]x3y7, x3y6, x3y5, x3y4, x3y3, x3y2, x3y1, x3y0;
+reg[39:0]x2y7, x2y6, x2y5, x2y4, x2y3, x2y2, x2y1, x2y0;
+reg[39:0]x1y7, x1y6, x1y5, x1y4, x1y3, x1y2, x1y1, x1y0;
+reg[39:0]x0y7, x0y6, x0y5, x0y4, x0y3, x0y2, x0y1, x0y0;
 
-reg[31:0]x7y7, x7y6, x7y5, x7y4, x7y3, x7y2, x7y1, x7y0;
-reg[31:0]x6y7, x6y6, x6y5, x6y4, x6y3, x6y2, x6y1, x6y0;
-reg[31:0]x5y7, x5y6, x5y5, x5y4, x5y3, x5y2, x5y1, x5y0;
-reg[31:0]x4y7, x4y6, x4y5, x4y4, x4y3, x4y2, x4y1, x4y0;
-reg[31:0]x3y7, x3y6, x3y5, x3y4, x3y3, x3y2, x3y1, x3y0;
-reg[31:0]x2y7, x2y6, x2y5, x2y4, x2y3, x2y2, x2y1, x2y0;
-reg[31:0]x1y7, x1y6, x1y5, x1y4, x1y3, x1y2, x1y1, x1y0;
-reg[31:0]x0y7, x0y6, x0y5, x0y4, x0y3, x0y2, x0y1, x0y0;
-
+// pipe 0
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        x7y7 <= 0; 
-        x7y6 <= 0;
-        x7y5 <= 0;
-        x7y4 <= 0;
-        x7y3 <= 0;
-        x7y2 <= 0;
-        x7y1 <= 0;
-        x7y0 <= 0;
-
-        x6y7 <= 0;
-        x6y6 <= 0;
-        x6y5 <= 0;
-        x6y4 <= 0;
-        x6y3 <= 0;
-        x6y2 <= 0;
-        x6y1 <= 0;
-        x6y0 <= 0;
-
         x5y7 <= 0;
         x5y6 <= 0;
         x5y5 <= 0;
@@ -131,24 +130,6 @@ always @(posedge clk or negedge rst_n) begin
         x0y0 <= 0;
     end
     else begin
-        x7y7 <= x7 * y7; 
-        x7y6 <= x7 * y6;
-        x7y5 <= x7 * y5;
-        x7y4 <= x7 * y4;
-        x7y3 <= x7 * y3;
-        x7y2 <= x7 * y2;
-        x7y1 <= x7 * y1;
-        x7y0 <= x7 * y0;
-
-        x6y7 <= x6 * y7;
-        x6y6 <= x6 * y6;
-        x6y5 <= x6 * y5;
-        x6y4 <= x6 * y4;
-        x6y3 <= x6 * y3;
-        x6y2 <= x6 * y2;
-        x6y1 <= x6 * y1;
-        x6y0 <= x6 * y0;
-
         x5y7 <= x5 * y7;
         x5y6 <= x5 * y6;
         x5y5 <= x5 * y5;
@@ -205,301 +186,312 @@ always @(posedge clk or negedge rst_n) begin
     end
 end
 
-// 
-// round 0
-reg [255:0]sum077;
-reg [255:0]sum076, sum075, sum074, sum073, sum072, sum071, sum070;
-reg [255:0]sum066, sum065, sum064, sum063, sum062, sum061, sum060;
-reg [255:0]sum055, sum054, sum053, sum052, sum051, sum050;
-reg [255:0]sum044, sum043, sum042, sum041, sum040;
-reg [255:0]sum033, sum032, sum031, sum030;
-reg [255:0]sum022, sum021, sum020;
-reg [255:0]sum011, sum010;
-reg [255:0]sum000;
+// pipe 1
+reg [64:0] sum_s1_0;
+reg [64:0] sum_s1_1;
+reg [64:0] sum_s1_2;
+reg [64:0] sum_s1_3;
+reg [64:0] sum_s1_4;
+reg [64:0] sum_s1_5;
+reg [64:0] sum_s1_6;
+reg [64:0] sum_s1_7;
+reg [64:0] sum_s1_8;
+reg [64:0] sum_s1_9;
+reg [64:0] sum_s1_10;
+reg [64:0] sum_s1_11;
+reg [64:0] sum_s1_12;
+reg [64:0] sum_s1_13;
+reg [64:0] sum_s1_14;
+reg [64:0] sum_s1_15;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        sum077 <= 0;
-        sum076 <= 0;
-        sum075 <= 0;
-        sum074 <= 0;
-        sum073 <= 0;
-        sum072 <= 0;
-        sum071 <= 0;
-        sum070 <= 0;
-        sum066 <= 0;
-        sum065 <= 0;
-        sum064 <= 0;
-        sum063 <= 0;
-        sum062 <= 0;
-        sum061 <= 0;
-        sum060 <= 0;
-        sum055 <= 0;
-        sum054 <= 0;
-        sum053 <= 0;
-        sum052 <= 0;
-        sum051 <= 0;
-        sum050 <= 0;
-        sum044 <= 0;
-        sum043 <= 0;
-        sum042 <= 0;
-        sum041 <= 0;
-        sum040 <= 0;
-        sum033 <= 0;
-        sum032 <= 0;
-        sum031 <= 0;
-        sum030 <= 0;
-        sum022 <= 0;
-        sum021 <= 0;
-        sum020 <= 0;
-        sum011 <= 0;
-        sum010 <= 0;
-        sum000 <= 0;
+        sum_s1_0    <=  0;
+        sum_s1_1    <=  0;
+        sum_s1_2    <=  0;
+        sum_s1_3    <=  0;
+        sum_s1_4    <=  0;
+        sum_s1_5    <=  0;
+        sum_s1_6    <=  0;
+        sum_s1_7    <=  0;
+        sum_s1_8    <=  0;
+        sum_s1_9    <=  0;
+        sum_s1_10   <=  0;
+        sum_s1_11   <=  0;
+        sum_s1_12   <=  0;
+        sum_s1_13   <=  0;
+        sum_s1_14   <=  0;
+        sum_s1_15   <=  0;
     end
     else begin
-        sum077 <= x7y7;
-        sum076 <= x7y6 + x6y7;
-        sum075 <= x7y5 + x5y7;
-        sum074 <= x7y4 + x4y7;
-        sum073 <= x7y3 + x3y7;
-        sum072 <= x7y2 + x2y7;
-        sum071 <= x7y1 + x1y7;
-        sum070 <= x7y0 + x0y7;
-        sum066 <= x6y6;
-        sum065 <= x6y5 + x5y6;
-        sum064 <= x6y4 + x4y6;
-        sum063 <= x6y3 + x3y6;
-        sum062 <= x6y2 + x2y6;
-        sum061 <= x6y1 + x1y6;
-        sum060 <= x6y0 + x0y6;
-        sum055 <= x5y5;
-        sum054 <= x5y4 + x4y5;
-        sum053 <= x5y3 + x3y5;
-        sum052 <= x5y2 + x2y5;
-        sum051 <= x5y1 + x1y5;
-        sum050 <= x5y0 + x0y5;
-        sum044 <= x4y4;
-        sum043 <= x4y3 + x3y4;
-        sum042 <= x4y2 + x2y4;
-        sum041 <= x4y1 + x1y4;
-        sum040 <= x4y0 + x0y4;
-        sum033 <= x3y3;
-        sum032 <= x3y2 + x2y3;
-        sum031 <= x3y1 + x1y3;
-        sum030 <= x3y0 + x0y3;
-        sum022 <= x2y2;
-        sum021 <= x2y1 + x1y2;
-        sum020 <= x2y0 + x0y2;
-        sum011 <= x1y1;
-        sum010 <= x1y0 + x0y1;
-        sum000 <= x0y0;
+        sum_s1_0    <=  x0y0 + (x0y1 << 16) + (x1y0 << 24);// << 0
+        sum_s1_1    <=  x0y2 + (x1y1 << 8);// << 32
+        sum_s1_2    <=  x2y0 + x0y3 + (x1y2 << 8);// << 48
+        sum_s1_3    <=  x2y1 + x0y4 + ((x3y0 + x1y3) << 8);// << 64
+        sum_s1_4    <=  x2y2 + x0y5 + ((x3y1 + x1y4) << 8);// << 80
+        sum_s1_5    <=  x4y0 + x2y3 + x0y6;// << 96
+        sum_s1_6    <=  (x3y2 + x1y5) << 8;// << 96
+        sum_s1_7    <=  x4y1 + x2y4 + x0y7;// << 112
+
+        sum_s1_8    <=  (x5y0 + x3y3 + x1y6) << 8;// << 112
+        sum_s1_9    <=  x4y2 + x2y5;// << 128
+        sum_s1_10   <=  (x5y1 + x3y4 + x1y7) << 8;// << 128
+        sum_s1_11   <=  x4y3 + x2y6 + ((x5y2 + x3y5) << 8);// << 144
+        sum_s1_12   <=  x4y4 + x2y7 + ((x5y3 + x3y6) << 8);// << 160
+        sum_s1_13   <=  x4y5 + ((x5y4 + x3y7) << 8);// << 176
+        sum_s1_14   <=  x4y6 + (x5y5 << 8) + (x4y7 << 16);// << 192
+        sum_s1_15   <=  x5y6 + (x5y7 << 16);// << 216
     end
 end
 
-// round1
-reg[255:0] sum114_s, sum113_s, sum112,sum111;
-reg[255:0] sum110_a, sum110_b;
-reg[255:0] sum109_a, sum109_b;
-reg[255:0] sum108_a, sum108_b;
-reg[255:0] sum107_a, sum107_b;
-reg[255:0] sum106_a, sum106_b;
-reg[255:0] sum105_a, sum105_b;
-reg[255:0] sum104_a, sum104_b;
-reg[255:0] sum103, sum102, sum101_s, sum100_s;
+// pipe 2
+reg [127:0]  sum_s2_0;
+reg [127:0]  sum_s2_1;
+reg [127:0]  sum_s2_2;
+reg [127:0]  sum_s2_3;
+reg [127:0]  sum_s2_4;
+reg [127:0]  sum_s2_5;
+reg [127:0]  sum_s2_6;
+reg [127:0]  sum_s2_7;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        sum114_s <= 0;
-        sum113_s <= 0;
-        sum112   <= 0;
-        sum111   <= 0;
-        sum110_a <= 0;
-        sum110_b <= 0;
-        sum109_a <= 0;
-        sum109_b <= 0;
-        sum108_a <= 0;
-        sum108_b <= 0;
-        sum107_a <= 0;
-        sum107_b <= 0;
-        sum106_a <= 0;
-        sum106_b <= 0;
-        sum105_a <= 0;
-        sum105_b <= 0;
-        sum104_a <= 0;
-        sum104_b <= 0;
-        sum103   <= 0;
-        sum102   <= 0;
-        sum101_s <= 0;
-        sum100_s <= 0;
+        sum_s2_0    <=  0;
+        sum_s2_1    <=  0;
+        sum_s2_2    <=  0;
+        sum_s2_3    <=  0;
+        sum_s2_4    <=  0;
+        sum_s2_5    <=  0;
+        sum_s2_6    <=  0;
+        sum_s2_7    <=  0;
     end
     else begin
-        sum114_s <= sum077 << 224;
-        sum113_s <= sum076 << 208;
-        sum112 <= sum075 + sum066;
-        sum111 <= sum074 + sum065;
-        sum110_a <= sum073 + sum064;
-        sum110_b <= sum055;
-        sum109_a <= sum072 + sum063;
-        sum109_b <= sum054;
-        sum108_a <= sum071 + sum062;
-        sum108_b <= sum053 + sum044;
-        sum107_a <= sum070 + sum061;
-        sum107_b <= sum052 + sum043;
-        sum106_a <= sum060 + sum051;
-        sum106_b <= sum042 + sum033;
-        sum105_a <= sum050 + sum041;
-        sum105_b <= sum032;
-        sum104_a <= sum040 + sum031;
-        sum104_b <= sum022;
-        sum103 <= sum030 + sum021;
-        sum102 <= sum020 + sum011;
-        sum101_s <= sum010 << 16;
-        sum100_s <= sum000;
+        sum_s2_0    <=  sum_s1_0  + (sum_s1_1  << 32);// << 0
+        sum_s2_1    <=  sum_s1_2  + (sum_s1_3  << 16);// << 48
+        sum_s2_2    <=  sum_s1_4  + (sum_s1_5  << 16);// << 80
+        sum_s2_3    <=  sum_s1_6  + (sum_s1_7  << 16);// << 96
+
+        sum_s2_4    <=  sum_s1_8  + (sum_s1_9  << 16);// << 112
+        sum_s2_5    <=  sum_s1_10 + (sum_s1_11 << 16);// << 128
+        sum_s2_6    <=  sum_s1_12 + (sum_s1_13 << 16);// << 160
+        sum_s2_7    <=  sum_s1_14 + (sum_s1_15 << 24);// << 192
     end
 end
 
-// round2
-reg[255:0] sum2_1400;
-reg[255:0] sum2_1301;
-reg[255:0] sum210, sum209, sum208, sum207, sum206, sum205, sum204;
-reg[255:0] sum212_s, sum211_s, sum203_s, sum202_s;
+// pipe 3
+reg [255:0] sum_s3_0;
+reg [255:0] sum_s3_1;
+reg [255:0] sum_s3_2;
+reg [255:0] sum_s3_3;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        sum210      <= 0;
-        sum209      <= 0;
-        sum208      <= 0;
-        sum207      <= 0;
-        sum206      <= 0;
-        sum205      <= 0;
-        sum204      <= 0;
-        sum212_s    <= 0;
-        sum211_s    <= 0;
-        sum203_s    <= 0;
-        sum202_s    <= 0;
-        sum2_1301   <= 0;
-        sum2_1400   <= 0;
+        sum_s3_0    <=  0;
+        sum_s3_1    <=  0;
+        sum_s3_2    <=  0;
+        sum_s3_3    <=  0;
     end
     else begin
-        sum210 <= sum110_a + sum110_b;
-        sum209 <= sum109_a + sum109_b;
-        sum208 <= sum108_a + sum108_b;
-        sum207 <= sum107_a + sum107_b;
-        sum206 <= sum106_a + sum106_b;
-        sum205 <= sum105_a + sum105_b;
-        sum204 <= sum104_a + sum104_b;
-        
-        sum212_s <= sum112 << 192;
-        sum211_s <= sum111 << 176;
-        sum203_s <= sum103 << 48;
-        sum202_s <= sum102 << 32;
-        sum2_1301 <= sum113_s + sum101_s;
-        sum2_1400 <= sum114_s + sum100_s;
+        sum_s3_0    <=  sum_s2_0 + (sum_s2_1 << 48);// << 0
+        sum_s3_1    <=  sum_s2_2 + (sum_s2_3 << 16);// << 80
+
+        sum_s3_2    <=  sum_s2_4 + (sum_s2_5 << 16);// << 112
+        sum_s3_3    <=  sum_s2_6 + (sum_s2_7 << 32);// << 160
     end
 end
 
-//round3
-reg [255:0] sum310_s, sum309_s, sum308_s, sum307_s, sum306_s, sum305_s, sum304_s;
-reg [255:0] sum3_1211, sum3_0302, sum3_1413;
+// pipe 4
+reg [255:0] sum_s4_0;
+reg [255:0] sum_s4_1;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        sum310_s    <= 0;
-        sum309_s    <= 0;
-        sum308_s    <= 0;
-        sum307_s    <= 0;
-        sum306_s    <= 0;
-        sum305_s    <= 0;
-        sum304_s    <= 0;
-        sum3_1211   <= 0;
-        sum3_0302   <= 0;
-        sum3_1413   <= 0;
+        sum_s4_0    <=  0;
+        sum_s4_1    <=  0;
     end
     else begin
-        sum310_s <= sum210 << 160;
-        sum309_s <= sum209 << 144;
-        sum308_s <= sum208 << 128;
-        sum307_s <= sum207 << 112;
-        sum306_s <= sum206 << 96;
-        sum305_s <= sum205 << 80;
-        sum304_s <= sum204 << 64;
-        sum3_1211 <= sum212_s + sum211_s;
-        sum3_0302 <= sum203_s + sum202_s;
-        sum3_1413 <= sum2_1400 + sum2_1301;
+        sum_s4_0    <=  sum_s3_0 + (sum_s3_1 << 80);// << 0
+        sum_s4_1    <=  sum_s3_2 + (sum_s3_3 << 48);// << 112
     end
 end
 
-// round4
-reg [255:0]sum4_0, sum4_1, sum4_2, sum4_3, sum4_4;
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin        
-        sum4_0 <= 0;
-        sum4_1 <= 0;
-        sum4_2 <= 0;
-        sum4_3 <= 0;
-        sum4_4 <= 0;
-    end
-    else begin
-        sum4_0 <= sum310_s + sum309_s;
-        sum4_1 <= sum308_s + sum307_s;
-        sum4_2 <= sum306_s + sum305_s;
-        sum4_3 <= sum304_s + sum3_1211;
-        sum4_4 <= sum3_0302 + sum3_1413;
-    end
-end
-
-//round5
-reg [255:0]sum5_0, sum5_1, sum5_2;
+//pipe 5
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        sum5_0 <= 0;
-        sum5_1 <= 0;
-        sum5_2 <= 0;
+        result <= 0;
     end
     else begin
-        sum5_0 <= sum4_0 + sum4_1;
-        sum5_1 <= sum4_2 + sum4_3;
-        sum5_2 <= sum4_4;
+        result <= sum_s4_0 + (sum_s4_1 << 112);
+        // result  <=  (
+        //     +   (sum_s2_0   << 0)
+        //     +   (sum_s2_1   << 48)
+        //     +   (sum_s2_2   << 80)
+        //     +   (sum_s2_3   << 96)
+        //     +   (sum_s2_4   << 112)
+        //     +   (sum_s2_5   << 128)
+        //     +   (sum_s2_6   << 160)
+        //     +   (sum_s2_7   << 192)
+
+        //         (sum_s1_0   << 0)
+        //     +   (sum_s1_1   << 32)
+        //     +   (sum_s1_2   << 48)
+        //     +   (sum_s1_3   << 64)
+        //     +   (sum_s1_4   << 80)
+        //     +   (sum_s1_5   << 96)
+        //     +   (sum_s1_6   << 96)
+        //     +   (sum_s1_7   << 112)
+        //     +   (sum_s1_8   << 112)
+        //     +   (sum_s1_9   << 128)
+        //     +   (sum_s1_10  << 128)
+        //     +   (sum_s1_11  << 144)
+        //     +   (sum_s1_12  << 160)
+        //     +   (sum_s1_13  << 176)
+        //     +   (sum_s1_14  << 192)
+        //     +   (sum_s1_15  << 216)
+        // );
     end
 end
-
-// round 6
-reg [255:0]sum6_0, sum6_1;
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        sum6_0 <= 0;
-        sum6_1 <= 0;
-    end
-    else begin
-        sum6_0 <= sum5_0 + sum5_1;
-        sum6_1 <= sum5_2;
-    end
-end
-
-//round 7 8
-wire _,__;
-reg [257:0] sum7;
-
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        sum7 <= 0;
-    end
-    else begin
-        sum7 <= sum6_0 + sum6_1;
-    end
-end
-
-assign result = sum7;
-
-// simple_p12adder256_3_2 #(
-//     .STAGE              ( 2                 )
-// )simple_p12adder256_3_2(
-//     .clk                ( clk               ),
-//     .ain                ( sum6_0            ),//256
-//     .bin                ( sum6_1            ),//256
-//     .final_fa_cout_i    ( 1'd0              ),
-//     .full_sum           ( {_,__,carry,ret}  ) //258
-// );
-
 
 endmodule
+/*
+    X = x5x4x3x2x1x0
+    Y = y7y6y5y4y3y2y1y0
+    X*Y = (x5x4x3x2x1x0) * (y7y6y5y4y3y2y1y0)
+        = ((x5 << 120) + (x4 << 96) + (x3 << 72) + (x2 << 48) + (x1 << 24) + x0)
+            * ((y7 << 112) + (y6 << 96) + (y5 << 80) + (y4 << 64) + (y3 << 48) + (y2 << 32) + (y1 << 16) + y0)
+        =  (
+            ((x5y7) << 232)
+        +   ((x5y6) << 216)
+        +   ((x5y5) << 200)
+        +   ((x5y4) << 184)
+        +   ((x5y3) << 168)
+        +   ((x5y2) << 152)
+        +   ((x5y1) << 136)
+        +   ((x5y0) << 120)
+
+        +   ((x4y7) << 208)
+        +   ((x4y6) << 192)
+        +   ((x4y5) << 176)
+        +   ((x4y4) << 160)
+        +   ((x4y3) << 144)
+        +   ((x4y2) << 128)
+        +   ((x4y1) << 112)
+        +   ((x4y0) << 96)
+
+        +   ((x3y7) << 184)
+        +   ((x3y6) << 168)
+        +   ((x3y5) << 152)
+        +   ((x3y4) << 136)
+        +   ((x3y3) << 120)
+        +   ((x3y2) << 104)
+        +   ((x3y1) << 88)
+        +   ((x3y0) << 72)
+
+        +   ((x2y7) << 160)
+        +   ((x2y6) << 144)
+        +   ((x2y5) << 128)
+        +   ((x2y4) << 112)
+        +   ((x2y3) << 96)
+        +   ((x2y2) << 80)
+        +   ((x2y1) << 64)
+        +   ((x2y0) << 48)
+
+        +   ((x1y7) << 136)
+        +   ((x1y6) << 120)
+        +   ((x1y5) << 104)
+        +   ((x1y4) << 88)
+        +   ((x1y3) << 72)
+        +   ((x1y2) << 56)
+        +   ((x1y1) << 40)
+        +   ((x1y0) << 24)
+
+        +   ((x0y7) << 112)
+        +   ((x0y6) << 96)
+        +   ((x0y5) << 80)
+        +   ((x0y4) << 64)
+        +   ((x0y3) << 48)
+        +   ((x0y2) << 32)
+        +   ((x0y1) << 16)
+        +   ((x0y0))
+    )
+*/
+/*
+    X = x5x4x3x2x1x0
+    Y = y7y6y5y4y3y2y1y0
+    X*Y = (x5x4x3x2x1x0) * (y7y6y5y4y3y2y1y0)
+        = ((x5 << 120) + (x4 << 96) + (x3 << 72) + (x2 << 48) + (x1 << 24) + x0)
+            * ((y7 << 112) + (y6 << 96) + (y5 << 80) + (y4 << 64) + (y3 << 48) + (y2 << 32) + (y1 << 16) + y0)
+        =  (
+                ((x5y7) << 232)
+            +   ((x5y6) << 216)
+            +   ((x5y5) << 200)
+
+            +   ((x5y4 + x3y7) << 184)
+            +   ((x5y3 + x3y6) << 168)
+            +   ((x5y2 + x3y5) << 152)
+            +   ((x5y1 + x3y4 + x1y7) << 136)
+            +   ((x5y0 + x3y3 + x1y6) << 120)
+
+            +   ((x4y7) << 208)
+            +   ((x4y6) << 192)
+            +   ((x4y5) << 176)
+            +   ((x4y4 + x2y7) << 160)
+            +   ((x4y3 + x2y6) << 144)
+            +   ((x4y2 + x2y5) << 128)
+            +   ((x4y1 + x2y4 + x0y7) << 112)
+            +   ((x4y0 + x2y3 + x0y6) << 96)
+
+            +   ((x3y2 + x1y5) << 104)
+            +   ((x3y1 + x1y4) << 88)
+            +   ((x3y0 + x1y3) << 72)
+
+            +   ((x2y2 + x0y5) << 80)
+            +   ((x2y1 + x0y4) << 64)
+            +   ((x2y0 + x0y3) << 48)
+
+            +   ((x1y2) << 56)
+            +   ((x1y1) << 40)
+            +   ((x1y0) << 24)
+
+            +   ((x0y2) << 32)
+            +   ((x0y1) << 16)
+            +   ((x0y0))
+    )
+*/
+/*
+    X = x5x4x3x2x1x0
+    Y = y7y6y5y4y3y2y1y0
+    X*Y = (x5x4x3x2x1x0) * (y7y6y5y4y3y2y1y0)
+        = ((x5 << 120) + (x4 << 96) + (x3 << 72) + (x2 << 48) + (x1 << 24) + x0)
+            * ((y7 << 112) + (y6 << 96) + (y5 << 80) + (y4 << 64) + (y3 << 48) + (y2 << 32) + (y1 << 16) + y0)
+        =  (
+                (x5y7) << 232
+            +   (x5y6) << 216
+            +   (x4y7) << 208
+            +   (x5y5) << 200
+            +   (x4y6) << 192
+            +   (x5y4 + x3y7) << 184
+            +   (x4y5) << 176
+            +   (x5y3 + x3y6) << 168
+            +   (x4y4 + x2y7) << 160
+            +   (x5y2 + x3y5) << 152
+            +   (x4y3 + x2y6) << 144
+            +   (x5y1 + x3y4 + x1y7) << 136
+            +   (x4y2 + x2y5) << 128
+            +   (x5y0 + x3y3 + x1y6) << 120
+            +   (x4y1 + x2y4 + x0y7) << 112
+            +   (x3y2 + x1y5) << 104
+
+            +   (x4y0 + x2y3 + x0y6) << 96
+
+            +   (x2y2 + x0y5 + ((x3y1 + x1y4) << 8)) << 80
+
+            +   (x2y1 + x0y4 + ((x3y0 + x1y3) << 8)) << 64
+
+            +   (x2y0 + x0y3 + (x1y2 << 8)) << 48
+
+            +   (x0y2 + (x1y1 << 8)) << 32
+
+            +   ((x0y0) + (x0y1 << 16) + (x1y0 << 24))
+    )
+*/

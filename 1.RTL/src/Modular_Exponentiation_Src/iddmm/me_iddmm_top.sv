@@ -596,34 +596,24 @@ generate
         assign  task_grant          =   iddmm_task_grant;
     end
     else begin
-        mmp_iddmm_sp #(
-                .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                    // "TRADITION" :MULT_LATENCY=9                
-                                                    // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-            ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                    // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                                    // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                                    // 
-            ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                    // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                    // 
-            ,   .K              (K              )   // K bits in every group
-            ,   .N              (N              )   // Number of groups
-        )u_mmp_iddmm_sp(
-                .clk            (clk            )
-            ,   .rst_n          (rst_n          )
+        iddmm_top #(
+                .K                  (K              )   // K bits in every group
+            ,   .N                  (N              )   // Number of groups
+        )u_iddmm_top(    
+                .clk                (clk            )
+            ,   .rst_n              (rst_n          )
 
-            ,   .wr_ena         (wr_ena         )
-            ,   .wr_addr        (wr_addr_d1     )
-            ,   .wr_x           (wr_x_reg       )   //low words first
-            ,   .wr_y           (wr_y_reg       )   //low words first
-            ,   .wr_m           (wr_m           )   //low words first
-            ,   .wr_m1          (me_m1          )
+            ,   .wr_ena             (wr_ena         )
+            ,   .wr_addr            (wr_addr_d1     )
+            ,   .wr_x               (wr_x_reg       )   //low words first
+            ,   .wr_y               (wr_y_reg       )   //low words first
+            ,   .wr_m               (wr_m           )   //low words first
+            ,   .wr_m1              (me_m1          )
 
-            ,   .task_req       (task_req       )
-            ,   .task_end       (task_end       )
-            ,   .task_grant     (task_grant     )
-            ,   .task_res       (task_res       )    
+            ,   .task_req           (task_req       )
+            ,   .task_end           (task_end       )
+            ,   .task_grant         (task_grant     )
+            ,   .task_res           (task_res       )    
         );
     end
 endgenerate

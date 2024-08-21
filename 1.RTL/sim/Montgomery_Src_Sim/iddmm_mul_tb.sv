@@ -25,12 +25,13 @@ task test_128_to_256();
         @(posedge clk);
     end
     assert((result == result_confirm) && (result_low128 == result_confirm[127:0]))
-        $display("Right:");
-    else 
+        // $display("Right:");
+    else begin
         $display("Error: ");
-    $display("result_confirm: %x",result_confirm);
-    $display("result_output : %x",result);
-    $display("result_output : %x",result_low128);
+        $display("result_confirm: %x",result_confirm);
+        $display("result_output : %x",result);
+        $display("result_output : %x",result_low128);
+    end
 endtask
 
 initial begin
@@ -38,6 +39,7 @@ initial begin
     for(i = 0; i < 100; i = i + 1)begin
         test_128_to_256();
     end
+    $display("Finished");
     $stop;
 end
 

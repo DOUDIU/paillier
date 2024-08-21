@@ -188,21 +188,21 @@ end
 
 // pipe 1
 reg [64:0] sum_s1_0;
-reg [64:0] sum_s1_1;
-reg [64:0] sum_s1_2;
-reg [64:0] sum_s1_3;
-reg [64:0] sum_s1_4;
-reg [64:0] sum_s1_5;
-reg [64:0] sum_s1_6;
-reg [64:0] sum_s1_7;
-reg [64:0] sum_s1_8;
-reg [64:0] sum_s1_9;
-reg [64:0] sum_s1_10;
-reg [64:0] sum_s1_11;
-reg [64:0] sum_s1_12;
-reg [64:0] sum_s1_13;
-reg [64:0] sum_s1_14;
-reg [64:0] sum_s1_15;
+reg [49:0] sum_s1_1;
+reg [49:0] sum_s1_2;
+reg [49:0] sum_s1_3;
+reg [49:0] sum_s1_4;
+reg [49:0] sum_s1_5;
+reg [49:0] sum_s1_6;
+reg [49:0] sum_s1_7;
+reg [49:0] sum_s1_8;
+reg [49:0] sum_s1_9;
+reg [49:0] sum_s1_10;
+reg [49:0] sum_s1_11;
+reg [49:0] sum_s1_12;
+reg [49:0] sum_s1_13;
+reg [56:0] sum_s1_14;
+reg [56:0] sum_s1_15;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -245,14 +245,14 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // pipe 2
-reg [127:0]  sum_s2_0;
-reg [127:0]  sum_s2_1;
-reg [127:0]  sum_s2_2;
-reg [127:0]  sum_s2_3;
-reg [127:0]  sum_s2_4;
-reg [127:0]  sum_s2_5;
-reg [127:0]  sum_s2_6;
-reg [127:0]  sum_s2_7;
+reg [82 :0]  sum_s2_0;
+reg [66 :0]  sum_s2_1;
+reg [66 :0]  sum_s2_2;
+reg [66 :0]  sum_s2_3;
+reg [66 :0]  sum_s2_4;
+reg [66 :0]  sum_s2_5;
+reg [66 :0]  sum_s2_6;
+reg [81 :0]  sum_s2_7;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -279,10 +279,10 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // pipe 3
-reg [255:0] sum_s3_0;
-reg [255:0] sum_s3_1;
-reg [255:0] sum_s3_2;
-reg [255:0] sum_s3_3;
+reg [114:0] sum_s3_0;
+reg [83 :0] sum_s3_1;
+reg [83 :0] sum_s3_2;
+reg [114:0] sum_s3_3;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -301,8 +301,8 @@ always @(posedge clk or negedge rst_n) begin
 end
 
 // pipe 4
-reg [255:0] sum_s4_0;
-reg [255:0] sum_s4_1;
+reg [164:0] sum_s4_0;
+reg [164:0] sum_s4_1;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin

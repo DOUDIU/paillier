@@ -38,9 +38,66 @@ module mm_iddmm_top#(
 );
 localparam ADDR_W   =   $clog2(N);
 
+typedef enum logic [2:0] {
+    STA_IDLE        ,
+    STA_MM_X_ROU    ,
+    STA_MM_Y_ROU    ,
+    STA_MM_R1_R2    ,
+    STA_MM_R3_1     ,
+    STA_END         
+} FSM_STATE;
+
+FSM_STATE  state_now;
+FSM_STATE  state_next;
+
 wire    [K-1    : 0]    mm_m1                       ;
 
 assign  mm_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
+
+wire    [2              : 0]    wr_ena                  ;
+reg                             wr_ena_x                ;
+reg                             wr_ena_y                ;
+reg                             wr_ena_m                ;
+reg     [ADDR_W-1       : 0]    wr_addr                 ;
+reg     [ADDR_W-1       : 0]    wr_addr_d1          = 0 ;
+reg     [ADDR_W-1       : 0]    wr_cnt                  ;
+reg     [K-1            : 0]    wr_x                    ;
+reg     [K-1            : 0]    wr_y                    ;
+reg     [K-1            : 0]    wr_m                    ;
+
+reg     [K-1            : 0]    wr_x_reg                ;
+reg     [K-1            : 0]    wr_y_reg                ;
+reg     [K-1            : 0]    wr_m_reg                ;
+wire    [K-1            : 0]    mm_m1_reg               ;
+
+reg                             task_req                ;
+
+wire                            task_end                ;
+wire                            task_grant              ;
+wire    [K-1            : 0]    task_res                ;
+
+reg                             result_valid            ;
+reg     [K-1            : 0]    result_out              ;
+
+
+wire    [K-1            : 0]    ram_rou_rd_data         ;
+
+wire    [K-1            : 0]    ram_m_rd_data           ;
+
+wire                            ram_result0_wr_en       ;
+wire    [K-1            : 0]    ram_result0_rd_data     ;
+
+wire                            ram_result1_wr_en       ;
+wire    [K-1            : 0]    ram_result1_rd_data     ;
+
+reg                             ram_y_wr_en             ;
+reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
+reg     [K-1            : 0]    ram_y_wr_data           ;
+wire    [K-1            : 0]    ram_y_rd_data           ;
+
+assign ram_result0_wr_en = ((state_now == STA_MM_X_ROU) | (state_now == STA_MM_R1_R2)) & task_grant;
+assign ram_result1_wr_en = (state_now == STA_MM_Y_ROU) & task_grant;
+
 
 dual_port_ram#(
     `ifndef Modelsim_Sim
@@ -119,51 +176,6 @@ dual_port_ram#(
     ,   .rd_addr        (wr_addr            )
     ,   .rd_data        (ram_y_rd_data      )
 );
-
-
-
-wire    [2              : 0]    wr_ena                  ;
-reg                             wr_ena_x                ;
-reg                             wr_ena_y                ;
-reg                             wr_ena_m                ;
-reg     [ADDR_W-1       : 0]    wr_addr                 ;
-reg     [ADDR_W-1       : 0]    wr_cnt                  ;
-reg     [K-1            : 0]    wr_x                    ;
-reg     [K-1            : 0]    wr_y                    ;
-reg     [K-1            : 0]    wr_m                    ;
-
-reg     [K-1            : 0]    wr_x_reg                ;
-reg     [K-1            : 0]    wr_y_reg                ;
-reg     [K-1            : 0]    wr_m_reg                ;
-wire    [K-1            : 0]    mm_m1_reg               ;
-
-reg                             task_req                ;
-
-wire                            task_end                ;
-wire                            task_grant              ;
-wire    [K-1            : 0]    task_res                ;
-
-reg                             result_valid            ;
-reg     [K-1            : 0]    result_out              ;
-
-
-wire    [K-1            : 0]    ram_rou_rd_data         ;
-
-wire    [K-1            : 0]    ram_m_rd_data           ;
-
-wire                            ram_result0_wr_en       ;
-wire    [K-1            : 0]    ram_result0_rd_data     ;
-
-wire                            ram_result1_wr_en       ;
-wire    [K-1            : 0]    ram_result1_rd_data     ;
-
-reg                             ram_y_wr_en             ;
-reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
-reg     [K-1            : 0]    ram_y_wr_data           ;
-wire    [K-1            : 0]    ram_y_rd_data           ;
-
-assign ram_result0_wr_en = ((state_now == STA_MM_X_ROU) | (state_now == STA_MM_R1_R2)) & task_grant;
-assign ram_result1_wr_en = (state_now == STA_MM_Y_ROU) & task_grant;
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
@@ -246,18 +258,6 @@ reg  [ADDR_W-1       : 0]    wr_addr_d1              = 0;
 always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
 end
-
-typedef enum logic [2:0] {
-    STA_IDLE        ,
-    STA_MM_X_ROU    ,
-    STA_MM_Y_ROU    ,
-    STA_MM_R1_R2    ,
-    STA_MM_R3_1     ,
-    STA_END         
-} FSM_STATE;
-
-FSM_STATE  state_now;
-FSM_STATE  state_next;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -477,34 +477,24 @@ generate
         assign  task_grant          =   iddmm_task_grant;
     end
     else begin
-        mmp_iddmm_sp #(
-                .MULT_METHOD    (MULT_METHOD    )   // "COMMON"    :use * ,MULT_LATENCY arbitrarily
-                                                    // "TRADITION" :MULT_LATENCY=9                
-                                                    // "VEDIC8"  :VEDIC MULT, MULT_LATENCY=8 
-            ,   .ADD1_METHOD    (ADD1_METHOD    )   // "COMMON"    :use + ,ADD1_LATENCY arbitrarily
-                                                    // "3-2_PIPE2" :classic pipeline adder,state 2,ADD1_LATENCY=2
-                                                    // "3-2_PIPE1" :classic pipeline adder,state 1,ADD1_LATENCY=1
-                                                    // 
-            ,   .ADD2_METHOD    (ADD2_METHOD    )   // "COMMON"    :use + ,adder2 has no delay,32*(32+2)=1088 clock
-                                                    // "3-2_DELAY2":use + ,adder2 has 1  delay,32*(32+2)*2=2176 clock
-                                                    // 
-            ,   .K              (K              )   // K bits in every group
-            ,   .N              (N              )   // Number of groups
-        )u_mmp_iddmm_sp(
-                .clk            (clk            )
-            ,   .rst_n          (rst_n          )
+        iddmm_top #(
+                .K                  (K              )   // K bits in every group
+            ,   .N                  (N              )   // Number of groups
+        )u_iddmm_top(    
+                .clk                (clk            )
+            ,   .rst_n              (rst_n          )
 
-            ,   .wr_ena         (wr_ena         )
-            ,   .wr_addr        (wr_addr_d1     )
-            ,   .wr_x           (wr_x_reg       )   //low words first
-            ,   .wr_y           (wr_y_reg       )   //low words first
-            ,   .wr_m           (wr_m_reg       )   //low words first
-            ,   .wr_m1          (mm_m1_reg      )
+            ,   .wr_ena             (wr_ena         )
+            ,   .wr_addr            (wr_addr_d1     )
+            ,   .wr_x               (wr_x_reg       )   //low words first
+            ,   .wr_y               (wr_y_reg       )   //low words first
+            ,   .wr_m               (wr_m_reg       )   //low words first
+            ,   .wr_m1              (mm_m1_reg      )
 
-            ,   .task_req       (task_req       )
-            ,   .task_end       (task_end       )
-            ,   .task_grant     (task_grant     )
-            ,   .task_res       (task_res       )
+            ,   .task_req           (task_req       )
+            ,   .task_end           (task_end       )
+            ,   .task_grant         (task_grant     )
+            ,   .task_res           (task_res       )    
         );
     end
 endgenerate

@@ -40,7 +40,7 @@ reg                     me_y_valid  =   0   ;
 wire    [K-1    : 0]    me_result           ;
 wire                    me_valid            ;
 
-parameter               PERIOD      =   10  ;
+parameter               PERIOD      =   4   ;
 initial begin
     forever #(PERIOD/2)  clk=~clk;
 end

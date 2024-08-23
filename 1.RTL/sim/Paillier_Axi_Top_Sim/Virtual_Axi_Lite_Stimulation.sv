@@ -77,12 +77,12 @@
 	//write response acceptance
 	reg  	axi_bready;
 	//write address
-	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;
+	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	//write data
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	axi_wdata;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	axi_wdata_buf;
+	reg [`AXI_LITE_DATA_WIDTH-1 : 0] 	axi_wdata;
+	reg [`AXI_LITE_DATA_WIDTH-1 : 0] 	axi_wdata_buf;
 	//read addresss
-	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_araddr;
+	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	//Asserts when there is a write response error
 	wire  	write_resp_error;
 	//Asserts when there is a read response error
@@ -106,7 +106,7 @@
 	//index counter to track the number of read transaction issued
 	reg [TRANS_NUM_BITS : 0] 	read_index;
 	//Expected read data used to compare with the read data.
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	expected_rdata;
+	reg [`AXI_LITE_DATA_WIDTH-1 : 0] 	expected_rdata;
 	//Flag marks the completion of comparison of the read data with the expected read data
 	reg  	compare_done;
 	//This flag is asserted when there is a mismatch of the read data with the expected read data.

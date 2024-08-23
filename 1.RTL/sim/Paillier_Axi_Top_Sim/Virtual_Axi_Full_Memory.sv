@@ -22,15 +22,15 @@
 	import  tvip_axi_types_pkg::*;
 
 	// AXI4FULL signals
-	reg [`TVIP_AXI_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;
+	reg [`AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awready;
 	reg  	axi_wready;
 	reg [1 : 0] 	axi_bresp;
 	// reg [C_S_AXI_BUSER_WIDTH-1 : 0] 	axi_buser;
 	reg  	axi_bvalid;
-	reg [`TVIP_AXI_MAX_ADDRESS_WIDTH-1 : 0] 	axi_araddr;
+	reg [`AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arready;
-	reg [`TVIP_AXI_MAX_DATA_WIDTH-1 : 0] 	axi_rdata;
+	reg [`AXI_DATA_WIDTH-1 : 0] 	axi_rdata;
 	reg [1 : 0] 	axi_rresp;
 	reg  	axi_rlast;
 	// reg [C_S_AXI_RUSER_WIDTH-1 : 0] 	axi_ruser;
@@ -59,12 +59,12 @@
 	reg [1:0] axi_awburst;
 	reg [7:0] axi_arlen;
 	reg [7:0] axi_awlen;
-	//local parameter for addressing 32 bit / 64 bit `TVIP_AXI_MAX_DATA_WIDTH
+	//local parameter for addressing 32 bit / 64 bit `AXI_DATA_WIDTH
 	//ADDR_LSB is used for addressing 32/64 bit registers/memories
 	//ADDR_LSB = 2 for 32 bits (n downto 2) 
 	//ADDR_LSB = 3 for 42 bits (n downto 3)
 
-	localparam integer ADDR_LSB = (`TVIP_AXI_MAX_DATA_WIDTH/32);
+	localparam integer ADDR_LSB = (`AXI_DATA_WIDTH/32);
 	localparam integer OPT_MEM_ADDR_BITS = 24-ADDR_LSB;//the address number = 80Mb/8 = 10485760(24bits)
 	localparam integer USER_NUM_MEM = 1;
 	//----------------------------------------------
@@ -72,7 +72,7 @@
 	//------------------------------------------------
 	wire [OPT_MEM_ADDR_BITS:0] mem_address;
 	wire [USER_NUM_MEM-1:0] mem_select;
-	reg [`TVIP_AXI_MAX_DATA_WIDTH-1:0] mem_data_out[0 : USER_NUM_MEM-1];
+	reg [`AXI_DATA_WIDTH-1:0] mem_data_out[0 : USER_NUM_MEM-1];
 
 	genvar i;
 	genvar j;
@@ -93,8 +93,8 @@
 	assign AXI_FULL_IF.AXI_RVALID	= axi_rvalid;
 	assign AXI_FULL_IF.AXI_BID = AXI_FULL_IF.AXI_AWID;
 	assign AXI_FULL_IF.AXI_RID = AXI_FULL_IF.AXI_ARID;
-	assign  aw_wrap_size = (`TVIP_AXI_MAX_DATA_WIDTH/8 * (axi_awlen)); 
-	assign  ar_wrap_size = (`TVIP_AXI_MAX_DATA_WIDTH/8 * (axi_arlen)); 
+	assign  aw_wrap_size = (`AXI_DATA_WIDTH/8 * (axi_awlen)); 
+	assign  ar_wrap_size = (`AXI_DATA_WIDTH/8 * (axi_arlen)); 
 	assign  aw_wrap_en = ((axi_awaddr & aw_wrap_size) == aw_wrap_size)? 1'b1: 1'b0;
 	assign  ar_wrap_en = ((axi_araddr & ar_wrap_size) == ar_wrap_size)? 1'b1: 1'b0;
 
@@ -141,7 +141,7 @@
 	  	else begin    
 	      	if (~axi_awready && AXI_FULL_IF.AXI_AWVALID && ~axi_awv_awr_flag) begin
 	          	// address latching 
-	          	axi_awaddr <= AXI_FULL_IF.AXI_AWADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0];  
+	          	axi_awaddr <= AXI_FULL_IF.AXI_AWADDR[`AXI_ADDR_WIDTH - 1:0];  
 	           	axi_awburst <= AXI_FULL_IF.AXI_AWBURST; 
 	           	axi_awlen <= AXI_FULL_IF.AXI_AWLEN;     
 				// start address of transfer
@@ -157,7 +157,7 @@
 					end   
 					2'b01: begin//incremental burst
 						// The write address for all the beats in the transaction are increments by awsize
-						axi_awaddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] <= axi_awaddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] + 1;
+						axi_awaddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
 						//awaddr aligned to 4 byte boundary
 						axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}};   
 						//for awsize = 4 bytes (010)
@@ -168,12 +168,12 @@
 							axi_awaddr <= (axi_awaddr - aw_wrap_size); 
 						end
 						else begin
-							axi_awaddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] <= axi_awaddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] + 1;
+							axi_awaddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_awaddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
 							axi_awaddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}}; 
 						end
 					end
 					default: begin//reserved (incremental burst for example)
-						axi_awaddr <= axi_awaddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] + 1;
+						axi_awaddr <= axi_awaddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1;
 						//for awsize = 4 bytes (010)
 					end
 				endcase              
@@ -293,7 +293,7 @@
 	      if (~axi_arready && AXI_FULL_IF.AXI_ARVALID && ~axi_arv_arr_flag)
 	        begin
 	          // address latching 
-	          axi_araddr <= AXI_FULL_IF.AXI_ARADDR[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:0]; 
+	          axi_araddr <= AXI_FULL_IF.AXI_ARADDR[`AXI_ADDR_WIDTH - 1:0]; 
 	          axi_arburst <= AXI_FULL_IF.AXI_ARBURST; 
 	          axi_arlen <= AXI_FULL_IF.AXI_ARLEN;     
 	          // start address of transfer
@@ -316,7 +316,7 @@
 	            2'b01: //incremental burst
 	            // The read address for all the beats in the transaction are increments by awsize
 	              begin
-	                axi_araddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] <= axi_araddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] + 1; 
+	                axi_araddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_araddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1; 
 	                //araddr aligned to 4 byte boundary
 	                axi_araddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}};   
 	                //for awsize = 4 bytes (010)
@@ -329,13 +329,13 @@
 	                end
 	              else 
 	                begin
-	                axi_araddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] <= axi_araddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB] + 1; 
+	                axi_araddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] <= axi_araddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB] + 1; 
 	                //araddr aligned to 4 byte boundary
 	                axi_araddr[ADDR_LSB-1:0]  <= {ADDR_LSB{1'b0}};   
 	                end                      
 	            default: //reserved (incremental burst for example)
 	              begin
-	                axi_araddr <= axi_araddr[`TVIP_AXI_MAX_ADDRESS_WIDTH - 1:ADDR_LSB]+1;
+	                axi_araddr <= axi_araddr[`AXI_ADDR_WIDTH - 1:ADDR_LSB]+1;
 	                //for arsize = 4 bytes (010)
 	              end
 	          endcase              
@@ -393,8 +393,8 @@
 	endgenerate
 
 	// implement Block RAM(s)
-	// reg  [8-1:0] byte_ram [0:`TVIP_AXI_MAX_DATA_WIDTH/8-1][0 : 33554430];
-	reg  [8-1:0] byte_ram [0:`TVIP_AXI_MAX_DATA_WIDTH/8-1][0 : 1023];
+	// reg  [8-1:0] byte_ram [0:`AXI_DATA_WIDTH/8-1][0 : 33554430];
+	reg  [8-1:0] byte_ram [0:`AXI_DATA_WIDTH/8-1][0 : 1023];
 	generate 
 	  	for(i=0; i<= USER_NUM_MEM-1; i=i+1) begin:BRAM_GEN
 			wire mem_rden;
@@ -404,7 +404,7 @@
 
 			assign mem_rden = axi_arv_arr_flag ; //& ~axi_rvalid
 			
-			for(mem_byte_index=0; mem_byte_index<= (`TVIP_AXI_MAX_DATA_WIDTH/8-1); mem_byte_index=mem_byte_index+1) begin:BYTE_BRAM_GEN
+			for(mem_byte_index=0; mem_byte_index<= (`AXI_DATA_WIDTH/8-1); mem_byte_index=mem_byte_index+1) begin:BYTE_BRAM_GEN
 				wire [8-1:0] data_in ;
 				wire [8-1:0] data_out;
 
@@ -518,8 +518,8 @@ endgenerate
 		end
 
 		for(p = 0; p < TEST_TIMES; p = p + 1) begin
-			write_file_to_memory(fp_a, ((DATA_SIZE_1+DATA_SIZE_2)/`TVIP_AXI_MAX_DATA_WIDTH)*p, DATA_SIZE_1);
-			write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/`TVIP_AXI_MAX_DATA_WIDTH)*p + DATA_SIZE_1/`TVIP_AXI_MAX_DATA_WIDTH, DATA_SIZE_2);
+			write_file_to_memory(fp_a, ((DATA_SIZE_1+DATA_SIZE_2)/`AXI_DATA_WIDTH)*p, DATA_SIZE_1);
+			write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/`AXI_DATA_WIDTH)*p + DATA_SIZE_1/`AXI_DATA_WIDTH, DATA_SIZE_2);
 		end
 
 		$fclose(fp_a);
@@ -543,7 +543,7 @@ endgenerate
 		
 		for(p = 0; p < TEST_TIMES; p = p + 1) begin
 			@(posedge S_AXI_ACLK);//Add for debug.
-			memory_data_actual = read_file_from_memory((DATA_SIZE/`TVIP_AXI_MAX_DATA_WIDTH)*p, DATA_SIZE);
+			memory_data_actual = read_file_from_memory((DATA_SIZE/`AXI_DATA_WIDTH)*p, DATA_SIZE);
 			$fscanf(fp_result, "%x ", memory_data_expect);
 			assert(memory_data_actual == memory_data_expect)
 				$display("Check [%d] passed", p);
@@ -559,8 +559,8 @@ endgenerate
 		reg	[4095:0]	file_data;
 		integer p, o;
 		$fscanf(fp, "%x ", file_data);
-		for(p = start_address; p < start_address + DATA_SIZE/`TVIP_AXI_MAX_DATA_WIDTH; p=p+1) begin
-			for(o = 0; o <= (`TVIP_AXI_MAX_DATA_WIDTH/8-1); o=o+1) begin
+		for(p = start_address; p < start_address + DATA_SIZE/`AXI_DATA_WIDTH; p=p+1) begin
+			for(o = 0; o <= (`AXI_DATA_WIDTH/8-1); o=o+1) begin
 				byte_ram[o][p]  =  file_data[0+:8];
 				file_data       =  file_data>>8;
 			end
@@ -570,8 +570,8 @@ endgenerate
   	function reg [4095:0] read_file_from_memory(input integer start_address, input integer DATA_SIZE);
 		reg [4095:0] memory_data;
 		integer p, o;
-		for(p = start_address; p < start_address + DATA_SIZE/`TVIP_AXI_MAX_DATA_WIDTH; p = p + 1) begin
-			for(o = 0; o <= (`TVIP_AXI_MAX_DATA_WIDTH/8 - 1); o = o + 1) begin
+		for(p = start_address; p < start_address + DATA_SIZE/`AXI_DATA_WIDTH; p = p + 1) begin
+			for(o = 0; o <= (`AXI_DATA_WIDTH/8 - 1); o = o + 1) begin
 				memory_data = memory_data >> 8;
 				memory_data[(DATA_SIZE-1)-:8] = byte_ram[o][p];
 			end

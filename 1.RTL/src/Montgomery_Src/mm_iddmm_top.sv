@@ -88,85 +88,6 @@ wire    [K-1            : 0]    ram_y_rd_data           ;
 assign ram_result0_wr_en = ((state_now == STA_MM_X_ROU) | (state_now == STA_MM_R1_R2)) & task_grant;
 assign ram_result1_wr_en = (state_now == STA_MM_Y_ROU) & task_grant;
 
-
-dual_port_ram#(
-    `ifndef Modelsim_Sim
-        .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
-    `else
-        .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
-    `endif
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_m(
-        .clk            (clk                )
-    ,   .wr_en          (0)
-    ,   .wr_addr        ()
-    ,   .wr_data        ()
-    ,   .rd_en          (1)
-    ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_m_rd_data      )
-);
-
-dual_port_ram#(
-    `ifndef Modelsim_Sim
-        .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
-    `else
-        .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
-    `endif
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_rou(
-        .clk            (clk                )
-    ,   .wr_en          (0)
-    ,   .wr_addr        ()
-    ,   .wr_data        ()
-    ,   .rd_en          (1)
-    ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_rou_rd_data    )
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_result0(
-        .clk            (clk                )
-    ,   .wr_en          (ram_result0_wr_en  )
-    ,   .wr_addr        (wr_cnt             )
-    ,   .wr_data        (task_res           )
-    ,   .rd_en          (1)
-    ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_result0_rd_data)
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_result1(
-        .clk            (clk                )
-    ,   .wr_en          (ram_result1_wr_en  )
-    ,   .wr_addr        (wr_cnt             )
-    ,   .wr_data        (task_res           )
-    ,   .rd_en          (1)
-    ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_result1_rd_data)
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_y(
-        .clk            (clk                )
-    ,   .wr_en          (ram_y_wr_en        )
-    ,   .wr_addr        (ram_y_wr_addr      )
-    ,   .wr_data        (ram_y_wr_data      )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_y_rd_data      )
-);
-
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 //algorithm achievement:
@@ -243,8 +164,6 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-
-reg  [ADDR_W-1       : 0]    wr_addr_d1              = 0;
 always@(posedge clk)begin
   wr_addr_d1 <= wr_addr;
 end
@@ -450,7 +369,6 @@ assign wr_ena       = {wr_ena_m,wr_ena_y,wr_ena_x};
 assign mm_result    = result_out;
 assign mm_valid     = result_valid;
 
-
 generate 
     if(OUTSIDE_MONTGOMERY == 1) begin
         assign  iddmm_wr_ena        =   wr_ena;
@@ -488,5 +406,83 @@ generate
         );
     end
 endgenerate
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_m(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_m_rd_data      )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_rou(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_rou_rd_data    )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result0(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result0_wr_en  )
+    ,   .wr_addr        (wr_cnt             )
+    ,   .wr_data        (task_res           )
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_result0_rd_data)
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_result1(
+        .clk            (clk                )
+    ,   .wr_en          (ram_result1_wr_en  )
+    ,   .wr_addr        (wr_cnt             )
+    ,   .wr_data        (task_res           )
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_result1_rd_data)
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_y(
+        .clk            (clk                )
+    ,   .wr_en          (ram_y_wr_en        )
+    ,   .wr_addr        (ram_y_wr_addr      )
+    ,   .wr_data        (ram_y_wr_data      )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        (ram_y_rd_data      )
+);
 
 endmodule

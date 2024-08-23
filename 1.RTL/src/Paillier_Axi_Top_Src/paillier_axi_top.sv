@@ -12,20 +12,14 @@ module paillier_axi_top#(
 )(
 //----------------------------------------------------
 // AXI-LITE slave port
-    // Global Clock Signal
-        input wire  S_AXI_ACLK
-    // Global Reset Signal. This Signal is Active LOW
-    ,   input wire  S_AXI_ARESETN
-    
+        input           S_AXI_ACLK
+    ,   input           S_AXI_ARESETN
     ,   tvip_axi_if     AXI_LITE_IF
 
 //----------------------------------------------------
 // AXI-FULL master port
-    // Global Clock Signal.
-    ,   input wire  M_AXI_ACLK
-    // Global Reset Singal. This Signal is Active Low
-    ,   input wire  M_AXI_ARESETN
-
+    ,   input           M_AXI_ACLK
+    ,   input           M_AXI_ARESETN
     ,   tvip_axi_if     AXI_FULL_IF
 );
     genvar o;

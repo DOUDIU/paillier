@@ -18,35 +18,35 @@
 	import  tvip_axi_types_pkg::*;
 
 	// AXI4LITE signals
-	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;
+	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awready;
 	reg  	axi_wready;
 	reg [1 : 0] 	axi_bresp;
 	reg  	axi_bvalid;
-	reg [`TVIP_AXI_LITE_MAX_ADDRESS_WIDTH-1 : 0] 	axi_araddr;
+	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arready;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1 : 0] 	axi_rdata;
+	reg [`AXI_LITE_DATA_WIDTH-1 : 0] 	axi_rdata;
 	reg [1 : 0] 	axi_rresp;
 	reg  	axi_rvalid;
 
 	// Example-specific design signals
-	// local parameter for addressing 32 bit / 64 bit `TVIP_AXI_LITE_MAX_DATA_WIDTH
+	// local parameter for addressing 32 bit / 64 bit `AXI_LITE_DATA_WIDTH
 	// ADDR_LSB is used for addressing 32/64 bit registers/memories
 	// ADDR_LSB = 2 for 32 bits (n downto 2)
 	// ADDR_LSB = 3 for 64 bits (n downto 3)
-	localparam integer ADDR_LSB = (`TVIP_AXI_LITE_MAX_DATA_WIDTH/32) + 1;
+	localparam integer ADDR_LSB = (`AXI_LITE_DATA_WIDTH/32) + 1;
 	localparam integer OPT_MEM_ADDR_BITS = 1;
 	//----------------------------------------------
 	//-- Signals for user logic register space example
 	//------------------------------------------------
 	//-- Number of Slave Registers 4
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1:0]	slv_reg0;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1:0]	slv_reg1;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1:0]	slv_reg2;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1:0]	slv_reg3;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg0;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg1;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg2;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg3;
 	wire	 slv_reg_rden;
 	wire	 slv_reg_wren;
-	reg [`TVIP_AXI_LITE_MAX_DATA_WIDTH-1:0]	 reg_data_out;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	 reg_data_out;
 	integer	 byte_index;
 	reg	 aw_en;
 
@@ -185,7 +185,7 @@
 			if (slv_reg_wren) begin
 				case ( axi_awaddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 					2'h0: begin
-						for ( byte_index = 0; byte_index <= (`TVIP_AXI_LITE_MAX_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
+						for ( byte_index = 0; byte_index <= (`AXI_LITE_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
 							if ( AXI_LITE_IF.AXI_WSTRB[byte_index] == 1 ) begin
 								// Respective byte enables are asserted as per write strobes 
 								// Slave register 0
@@ -194,7 +194,7 @@
 						end
 					end
 					2'h1: begin
-						for ( byte_index = 0; byte_index <= (`TVIP_AXI_LITE_MAX_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
+						for ( byte_index = 0; byte_index <= (`AXI_LITE_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
 							if ( AXI_LITE_IF.AXI_WSTRB[byte_index] == 1 ) begin
 								// Respective byte enables are asserted as per write strobes 
 								// Slave register 1
@@ -203,7 +203,7 @@
 						end
 					end
 					2'h2: begin
-						for ( byte_index = 0; byte_index <= (`TVIP_AXI_LITE_MAX_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
+						for ( byte_index = 0; byte_index <= (`AXI_LITE_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
 							if ( AXI_LITE_IF.AXI_WSTRB[byte_index] == 1 ) begin
 								// Respective byte enables are asserted as per write strobes 
 								// Slave register 2
@@ -212,7 +212,7 @@
 						end
 					end
 					2'h3: begin
-						for ( byte_index = 0; byte_index <= (`TVIP_AXI_LITE_MAX_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
+						for ( byte_index = 0; byte_index <= (`AXI_LITE_DATA_WIDTH/8)-1; byte_index = byte_index+1 ) begin
 							if ( AXI_LITE_IF.AXI_WSTRB[byte_index] == 1 ) begin
 								// Respective byte enables are asserted as per write strobes 
 								// Slave register 3

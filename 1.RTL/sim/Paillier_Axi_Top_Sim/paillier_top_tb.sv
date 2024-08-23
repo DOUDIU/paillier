@@ -1,7 +1,6 @@
 `timescale 1ns / 1ps
 module paillier_top_tb();
 
-
 parameter K       = 128 ;
 parameter N       = 32  ;
 
@@ -11,18 +10,16 @@ reg     rst_n = 0;
 always #5 clk = ~clk;
 initial #100 rst_n = 1;
 
+wire    [K-1    :   0]      PAILLIER_N                              [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_N_SQUARE                       [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_M                              [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_C                              [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_R                              [N-1:0] ;
 
+wire    [K-1    :   0]      PAILLIER_ENC_A                          [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_ENC_B                          [N-1:0] ;
 
-wire    [K-1    :   0]      PAILLIER_N              [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_N_SQUARE       [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_M              [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_C              [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_R              [N-1:0] ;
-
-wire    [K-1    :   0]      PAILLIER_ENC_A          [N-1:0] ;
-wire    [K-1    :   0]      PAILLIER_ENC_B          [N-1:0] ;
-
-wire    [K-1    :   0]      PAILLIER_CONST_SCALAR   [N-1:0] ;
+wire    [K-1    :   0]      PAILLIER_CONST_SCALAR                   [N-1:0] ;
 
 reg     [K*N-1  :   0]      PAILLIER_ENC_RESULT                             ;
 reg     [K*N-1  :   0]      PAILLIER_DEC_RESULT                             ;
@@ -30,6 +27,30 @@ wire    [K*N-1  :   0]      PAILLIER_ENC_RESULT_CONFIRM                     ;
 wire    [K*N-1  :   0]      PAILLIER_DEC_RESULT_CONFIRM                     ;
 wire    [K*N-1  :   0]      PAILLIER_HOMOMORPHIC_ADD_RESULT_CONFIRM         ;
 wire    [K*N-1  :   0]      PAILLIER_POSTIVE_SCALAR_MUL_RESULT_CONFIRM      ;
+
+reg     [1      :   0]      task_cmd                                        ;
+reg                         task_req                                        ;
+
+reg     [K-1    :   0]      enc_m_data                                      ;
+reg                         enc_m_valid                                     ;
+reg     [K-1    :   0]      enc_r_data                                      ;
+reg                         enc_r_valid                                     ;
+
+reg     [K-1    :   0]      dec_c_data                                      ;
+reg                         dec_c_valid                                     ;
+
+reg     [K-1    :   0]      homo_add_c1                                     ;
+reg                         homo_add_c1_valid                               ;
+reg     [K-1    :   0]      homo_add_c2                                     ;
+reg                         homo_add_c2_valid                               ;
+
+reg     [K-1    :   0]      scalar_mul_c1                                   ;
+reg                         scalar_mul_c1_valid                             ;
+reg     [K-1    :   0]      scalar_mul_const                                ;
+reg                         scalar_mul_const_valid                          ;
+
+wire    [K-1    :   0]      enc_out_data                                    ;
+wire                        enc_out_valid                                   ;
 
 assign  PAILLIER_N          =       {
     128'h0,
@@ -317,35 +338,12 @@ assign PAILLIER_POSTIVE_SCALAR_MUL_RESULT_CONFIRM =
 
 assign PAILLIER_DEC_RESULT_CONFIRM = 4096'h100187;
 
-
-
-
-
-
-reg     [1  :0]     task_cmd                ;
-reg                 task_req                ;
-
-reg     [K-1:0]     enc_m_data              ;
-reg                 enc_m_valid             ;
-reg     [K-1:0]     enc_r_data              ;
-reg                 enc_r_valid             ;
-
-reg     [K-1:0]     dec_c_data              ;
-reg                 dec_c_valid             ;
-
-reg     [K-1:0]     homo_add_c1             ;
-reg                 homo_add_c1_valid       ;
-reg     [K-1:0]     homo_add_c2             ;
-reg                 homo_add_c2_valid       ;
-
-reg     [K-1:0]     scalar_mul_c1           ;
-reg                 scalar_mul_c1_valid     ;
-reg     [K-1:0]     scalar_mul_const        ;
-reg                 scalar_mul_const_valid  ;
-
-wire    [K-1:0]     enc_out_data            ;
-wire                enc_out_valid           ;
-
+initial begin
+    paillier_encrypt_task;
+    // paillier_decrypt_task;
+    // paillier_homomorphic_addition_task;
+    // paillier_postive_scalar_multiplication_task;
+end
 
 paillier_top #(
         .K                          (K                          )
@@ -538,26 +536,5 @@ task paillier_postive_scalar_multiplication_task;
         $display("paillier postive multiplication result is wrong!");
     $stop;
 endtask
-
-initial begin
-    paillier_encrypt_task;
-    // paillier_decrypt_task;
-    // paillier_homomorphic_addition_task;
-    // paillier_postive_scalar_multiplication_task;
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 endmodule

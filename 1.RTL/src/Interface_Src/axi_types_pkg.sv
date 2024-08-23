@@ -3,13 +3,13 @@
 package tvip_axi_types_pkg;
     `include  "axi_defines.svh"
 
-    typedef logic [`TVIP_AXI_MAX_ID_WIDTH-1:0]      tvip_axi_id;
-    typedef logic [`TVIP_AXI_MAX_ADDRESS_WIDTH-1:0] tvip_axi_address;
-    typedef logic [7:0]                             tvip_axi_burst_length;
-    typedef logic [3:0]                             tvip_axi_cache;
-    typedef logic [3:0]                             tvip_axi_qos;
-    typedef logic [`TVIP_AXI_MAX_DATA_WIDTH-1:0]    tvip_axi_data;
-    typedef logic [`TVIP_AXI_MAX_DATA_WIDTH/8-1:0]  tvip_axi_strobe;
+    typedef logic [`AXI_ID_WIDTH-1:0]       tvip_axi_id;
+    typedef logic [`AXI_ADDR_WIDTH-1:0]     tvip_axi_address;
+    typedef logic [7:0]                     tvip_axi_burst_length;
+    typedef logic [3:0]                     tvip_axi_cache;
+    typedef logic [3:0]                     tvip_axi_qos;
+    typedef logic [`AXI_DATA_WIDTH-1:0]     tvip_axi_data;
+    typedef logic [`AXI_DATA_WIDTH/8-1:0]   tvip_axi_strobe;
 
     typedef enum logic [2:0] {
         TVIP_AXI_BURST_SIZE_1_BYTE    = 'b000,

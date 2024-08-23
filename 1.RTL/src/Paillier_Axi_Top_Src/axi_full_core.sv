@@ -32,12 +32,9 @@ module axi_full_core#(
 )(
 //----------------------------------------------------
 // AXI-FULL master port
-    // Global Clock Signal.
-        input wire  M_AXI_ACLK
-    // Global Reset Singal. This Signal is Active Low
-    ,   input wire  M_AXI_ARESETN
-
-	,	tvip_axi_if         AXI_FULL_IF
+        input							M_AXI_ACLK
+    ,   input							M_AXI_ARESETN
+	,	tvip_axi_if         			AXI_FULL_IF
 
 //----------------------------------------------------
 // paillier control interface
@@ -87,20 +84,20 @@ module axi_full_core#(
 	}PAILLIER_MODE;
 
 	// Add user definition here
-	reg		[$clog2(TEST_TIMES) + 1  : 0]	loop_counter;// tha max value = TEST_TIMES * 4
+	reg		[$clog2(TEST_TIMES) + 1  	: 0]	loop_counter;// tha max value = TEST_TIMES * 4
 
-	reg		[BLOCK_COUNT - 1 : 0]			block_is_busy;
-	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	block_is_busy_next;
-	reg		[`TVIP_AXI_MAX_ADDRESS_WIDTH-1	 : 0]	block_target_addr	[0:BLOCK_COUNT-1];
-	reg 	[$clog2(BLOCK_COUNT) - 1 : 0]	block_lowest_zero_bit;
-	reg 									all_block_is_busy;
+	reg		[BLOCK_COUNT - 1 			: 0]	block_is_busy;
+	reg		[$clog2(BLOCK_COUNT) - 1 	: 0]	block_is_busy_next;
+	reg		[`AXI_ADDR_WIDTH-1	 	 	: 0]	block_target_addr	[0:BLOCK_COUNT-1];
+	reg 	[$clog2(BLOCK_COUNT) - 1 	: 0]	block_lowest_zero_bit;
+	reg 										all_block_is_busy;
 
-	wire 	[BLOCK_COUNT - 1 : 0]			fifo_is_full;
-	reg		[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_is_busy_next;
-	reg 									all_fifo_is_empty;
-	reg 	[$clog2(BLOCK_COUNT) - 1 : 0]	fifo_lowest_zero_bit;
+	wire 	[BLOCK_COUNT - 1 			: 0]	fifo_is_full;
+	reg		[$clog2(BLOCK_COUNT) - 1 	: 0]	fifo_is_busy_next;
+	reg 										all_fifo_is_empty;
+	reg 	[$clog2(BLOCK_COUNT) - 1 	: 0]	fifo_lowest_zero_bit;
 
-	reg		[1 : 0]							single_task_read_cnt;
+	reg		[1 							: 0]	single_task_read_cnt;
 
 	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 		if (M_AXI_ARESETN == 0) begin
@@ -143,13 +140,13 @@ module axi_full_core#(
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
 	// number of write or read transaction.
-	 localparam integer C_TRANSACTIONS_NUM = clogb2(`TVIP_AXI_BURST_LEN-1);
+	 localparam integer C_TRANSACTIONS_NUM = clogb2(`AXI_BURST_LEN-1);
 
 	// Burst length for transactions, in C_M_AXI_DATA_WIDTHs.
 	// Non-2^n lengths will eventually cause bursts across 4K address boundaries.
 	 localparam integer C_MASTER_LENGTH	= 12;
 	// total number of burst transfers is master length divided by burst length and burst size
-	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((`TVIP_AXI_BURST_LEN*`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
+	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((`AXI_BURST_LEN*`AXI_DATA_WIDTH/8)-1);
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
@@ -175,24 +172,24 @@ module axi_full_core#(
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
-	wire [`TVIP_AXI_MAX_ADDRESS_WIDTH-1 : 0] 	axi_awaddr;
+	wire [`AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
-	wire[`TVIP_AXI_MAX_DATA_WIDTH-1 : 0] 	axi_wdata;
+	wire [`AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
 	reg  	axi_wvalid;
 	reg  	axi_bready;
-	reg [`TVIP_AXI_MAX_ADDRESS_WIDTH-1 : 0] 	axi_araddr;
+	reg  [`AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arvalid;
 	reg  	axi_rready;
 	//write beat count in a burst
-	reg [C_TRANSACTIONS_NUM : 0] 	write_index;
+	reg  [C_TRANSACTIONS_NUM : 0] 	write_index;
 	//read beat count in a burst
-	reg [C_TRANSACTIONS_NUM : 0] 	read_index;
-	//size of `TVIP_AXI_BURST_LEN length burst in bytes
+	reg  [C_TRANSACTIONS_NUM : 0] 	read_index;
+	//size of `AXI_BURST_LEN length burst in bytes
 	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
-	//The burst counters are used to track the number of burst transfers of `TVIP_AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
-	reg [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
-	reg [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
+	//The burst counters are used to track the number of burst transfers of `AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
+	reg  [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
+	reg  [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
 	reg  	start_single_burst_write;
 	reg  	start_single_burst_read;
 	reg  	writes_done;
@@ -201,7 +198,7 @@ module axi_full_core#(
 	reg  	read_mismatch;
 	reg  	burst_write_active;
 	reg  	burst_read_active;
-	reg [`TVIP_AXI_MAX_DATA_WIDTH-1 : 0] 	expected_rdata;
+	reg  [`AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
 	//Interface response error flags
 	wire  	write_resp_error;
 	wire  	read_resp_error;
@@ -220,9 +217,9 @@ module axi_full_core#(
 	//The AXI address is a concatenation of the target base address + active offset range
 	assign AXI_FULL_IF.AXI_AWADDR	= TARGET_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign AXI_FULL_IF.AXI_AWLEN	= `TVIP_AXI_BURST_LEN - 1;
-	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign AXI_FULL_IF.AXI_AWSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
+	assign AXI_FULL_IF.AXI_AWLEN	= `AXI_BURST_LEN - 1;
+	//Size should be `AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
+	assign AXI_FULL_IF.AXI_AWSIZE	= clogb2((`AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign AXI_FULL_IF.AXI_AWBURST	= 2'b01;
 	assign M_AXI_AWLOCK	= 1'b0;
@@ -235,7 +232,7 @@ module axi_full_core#(
 	//Write Data(W)
 	assign AXI_FULL_IF.AXI_WDATA	= axi_wdata;
 	//All bursts are complete and aligned in this example
-	assign AXI_FULL_IF.AXI_WSTRB	= {(`TVIP_AXI_MAX_DATA_WIDTH/8){1'b1}};
+	assign AXI_FULL_IF.AXI_WSTRB	= {(`AXI_DATA_WIDTH/8){1'b1}};
 	assign AXI_FULL_IF.AXI_WLAST	= axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
 	assign AXI_FULL_IF.AXI_WVALID	= axi_wvalid;
@@ -245,9 +242,9 @@ module axi_full_core#(
 	assign AXI_FULL_IF.AXI_ARID	= 'b0;
 	assign AXI_FULL_IF.AXI_ARADDR	= TARGET_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign AXI_FULL_IF.AXI_ARLEN	= `TVIP_AXI_BURST_LEN - 1;
-	//Size should be `TVIP_AXI_MAX_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign AXI_FULL_IF.AXI_ARSIZE	= clogb2((`TVIP_AXI_MAX_DATA_WIDTH/8)-1);
+	assign AXI_FULL_IF.AXI_ARLEN	= `AXI_BURST_LEN - 1;
+	//Size should be `AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
+	assign AXI_FULL_IF.AXI_ARSIZE	= clogb2((`AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
 	assign AXI_FULL_IF.AXI_ARBURST	= 2'b01;
 	assign M_AXI_ARLOCK	= 1'b0;
@@ -260,7 +257,7 @@ module axi_full_core#(
 	//Read and Read Response (R)
 	assign AXI_FULL_IF.AXI_RREADY	= axi_rready;
 	//Burst size in bytes
-	assign burst_size_bytes	= `TVIP_AXI_BURST_LEN * `TVIP_AXI_MAX_DATA_WIDTH / 8;
+	assign burst_size_bytes	= `AXI_BURST_LEN * `AXI_DATA_WIDTH / 8;
 	// assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 	//--------------------
@@ -368,7 +365,7 @@ module axi_full_core#(
 		// count reaches the penultimate count to synchronize                           
 		// with the last write data when write_index is b1111                           
 		// else if (&(write_index[C_TRANSACTIONS_NUM-1:1])&& ~write_index[0] && wnext)  
-		else if (((write_index == `TVIP_AXI_BURST_LEN-2 && `TVIP_AXI_BURST_LEN >= 2) && wnext) || (`TVIP_AXI_BURST_LEN == 1 )) begin                                                                         
+		else if (((write_index == `AXI_BURST_LEN-2 && `AXI_BURST_LEN >= 2) && wnext) || (`AXI_BURST_LEN == 1 )) begin                                                                         
 			axi_wlast <= 1'b1;                                                          
 		end                                                                           
 		// Deassrt axi_wlast when the last write data has been                          
@@ -376,7 +373,7 @@ module axi_full_core#(
 		else if (wnext) begin                                                               
 			axi_wlast <= 1'b0; 
 		end                                                           
-		else if (axi_wlast && `TVIP_AXI_BURST_LEN == 1) begin                                 
+		else if (axi_wlast && `AXI_BURST_LEN == 1) begin                                 
 			axi_wlast <= 1'b0;                             
 		end                               
 		else begin                                                                            
@@ -391,7 +388,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_write == 1'b1) begin                                                                         
 			write_index <= 0;                                                           
 		end                                                                           
-		else if (wnext && (write_index != `TVIP_AXI_BURST_LEN-1)) begin                                                                         
+		else if (wnext && (write_index != `AXI_BURST_LEN-1)) begin                                                                         
 			write_index <= write_index + 1;                                             
 		end                                                                           
 		else begin
@@ -542,7 +539,7 @@ module axi_full_core#(
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_read) begin                                                             
 			read_index <= 0;                                                
 		end                                                               
-	    else if (rnext && (read_index != `TVIP_AXI_BURST_LEN-1)) begin                                                             
+	    else if (rnext && (read_index != `AXI_BURST_LEN-1)) begin                                                             
 	     	read_index <= read_index + 1;                                   
 		end                                                               
 	    else begin                                                               
@@ -1161,7 +1158,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			reads_done <= 1'b0;
 		//The reads_done should be associated with a rready response
-		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && (read_index == `TVIP_AXI_BURST_LEN-1) && (read_burst_counter == 1))
+		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && (read_index == `AXI_BURST_LEN-1) && (read_burst_counter == 1))
 			reads_done <= 1'b1;                                                                                   
 		else                                                                                                    
 			reads_done <= 0;                                                                             

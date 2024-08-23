@@ -6,6 +6,7 @@ reg                 M_AXI_ACLK          ;
 reg                 M_AXI_ARESETN       ;
 wire                S_LITE_AXI_ACLK     ;
 wire                S_LITE_AXI_ARESETN  ;
+reg                 INIT_AXI_TXN        ;
 
 tvip_axi_if AXI_FULL_IF(M_AXI_ACLK, M_AXI_ARESETN);
 tvip_axi_if AXI_LITE_IF(S_LITE_AXI_ACLK, S_LITE_AXI_ARESETN);
@@ -25,17 +26,6 @@ end
 assign  S_LITE_AXI_ACLK     =   M_AXI_ACLK;
 assign  S_LITE_AXI_ARESETN  =   M_AXI_ARESETN;
 
-reg             INIT_AXI_TXN;
-
-initial begin
-    INIT_AXI_TXN    <=  0;
-    @(posedge M_AXI_ARESETN);
-    #(_PERIOD_*4)
-    INIT_AXI_TXN    <=  1;
-    #_PERIOD_
-    INIT_AXI_TXN    <=  0;
-end
-
 parameter   K                       = 128;
 parameter   N                       = 32;
 
@@ -45,8 +35,17 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_SCALAR_MUL          = 2'b11;
 
 parameter   PAILLIER_MODE           = STA_ENCRYPTION;
-parameter   BLOCK_COUNT             = 1;
-parameter   TEST_TIMES              = 1;
+parameter   BLOCK_COUNT             = 5;
+parameter   TEST_TIMES              = 10;
+
+initial begin
+    INIT_AXI_TXN    <=  0;
+    @(posedge M_AXI_ARESETN);
+    #(_PERIOD_*4)
+    INIT_AXI_TXN    <=  1;
+    #_PERIOD_
+    INIT_AXI_TXN    <=  0;
+end
 
 paillier_axi_top#(
         .BLOCK_COUNT                (BLOCK_COUNT            )

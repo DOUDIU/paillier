@@ -32,118 +32,6 @@ module paillier_top#(
 );
 localparam ADDR_W   =   $clog2(N);
 
-dual_port_ram#(
-    `ifndef Modelsim_Sim
-        .filename       ("../../../../../1.RTL/data/ram_lamda.txt")
-    `else
-        .filename       ("..\\1.RTL\\data\\ram_lamda.txt")
-    `endif
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_lamda(
-        .clk            (clk                )
-    ,   .wr_en          (0)
-    ,   .wr_addr        ()
-    ,   .wr_data        ()
-    ,   .rd_en          (1)
-    ,   .rd_addr        (me_addr            )
-    ,   .rd_data        (ram_lamda_rd_data  )
-);
-
-dual_port_ram#(
-    `ifndef Modelsim_Sim
-        .filename       ("../../../../../1.RTL/data/ram_mu.txt")
-    `else
-        .filename       ("..\\1.RTL\\data\\ram_mu.txt")
-    `endif
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mu(
-        .clk            (clk                )
-    ,   .wr_en          (0)
-    ,   .wr_addr        ()
-    ,   .wr_data        ()
-    ,   .rd_en          (1)
-    ,   .rd_addr        (mm_addr            )
-    ,   .rd_data        (ram_mu_rd_data     )
-);
-
-dual_port_ram#(
-    `ifndef Modelsim_Sim
-        .filename       ("../../../../../1.RTL/data/ram_N.txt")
-    `else
-        .filename       ("..\\1.RTL\\data\\ram_N.txt")
-    `endif
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_N(
-        .clk            (clk                )
-    ,   .wr_en          (0)
-    ,   .wr_addr        ()
-    ,   .wr_data        ()
-    ,   .rd_en          (1)
-    ,   .rd_addr        (ram_N_rd_addr      )
-    ,   .rd_data        (ram_N_rd_data      )
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_y(
-        .clk            (clk                )
-    ,   .wr_en          (ram_y_wr_en        )
-    ,   .wr_addr        (ram_y_wr_addr      )
-    ,   .wr_data        (ram_y_wr_data      )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (mm_addr            )
-    ,   .rd_data        (ram_y_rd_data      )
-);
-
-//The use of DRAM is intended for timing performance.
-dual_port_dram#(
-        .filename       ("none"             )
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_me_result(
-        .clk            (clk                )
-    ,   .wr_en          (ram_me_wr_en       )    
-    ,   .wr_addr        (ram_me_wr_addr     )    
-    ,   .wr_data        (ram_me_wr_data     )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (ram_me_rd_addr     )
-    ,   .rd_data        (ram_me_rd_data     )
-);
-
-//The use of DRAM is intended for timing performance.
-dual_port_dram#(
-        .filename       ("none"             )
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_result(
-        .clk            (clk                )
-    ,   .wr_en          (ram_mm_wr_en       )
-    ,   .wr_addr        (ram_mm_wr_addr     )
-    ,   .wr_data        (ram_mm_wr_data     )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (ram_mm_rd_addr     )
-    ,   .rd_data        (ram_mm_rd_data     )
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_L_result(
-        .clk            (clk                )
-    ,   .wr_en          (L_valid            )
-    ,   .wr_addr        (L_result_cnt       )
-    ,   .wr_data        (L_result           )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (mm_addr            )
-    ,   .rd_data        (ram_L_rd_data      )
-);
-
 reg     [ADDR_W-1       : 0]    ram_N_rd_addr           ;
 wire    [K-1            : 0]    ram_N_rd_data           ;
 
@@ -210,6 +98,22 @@ wire    [K-1            : 0]    L_result                ;
 wire                            L_valid                 ;
 
 reg     [$clog2(N)-1    : 0]    L_result_cnt        =   0;
+
+typedef enum logic [3:0] {
+    STA_IDLE                    ,
+    STA_ENCRYPTION_ME           ,
+    STA_ENCRYPTION_MM_STEP0     ,
+    STA_ENCRYPTION_MM_STEP1     ,
+    STA_DECRYPTION_ME           ,
+    STA_DECRYPTION_L            ,
+    STA_DECRYPTION_MM           ,
+    STA_HOMOMORPHIC_ADD         ,
+    STA_SCALAR_MUL              ,
+    STA_END                     
+} FSM_STATE;
+
+FSM_STATE   state_now;
+FSM_STATE   state_next;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n | task_req)begin
@@ -351,23 +255,6 @@ always@(*) begin
     L_y         =       ram_N_rd_data;
 end
 
-typedef enum logic [3:0] {
-    STA_IDLE                    ,
-    STA_ENCRYPTION_ME           ,
-    STA_ENCRYPTION_MM_STEP0     ,
-    STA_ENCRYPTION_MM_STEP1     ,
-    STA_DECRYPTION_ME           ,
-    STA_DECRYPTION_L            ,
-    STA_DECRYPTION_MM           ,
-    STA_HOMOMORPHIC_ADD         ,
-    STA_SCALAR_MUL              ,
-    STA_END                     
-} FSM_STATE;
-
-FSM_STATE   state_now;
-FSM_STATE   state_next;
-
-
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         state_now <= STA_IDLE;
@@ -383,10 +270,10 @@ always@(*) begin
         STA_IDLE: begin
             if(task_req) begin
                 case(task_cmd)
-                    2'b00:     state_next = STA_ENCRYPTION_ME;
-                    2'b01:     state_next = STA_DECRYPTION_ME;
-                    2'b10:     state_next = STA_HOMOMORPHIC_ADD;
-                    2'b11:     state_next = STA_SCALAR_MUL;
+                    2'b00:      state_next = STA_ENCRYPTION_ME;
+                    2'b01:      state_next = STA_DECRYPTION_ME;
+                    2'b10:      state_next = STA_HOMOMORPHIC_ADD;
+                    2'b11:      state_next = STA_SCALAR_MUL;
                     default:    state_next = STA_IDLE;
                 endcase
             end
@@ -531,7 +418,7 @@ always@(posedge clk or negedge rst_n) begin
                     me_y_valid_0        <=  0;
                 end
                 if(me_valid_0) begin
-                    me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                    me_result_0_cnt     <=  (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
 
                 if(state_next   ==  STA_ENCRYPTION_MM_STEP0) begin
@@ -594,7 +481,7 @@ always@(posedge clk or negedge rst_n) begin
                     me_y_valid_0        <=  0;
                 end
                 if(me_valid_0) begin
-                    me_result_0_cnt                         <=      (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
+                    me_result_0_cnt     <=  (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
 
                 if(state_next   ==  STA_DECRYPTION_L) begin
@@ -613,7 +500,7 @@ always@(posedge clk or negedge rst_n) begin
                 end
 
                 if(L_valid) begin
-                    L_result_cnt                        <=  L_result_cnt + 1;
+                    L_result_cnt        <=  L_result_cnt + 1;
                 end
 
                 if(state_next   ==  STA_DECRYPTION_MM) begin
@@ -717,6 +604,117 @@ montgomery_iddmm_top #(
     ,   .me_valid       (me_valid_0     )
 );
 
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_lamda.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_lamda.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_lamda(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (me_addr            )
+    ,   .rd_data        (ram_lamda_rd_data  )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mu.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mu.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mu(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_mu_rd_data     )
+);
+
+dual_port_ram#(
+    `ifndef Modelsim_Sim
+        .filename       ("../../../../../1.RTL/data/ram_N.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_N.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_N(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (ram_N_rd_addr      )
+    ,   .rd_data        (ram_N_rd_data      )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_y(
+        .clk            (clk                )
+    ,   .wr_en          (ram_y_wr_en        )
+    ,   .wr_addr        (ram_y_wr_addr      )
+    ,   .wr_data        (ram_y_wr_data      )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_y_rd_data      )
+);
+
+//The use of DRAM is intended for timing performance.
+dual_port_dram#(
+        .filename       ("none"             )
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_me_result(
+        .clk            (clk                )
+    ,   .wr_en          (ram_me_wr_en       )    
+    ,   .wr_addr        (ram_me_wr_addr     )    
+    ,   .wr_data        (ram_me_wr_data     )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (ram_me_rd_addr     )
+    ,   .rd_data        (ram_me_rd_data     )
+);
+
+//The use of DRAM is intended for timing performance.
+dual_port_dram#(
+        .filename       ("none"             )
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_result(
+        .clk            (clk                )
+    ,   .wr_en          (ram_mm_wr_en       )
+    ,   .wr_addr        (ram_mm_wr_addr     )
+    ,   .wr_data        (ram_mm_wr_data     )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (ram_mm_rd_addr     )
+    ,   .rd_data        (ram_mm_rd_data     )
+);
+
+dual_port_ram#(
+        .filename       ("none")
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_L_result(
+        .clk            (clk                )
+    ,   .wr_en          (L_valid            )
+    ,   .wr_addr        (L_result_cnt       )
+    ,   .wr_data        (L_result           )
+    ,   .rd_en          (1                  )
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_L_rd_data      )
+);
 
 
 endmodule

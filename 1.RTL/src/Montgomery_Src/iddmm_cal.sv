@@ -144,7 +144,7 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-//pipe stage 2 ( 6 cycles )
+//pipe stage 2 ( 5 cycles )
 wire    [127        :0]     result_p1_mul_s         ;
 reg     [127        :0]     p_stage_2_d     [0:5]   ;
 reg     [ADDR_W-1   :0]     i_cnt_stage_2_d [0:5]   ;
@@ -193,7 +193,7 @@ always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         q <= 0;
     end
-    else if(j_cnt_stage_2_d[5] == 0) begin
+    else if(j_cnt_stage_2_d[4] == 0) begin
         q <= result_p1_mul_s;
     end
     else begin
@@ -209,10 +209,10 @@ always@(posedge clk or negedge rst_n) begin
         j_cnt_stage_3_d <= 0;
     end
     else begin
-        s_stage_3_d <= s_stage_2_d[5];
-        p_stage_3_d <= p_stage_2_d[5];
-        i_cnt_stage_3_d <= i_cnt_stage_2_d[5];
-        j_cnt_stage_3_d <= j_cnt_stage_2_d[5];
+        s_stage_3_d <= s_stage_2_d[4];
+        p_stage_3_d <= p_stage_2_d[4];
+        i_cnt_stage_3_d <= i_cnt_stage_2_d[4];
+        j_cnt_stage_3_d <= j_cnt_stage_2_d[4];
     end
 end
 

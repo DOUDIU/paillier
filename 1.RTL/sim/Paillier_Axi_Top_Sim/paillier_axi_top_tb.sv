@@ -36,7 +36,14 @@ localparam  STA_ENCRYPTION          = 2'b00,
 
 parameter   PAILLIER_MODE           = STA_ENCRYPTION;
 parameter   BLOCK_COUNT             = 5;
-parameter   TEST_TIMES              = 10;
+parameter   TEST_TIMES              = 3;
+
+initial begin
+    @(posedge S_LITE_AXI_ARESETN);
+    @(posedge S_LITE_AXI_ACLK);
+    paillier_axi_top.u_saxi_lite_core.slv_reg3 = TEST_TIMES >> 32;
+    paillier_axi_top.u_saxi_lite_core.slv_reg2 = TEST_TIMES & 32'hFFFFFFFF;
+end
 
 initial begin
     INIT_AXI_TXN    <=  0;
@@ -49,7 +56,6 @@ end
 
 paillier_axi_top#(
         .BLOCK_COUNT                (BLOCK_COUNT            )
-    ,   .TEST_TIMES                 (TEST_TIMES             )
 	,	.K                          (K                      )
     ,   .N                          (N                      )
 //----------------------------------------------------

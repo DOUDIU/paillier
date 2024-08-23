@@ -1,7 +1,6 @@
 module paillier_axi_top#(
 // Users to add parameters here
         parameter BLOCK_COUNT   = 25
-    ,   parameter TEST_TIMES    = 18
 	,	parameter K             = 128
     ,   parameter N             = 32
 //----------------------------------------------------
@@ -33,6 +32,7 @@ module paillier_axi_top#(
 
     wire    		            paillier_start                                  ;
     wire    [1:0]	            paillier_mode                                   ;
+    wire    [63:0]	            paillier_counts                                 ;
     wire    			        paillier_finished                               ;
 
     wire    [1  :0]             task_cmd                [0 : BLOCK_COUNT - 1]   ;
@@ -68,7 +68,6 @@ axi_full_core #(
 	 	.BLOCK_COUNT            (BLOCK_COUNT            )
 	,	.K                      (K                      )
     ,   .N                      (N                      )
-    ,   .TEST_TIMES             (TEST_TIMES             )
 
     //----------------------------------------------------
     // AXI-FULL parameters
@@ -79,6 +78,7 @@ axi_full_core #(
 // paillier control interface
         .paillier_start         (paillier_start         )
     ,   .paillier_mode          (paillier_mode          )
+    ,   .paillier_counts        (paillier_counts        )
     ,   .paillier_finished      (paillier_finished      )
 
 //----------------------------------------------------
@@ -125,6 +125,7 @@ saxi_lite_core u_saxi_lite_core(
 // paillier control interface
         .paillier_start         (paillier_start         )
     ,   .paillier_mode          (paillier_mode          )
+    ,   .paillier_counts        (paillier_counts        )
     ,   .paillier_finished      (paillier_finished      )
 
 //----------------------------------------------------

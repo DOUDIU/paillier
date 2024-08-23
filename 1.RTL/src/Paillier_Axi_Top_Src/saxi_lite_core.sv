@@ -1,9 +1,10 @@
 	module saxi_lite_core(
 		// Users to add ports here
-		output wire 		paillier_start,
-		output wire [1:0]	paillier_mode,
+		output				paillier_start,
+		output		[1:0]	paillier_mode,
+		output		[63:0]	paillier_counts,
 
-		input wire 			paillier_finished,
+		input				paillier_finished,
 
 		// User ports ends
 		// Do not modify the ports beyond this line
@@ -19,15 +20,15 @@
 
 	// AXI4LITE signals
 	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_awaddr;
-	reg  	axi_awready;
-	reg  	axi_wready;
-	reg [1 : 0] 	axi_bresp;
-	reg  	axi_bvalid;
+	reg  								axi_awready;
+	reg  								axi_wready;
+	reg [1 						: 0] 	axi_bresp;
+	reg  								axi_bvalid;
 	reg [`AXI_LITE_ADDR_WIDTH-1 : 0] 	axi_araddr;
-	reg  	axi_arready;
+	reg  								axi_arready;
 	reg [`AXI_LITE_DATA_WIDTH-1 : 0] 	axi_rdata;
-	reg [1 : 0] 	axi_rresp;
-	reg  	axi_rvalid;
+	reg [1 						: 0] 	axi_rresp;
+	reg  								axi_rvalid;
 
 	// Example-specific design signals
 	// local parameter for addressing 32 bit / 64 bit `AXI_LITE_DATA_WIDTH
@@ -41,7 +42,7 @@
 	//------------------------------------------------
 	//-- Number of Slave Registers 4
 	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg0;
-	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg1;
+	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg1;//Read only.
 	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg2;
 	reg [`AXI_LITE_DATA_WIDTH-1:0]	slv_reg3;
 	wire	 slv_reg_rden;
@@ -65,6 +66,7 @@
 	// Add user logic here
 	assign paillier_start = slv_reg0[0];
 	assign paillier_mode = slv_reg0[2:1];
+	assign paillier_counts = {slv_reg3,slv_reg2};
 
 	reg	paillier_finished_d1;
 	reg paillier_finished_d2;
@@ -178,8 +180,8 @@
 		if (S_AXI_ARESETN == 1'b0) begin
 			slv_reg0 <= 0;
 			slv_reg1 <= 0;
-			slv_reg2 <= 0;
-			slv_reg3 <= 0;
+			slv_reg2 <= 32'h1;
+			slv_reg3 <= 32'h86A0;
 		end 
 		else begin
 			if (slv_reg_wren) begin
@@ -198,7 +200,7 @@
 							if ( AXI_LITE_IF.AXI_WSTRB[byte_index] == 1 ) begin
 								// Respective byte enables are asserted as per write strobes 
 								// Slave register 1
-								slv_reg1[(byte_index*8) +: 8] <= AXI_LITE_IF.AXI_WDATA[(byte_index*8) +: 8];
+								// slv_reg1[(byte_index*8) +: 8] <= AXI_LITE_IF.AXI_WDATA[(byte_index*8) +: 8];
 							end  
 						end
 					end
@@ -317,7 +319,7 @@
 		// Address decoding for reading registers
 		case ( axi_araddr[ADDR_LSB+OPT_MEM_ADDR_BITS:ADDR_LSB] )
 			2'h0   : reg_data_out <= slv_reg0;
-			2'h1   : reg_data_out <= slv_reg1 | paillier_finished_reg;
+			2'h1   : reg_data_out <= paillier_finished_reg;
 			2'h2   : reg_data_out <= slv_reg2;
 			2'h3   : reg_data_out <= slv_reg3;
 			default : reg_data_out <= 0;

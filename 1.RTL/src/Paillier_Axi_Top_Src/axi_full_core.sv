@@ -24,9 +24,8 @@ module axi_full_core#(
 	 	parameter BLOCK_COUNT 	=	18
 	,	parameter K 			=	128
 	,	parameter N				=	32
-	,	parameter TEST_TIMES 	=	100000
 
-		// Base address of targeted slave
+	// Base address of targeted slave
 	,   parameter  TARGET_RD_ADDR	= 0
 	,   parameter  TARGET_WR_ADDR	= 0
 )(
@@ -40,6 +39,7 @@ module axi_full_core#(
 // paillier control interface
 	,	input 							paillier_start
 	,	input 			[1	:0]			paillier_mode
+	,	input 			[63	:0]			paillier_counts
 	,	output	reg						paillier_finished = 0
 
 //----------------------------------------------------
@@ -84,7 +84,7 @@ module axi_full_core#(
 	}PAILLIER_MODE;
 
 	// Add user definition here
-	reg		[$clog2(TEST_TIMES) + 1  	: 0]	loop_counter;// tha max value = TEST_TIMES * 4
+	reg		[63  						: 0]	loop_counter;
 
 	reg		[BLOCK_COUNT - 1 			: 0]	block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 	: 0]	block_is_busy_next;
@@ -677,16 +677,16 @@ module axi_full_core#(
 			end
 
 			STA_ENCRYPTION: begin
-				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
-					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_ENCRYPTION_RD;
 				end
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_ENCRYPTION_WR;
 				end
-				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
-					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -711,16 +711,16 @@ module axi_full_core#(
 			end
 
 			STA_DECRYPTION: begin
-				if ((loop_counter != TEST_TIMES) & (!all_block_is_busy)) begin
-					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+				if ((loop_counter != paillier_counts) & (!all_block_is_busy)) begin
+					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_DECRYPTION_RD;
 				end
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_DECRYPTION_WR;
 				end
-				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
-					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -745,16 +745,16 @@ module axi_full_core#(
 			end
 
 			STA_HOMOMORPHIC_ADD: begin
-				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
-					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_HOMOMORPHIC_ADD_RD;
 				end
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_HOMOMORPHIC_ADD_WR;
 				end
-				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
-					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -779,16 +779,16 @@ module axi_full_core#(
 			end
 
 			STA_SCALAR_MUL: begin
-				if ((loop_counter != TEST_TIMES) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
-					//switch when the loop counter is not equal to TEST_TIMES, meanwhile
+				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_SCALAR_MUL_RD;
 				end
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_SCALAR_MUL_WR;
 				end
-				else if ((loop_counter == TEST_TIMES) & (!block_is_busy)) begin
-					//switch when all block is not busy and the loop counter is equal to TEST_TIMES
+				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
 				else begin
@@ -832,6 +832,7 @@ module axi_full_core#(
 			fifo_is_busy_next		<=	0;
 
 			single_task_read_cnt	<=	0;
+			paillier_finished 		<=	0;
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				task_req	[j]	<=	0;
 				task_cmd	[j]	<=	0;
@@ -867,6 +868,10 @@ module axi_full_core#(
 			case (state_now)
 				IDLE_WAIT : begin
 					loop_counter	<=	0;
+
+					if(state_next != IDLE_WAIT) begin
+						paillier_finished	<=	0;
+					end
 				end
 
 				STA_ENCRYPTION: begin
@@ -880,6 +885,10 @@ module axi_full_core#(
 
 					if(state_next == STA_ENCRYPTION_WR) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
+					end
+
+					if(state_next == IDLE_WAIT) begin
+						paillier_finished	<=	1;
 					end
 				end
 
@@ -938,6 +947,10 @@ module axi_full_core#(
 					if(state_next == STA_DECRYPTION_WR) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
+
+					if(state_next == IDLE_WAIT) begin
+						paillier_finished	<=	1;
+					end
 				end
 
 				STA_DECRYPTION_RD: begin
@@ -991,6 +1004,10 @@ module axi_full_core#(
 
 					if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
+					end
+
+					if(state_next == IDLE_WAIT) begin
+						paillier_finished	<=	1;
 					end
 				end
 
@@ -1050,6 +1067,10 @@ module axi_full_core#(
 
 					if(state_next == STA_SCALAR_MUL_WR) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
+					end
+
+					if(state_next == IDLE_WAIT) begin
+						paillier_finished	<=	1;
 					end
 				end
 

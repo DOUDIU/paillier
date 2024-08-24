@@ -28,12 +28,149 @@ module axi_full_core#(
 	// Base address of targeted slave
 	,   parameter  TARGET_RD_ADDR	= 0
 	,   parameter  TARGET_WR_ADDR	= 0
+		// Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
+	,   parameter integer C_M_AXI_BURST_LEN	= 32
+		// Thread ID Width
+	,   parameter integer C_M_AXI_ID_WIDTH	= 1
+		// Width of Address Bus
+	,   parameter integer C_M_AXI_ADDR_WIDTH	= 32
+		// Width of Data Bus
+	,   parameter integer C_M_AXI_DATA_WIDTH	= 32
+		// Width of User Write Address Bus
+	,   parameter integer C_M_AXI_AWUSER_WIDTH	= 0
+		// Width of User Read Address Bus
+	,   parameter integer C_M_AXI_ARUSER_WIDTH	= 0
+		// Width of User Write Data Bus
+	,   parameter integer C_M_AXI_WUSER_WIDTH	= 0
+		// Width of User Read Data Bus
+	,   parameter integer C_M_AXI_RUSER_WIDTH	= 0
+		// Width of User Response Bus
+	,   parameter integer C_M_AXI_BUSER_WIDTH	= 0
 )(
 //----------------------------------------------------
 // AXI-FULL master port
-        input							M_AXI_ACLK
-    ,   input							M_AXI_ARESETN
-	,	tvip_axi_if         			AXI_FULL_IF
+    // Global Clock Signal.
+        input wire  M_AXI_ACLK
+    // Global Reset Singal. This Signal is Active Low
+    ,   input wire  M_AXI_ARESETN
+
+    //----------------Write Address Channel----------------//
+    // Master Interface Write Address ID
+    ,   output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_AWID
+    // Master Interface Write Address
+    ,   output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_AWADDR
+    // Burst length. The burst length gives the exact number of transfers in a burst
+    ,   output wire [7 : 0] M_AXI_AWLEN
+    // Burst size. This signal indicates the size of each transfer in the burst
+    ,   output wire [2 : 0] M_AXI_AWSIZE
+    // Burst type. The burst type and the size information, 
+    // determine how the address for each transfer within the burst is calculated.
+    ,   output wire [1 : 0] M_AXI_AWBURST
+    // Lock type. Provides additional information about the
+    // atomic characteristics of the transfer.
+    ,   output wire  M_AXI_AWLOCK
+    // Memory type. This signal indicates how transactions
+    // are required to progress through a system.
+    ,   output wire [3 : 0] M_AXI_AWCACHE
+    // Protection type. This signal indicates the privilege
+    // and security level of the transaction, and whether
+    // the transaction is a data access or an instruction access.
+    ,   output wire [2 : 0] M_AXI_AWPROT
+    // Quality of Service, QoS identifier sent for each write transaction.
+    ,   output wire [3 : 0] M_AXI_AWQOS
+    // Optional User-defined signal in the write address channel.
+    ,   output wire [C_M_AXI_AWUSER_WIDTH-1 : 0] M_AXI_AWUSER
+    // Write address valid. This signal indicates that
+    // the channel is signaling valid write address and control information.
+    ,   output wire  M_AXI_AWVALID
+    // Write address ready. This signal indicates that
+    // the slave is ready to accept an address and associated control signals
+    ,   input wire  M_AXI_AWREADY
+
+    //----------------Write Data Channel----------------//
+    // Master Interface Write Data.
+    ,   output wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_WDATA
+    // Write strobes. This signal indicates which byte
+    // lanes hold valid data. There is one write strobe
+    // bit for each eight bits of the write data bus.
+    ,   output wire [C_M_AXI_DATA_WIDTH/8-1 : 0] M_AXI_WSTRB
+    // Write last. This signal indicates the last transfer in a write burst.
+    ,   output wire  M_AXI_WLAST
+    // Optional User-defined signal in the write data channel.
+    ,   output wire [C_M_AXI_WUSER_WIDTH-1 : 0] M_AXI_WUSER
+    // Write valid. This signal indicates that valid write
+    // data and strobes are available
+    ,   output wire  M_AXI_WVALID
+    // Write ready. This signal indicates that the slave
+    // can accept the write data.
+    ,   input wire  M_AXI_WREADY
+
+    //----------------Write Response Channel----------------//
+    // Master Interface Write Response.
+    ,   input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_BID
+    // Write response. This signal indicates the status of the write transaction.
+    ,   input wire [1 : 0] M_AXI_BRESP
+    // Optional User-defined signal in the write response channel
+    ,   input wire [C_M_AXI_BUSER_WIDTH-1 : 0] M_AXI_BUSER
+    // Write response valid. This signal indicates that the
+    // channel is signaling a valid write response.
+    ,   input wire  M_AXI_BVALID
+    // Response ready. This signal indicates that the master
+    // can accept a write response.
+    ,   output wire  M_AXI_BREADY
+
+    //----------------Read Address Channel----------------//
+    // Master Interface Read Address.
+    ,   output wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_ARID
+    // Read address. This signal indicates the initial
+    // address of a read burst transaction.
+    ,   output wire [C_M_AXI_ADDR_WIDTH-1 : 0] M_AXI_ARADDR
+    // Burst length. The burst length gives the exact number of transfers in a burst
+    ,   output wire [7 : 0] M_AXI_ARLEN
+    // Burst size. This signal indicates the size of each transfer in the burst
+    ,   output wire [2 : 0] M_AXI_ARSIZE
+    // Burst type. The burst type and the size information, 
+    // determine how the address for each transfer within the burst is calculated.
+    ,   output wire [1 : 0] M_AXI_ARBURST
+    // Lock type. Provides additional information about the
+    // atomic characteristics of the transfer.
+    ,   output wire  M_AXI_ARLOCK
+    // Memory type. This signal indicates how transactions
+    // are required to progress through a system.
+    ,   output wire [3 : 0] M_AXI_ARCACHE
+    // Protection type. This signal indicates the privilege
+    // and security level of the transaction, and whether
+    // the transaction is a data access or an instruction access.
+    ,   output wire [2 : 0] M_AXI_ARPROT
+    // Quality of Service, QoS identifier sent for each read transaction
+    ,   output wire [3 : 0] M_AXI_ARQOS
+    // Optional User-defined signal in the read address channel.
+    ,   output wire [C_M_AXI_ARUSER_WIDTH-1 : 0] M_AXI_ARUSER
+    // Write address valid. This signal indicates that
+    // the channel is signaling valid read address and control information
+    ,   output wire  M_AXI_ARVALID
+    // Read address ready. This signal indicates that
+    // the slave is ready to accept an address and associated control signals
+    ,   input wire  M_AXI_ARREADY
+
+    //----------------Read Data Channel----------------//
+    // Read ID tag. This signal is the identification tag
+    // for the read data group of signals generated by the slave.
+    ,   input wire [C_M_AXI_ID_WIDTH-1 : 0] M_AXI_RID
+    // Master Read Data
+    ,   input wire [C_M_AXI_DATA_WIDTH-1 : 0] M_AXI_RDATA
+    // Read response. This signal indicates the status of the read transfer
+    ,   input wire [1 : 0] M_AXI_RRESP
+    // Read last. This signal indicates the last transfer in a read burst
+    ,   input wire  M_AXI_RLAST
+    // Optional User-defined signal in the read address channel.
+    ,   input wire [C_M_AXI_RUSER_WIDTH-1 : 0] M_AXI_RUSER
+    // Read valid. This signal indicates that the channel
+    // is signaling the required read data.
+    ,   input wire  M_AXI_RVALID
+    // Read ready. This signal indicates that the master can
+    // accept the read data and response information.
+    ,   output wire  M_AXI_RREADY
 
 //----------------------------------------------------
 // paillier control interface
@@ -72,7 +209,6 @@ module axi_full_core#(
     ,	input			[K-1:0]       	rd_dout                 	[0 : BLOCK_COUNT - 1]
     ,	input			[$clog2(N):0] 	rd_cnt                  	[0 : BLOCK_COUNT - 1]
 );
-	import  tvip_axi_types_pkg::*;
 	integer		i,j,k;
 	genvar		o,p,q;
 
@@ -88,7 +224,7 @@ module axi_full_core#(
 
 	reg		[BLOCK_COUNT - 1 			: 0]	block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 	: 0]	block_is_busy_next;
-	reg		[`AXI_ADDR_WIDTH-1	 	 	: 0]	block_target_addr	[0:BLOCK_COUNT-1];
+	reg		[C_M_AXI_ADDR_WIDTH-1	 	: 0]	block_target_addr	[0:BLOCK_COUNT-1];
 	reg 	[$clog2(BLOCK_COUNT) - 1 	: 0]	block_lowest_zero_bit;
 	reg 										all_block_is_busy;
 
@@ -140,13 +276,13 @@ module axi_full_core#(
 
 	// C_TRANSACTIONS_NUM is the width of the index counter for 
 	// number of write or read transaction.
-	 localparam integer C_TRANSACTIONS_NUM = clogb2(`AXI_BURST_LEN-1);
+	 localparam integer C_TRANSACTIONS_NUM = clogb2(C_M_AXI_BURST_LEN-1);
 
 	// Burst length for transactions, in C_M_AXI_DATA_WIDTHs.
 	// Non-2^n lengths will eventually cause bursts across 4K address boundaries.
 	 localparam integer C_MASTER_LENGTH	= 12;
 	// total number of burst transfers is master length divided by burst length and burst size
-	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((`AXI_BURST_LEN*`AXI_DATA_WIDTH/8)-1);
+	 localparam integer C_NO_BURSTS_REQ = C_MASTER_LENGTH-clogb2((C_M_AXI_BURST_LEN*C_M_AXI_DATA_WIDTH/8)-1);
 	// Example State machine to initialize counter, initialize write transactions, 
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
@@ -172,22 +308,22 @@ module axi_full_core#(
 
 	// AXI4LITE signals
 	//AXI4 internal temp signals
-	wire [`AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
+	wire [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_awaddr;
 	reg  	axi_awvalid;
-	wire [`AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
+	wire [C_M_AXI_DATA_WIDTH-1 : 0] 	axi_wdata;
 	reg  	axi_wlast;
 	reg  	axi_wvalid;
 	reg  	axi_bready;
-	reg  [`AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
+	reg  [C_M_AXI_ADDR_WIDTH-1 : 0] 	axi_araddr;
 	reg  	axi_arvalid;
 	reg  	axi_rready;
 	//write beat count in a burst
 	reg  [C_TRANSACTIONS_NUM : 0] 	write_index;
 	//read beat count in a burst
 	reg  [C_TRANSACTIONS_NUM : 0] 	read_index;
-	//size of `AXI_BURST_LEN length burst in bytes
+	//size of C_M_AXI_BURST_LEN length burst in bytes
 	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
-	//The burst counters are used to track the number of burst transfers of `AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
+	//The burst counters are used to track the number of burst transfers of C_M_AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
 	reg  [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
 	reg  [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
 	reg  	start_single_burst_write;
@@ -198,7 +334,7 @@ module axi_full_core#(
 	reg  	read_mismatch;
 	reg  	burst_write_active;
 	reg  	burst_read_active;
-	reg  [`AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
+	reg  [C_M_AXI_DATA_WIDTH-1 : 0] 	expected_rdata;
 	//Interface response error flags
 	wire  	write_resp_error;
 	wire  	read_resp_error;
@@ -213,51 +349,51 @@ module axi_full_core#(
 	// I/O Connections assignments
 
 	//I/O Connections. Write Address (AW)
-	assign AXI_FULL_IF.AXI_AWID	= 'b0;
+	assign M_AXI_AWID	= 'b0;
 	//The AXI address is a concatenation of the target base address + active offset range
-	assign AXI_FULL_IF.AXI_AWADDR	= TARGET_WR_ADDR + axi_awaddr;
+	assign M_AXI_AWADDR	= TARGET_WR_ADDR + axi_awaddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign AXI_FULL_IF.AXI_AWLEN	= `AXI_BURST_LEN - 1;
-	//Size should be `AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
-	assign AXI_FULL_IF.AXI_AWSIZE	= clogb2((`AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_AWLEN	= C_M_AXI_BURST_LEN - 1;
+	//Size should be C_M_AXI_DATA_WIDTH, in 2^SIZE bytes, otherwise narrow bursts are used
+	assign M_AXI_AWSIZE	= clogb2((C_M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
-	assign AXI_FULL_IF.AXI_AWBURST	= 2'b01;
+	assign M_AXI_AWBURST	= 2'b01;
 	assign M_AXI_AWLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
-	assign AXI_FULL_IF.AXI_AWCACHE	= 4'b0010;
-	assign AXI_FULL_IF.AXI_AWPROT	= 3'h0;
-	assign AXI_FULL_IF.AXI_AWQOS	= 4'h0;
+	assign M_AXI_AWCACHE	= 4'b0010;
+	assign M_AXI_AWPROT	= 3'h0;
+	assign M_AXI_AWQOS	= 4'h0;
 	assign M_AXI_AWUSER	= 'b1;
-	assign AXI_FULL_IF.AXI_AWVALID	= axi_awvalid;
+	assign M_AXI_AWVALID	= axi_awvalid;
 	//Write Data(W)
-	assign AXI_FULL_IF.AXI_WDATA	= axi_wdata;
+	assign M_AXI_WDATA	= axi_wdata;
 	//All bursts are complete and aligned in this example
-	assign AXI_FULL_IF.AXI_WSTRB	= {(`AXI_DATA_WIDTH/8){1'b1}};
-	assign AXI_FULL_IF.AXI_WLAST	= axi_wlast;
+	assign M_AXI_WSTRB	= {(C_M_AXI_DATA_WIDTH/8){1'b1}};
+	assign M_AXI_WLAST	= axi_wlast;
 	assign M_AXI_WUSER	= 'b0;
-	assign AXI_FULL_IF.AXI_WVALID	= axi_wvalid;
+	assign M_AXI_WVALID	= axi_wvalid;
 	//Write Response (B)
-	assign AXI_FULL_IF.AXI_BREADY	= axi_bready;
+	assign M_AXI_BREADY	= axi_bready;
 	//Read Address (AR)
-	assign AXI_FULL_IF.AXI_ARID	= 'b0;
-	assign AXI_FULL_IF.AXI_ARADDR	= TARGET_RD_ADDR + axi_araddr;
+	assign M_AXI_ARID	= 'b0;
+	assign M_AXI_ARADDR	= TARGET_RD_ADDR + axi_araddr;
 	//Burst LENgth is number of transaction beats, minus 1
-	assign AXI_FULL_IF.AXI_ARLEN	= `AXI_BURST_LEN - 1;
-	//Size should be `AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
-	assign AXI_FULL_IF.AXI_ARSIZE	= clogb2((`AXI_DATA_WIDTH/8)-1);
+	assign M_AXI_ARLEN	= C_M_AXI_BURST_LEN - 1;
+	//Size should be C_M_AXI_DATA_WIDTH, in 2^n bytes, otherwise narrow bursts are used
+	assign M_AXI_ARSIZE	= clogb2((C_M_AXI_DATA_WIDTH/8)-1);
 	//INCR burst type is usually used, except for keyhole bursts
-	assign AXI_FULL_IF.AXI_ARBURST	= 2'b01;
+	assign M_AXI_ARBURST	= 2'b01;
 	assign M_AXI_ARLOCK	= 1'b0;
 	//Update value to 4'b0011 if coherent accesses to be used via the Zynq ACP port. Not Allocated, Modifiable, not Bufferable. Not Bufferable since this example is meant to test memory, not intermediate cache. 
 	assign M_AXI_ARCACHE	= 4'b0010;
 	assign M_AXI_ARPROT	= 3'h0;
-	assign AXI_FULL_IF.AXI_ARQOS	= 4'h0;
+	assign M_AXI_ARQOS	= 4'h0;
 	assign M_AXI_ARUSER	= 'b1;
-	assign AXI_FULL_IF.AXI_ARVALID	= axi_arvalid;
+	assign M_AXI_ARVALID	= axi_arvalid;
 	//Read and Read Response (R)
-	assign AXI_FULL_IF.AXI_RREADY	= axi_rready;
+	assign M_AXI_RREADY	= axi_rready;
 	//Burst size in bytes
-	assign burst_size_bytes	= `AXI_BURST_LEN * `AXI_DATA_WIDTH / 8;
+	assign burst_size_bytes	= C_M_AXI_BURST_LEN * C_M_AXI_DATA_WIDTH / 8;
 	// assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 	//--------------------
@@ -283,7 +419,7 @@ module axi_full_core#(
 		end                                                              
 	    /* Once asserted, VALIDs cannot be deasserted, so axi_awvalid      
 	    must wait until transaction is accepted */                         
-	    else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin                                                            
+	    else if (M_AXI_AWREADY && axi_awvalid) begin                                                            
 	        axi_awvalid <= 1'b0;                                           
 		end                                                              
 	    else begin                                                             
@@ -297,7 +433,7 @@ module axi_full_core#(
 	// 	if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                            
 	// 		axi_awaddr <= 1'b0;                                             
 	// 	end                                                              
-	// 	else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
+	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
 	// 		axi_awaddr	<=	block_target_addr[fifo_is_busy_next];
 	// 	end                                                              
 	// 	else begin                                                           
@@ -331,7 +467,7 @@ module axi_full_core#(
 
 	//Forward movement occurs when the write channel is valid and ready
 
-	assign wnext = AXI_FULL_IF.AXI_WREADY & axi_wvalid;                                   
+	assign wnext = M_AXI_WREADY & axi_wvalid;                                   
 	                                                                                    
 	// WVALID logic, similar to the axi_awvalid always block above                      
 	always @(posedge M_AXI_ACLK) begin                                                                             
@@ -340,7 +476,7 @@ module axi_full_core#(
 		end                                                                           
 		// If previously not valid, start next transaction                              
 		//else if (~axi_wvalid && start_single_burst_write) begin                      
-		else if (~axi_wvalid && AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin                                                                         
+		else if (~axi_wvalid && M_AXI_AWREADY && axi_awvalid) begin                                                                         
 			axi_wvalid <= 1'b1;                                                         
 		end                                                                           
 		/* If WREADY and too many writes, throttle WVALID                               
@@ -365,7 +501,7 @@ module axi_full_core#(
 		// count reaches the penultimate count to synchronize                           
 		// with the last write data when write_index is b1111                           
 		// else if (&(write_index[C_TRANSACTIONS_NUM-1:1])&& ~write_index[0] && wnext)  
-		else if (((write_index == `AXI_BURST_LEN-2 && `AXI_BURST_LEN >= 2) && wnext) || (`AXI_BURST_LEN == 1 )) begin                                                                         
+		else if (((write_index == C_M_AXI_BURST_LEN-2 && C_M_AXI_BURST_LEN >= 2) && wnext) || (C_M_AXI_BURST_LEN == 1 )) begin                                                                         
 			axi_wlast <= 1'b1;                                                          
 		end                                                                           
 		// Deassrt axi_wlast when the last write data has been                          
@@ -373,7 +509,7 @@ module axi_full_core#(
 		else if (wnext) begin                                                               
 			axi_wlast <= 1'b0; 
 		end                                                           
-		else if (axi_wlast && `AXI_BURST_LEN == 1) begin                                 
+		else if (axi_wlast && C_M_AXI_BURST_LEN == 1) begin                                 
 			axi_wlast <= 1'b0;                             
 		end                               
 		else begin                                                                            
@@ -388,7 +524,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_write == 1'b1) begin                                                                         
 			write_index <= 0;                                                           
 		end                                                                           
-		else if (wnext && (write_index != `AXI_BURST_LEN-1)) begin                                                                         
+		else if (wnext && (write_index != C_M_AXI_BURST_LEN-1)) begin                                                                         
 			write_index <= write_index + 1;                                             
 		end                                                                           
 		else begin
@@ -408,7 +544,7 @@ module axi_full_core#(
 	// 	else if (wnext && axi_wlast) begin
 	// 	 	rd_rdy[fifo_is_busy_next] <= 0;
 	// 	end
-	// 	else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
+	// 	else if (M_AXI_AWREADY && axi_awvalid) begin
 	// 		rd_rdy[fifo_is_busy_next] <= 1;
 	// 	end
 	// 	else if (wnext) begin         
@@ -449,8 +585,8 @@ module axi_full_core#(
 			axi_bready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge bresp with axi_bready by the master           
-	    // when AXI_FULL_IF.AXI_BVALID is asserted by slave                           
-	    else if (AXI_FULL_IF.AXI_BVALID && ~axi_bready) begin                                                             
+	    // when M_AXI_BVALID is asserted by slave                           
+	    else if (M_AXI_BVALID && ~axi_bready) begin                                                             
 			axi_bready <= 1'b1;                                             
 		end                                                               
 	    // deassert after one clock cycle                                   
@@ -465,7 +601,7 @@ module axi_full_core#(
 	                                                                        
 	                                                                        
 	//Flag any write response errors                                        
-	assign write_resp_error = axi_bready & AXI_FULL_IF.AXI_BVALID & AXI_FULL_IF.AXI_BRESP[1]; 
+	assign write_resp_error = axi_bready & M_AXI_BVALID & M_AXI_BRESP[1]; 
 
 
 	//----------------------------
@@ -486,7 +622,7 @@ module axi_full_core#(
 		else if (~axi_arvalid && start_single_burst_read) begin                                                          
 			axi_arvalid <= 1'b1;                                         
 		end                                                            
-		else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin                                                          
+		else if (M_AXI_ARREADY && axi_arvalid) begin                                                          
 			axi_arvalid <= 1'b0;                                         
 		end                                                            
 		else begin                                                        
@@ -500,7 +636,7 @@ module axi_full_core#(
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
 	        axi_araddr <= 'b0;                                           
 		end                                                            
-	    else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin
+	    else if (M_AXI_ARREADY && axi_arvalid) begin
 			case(state_now)
 				STA_ENCRYPTION_RD: begin
 					axi_araddr	<=	axi_araddr + (burst_size_bytes >> 1);//The function of ">>" is for encryption.
@@ -530,7 +666,7 @@ module axi_full_core#(
 	//--------------------------------
 
 	// Forward movement occurs when the channel is valid and ready   
-	assign rnext = AXI_FULL_IF.AXI_RVALID && axi_rready;                            
+	assign rnext = M_AXI_RVALID && axi_rready;                            
 
 
 	// Burst length counter. Uses extra counter register bit to indicate    
@@ -539,7 +675,7 @@ module axi_full_core#(
 	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 || start_single_burst_read) begin                                                             
 			read_index <= 0;                                                
 		end                                                               
-	    else if (rnext && (read_index != `AXI_BURST_LEN-1)) begin                                                             
+	    else if (rnext && (read_index != C_M_AXI_BURST_LEN-1)) begin                                                             
 	     	read_index <= read_index + 1;                                   
 		end                                                               
 	    else begin                                                               
@@ -558,9 +694,9 @@ module axi_full_core#(
 			axi_rready <= 1'b0;                                             
 		end                                                               
 	    // accept/acknowledge rdata/rresp with axi_rready by the master     
-	    // when AXI_FULL_IF.AXI_RVALID is asserted by slave                           
-	    else if (AXI_FULL_IF.AXI_RVALID) begin                                      
-			if (AXI_FULL_IF.AXI_RLAST && axi_rready) begin                                  
+	    // when M_AXI_RVALID is asserted by slave                           
+	    else if (M_AXI_RVALID) begin                                      
+			if (M_AXI_RLAST && axi_rready) begin                                  
 	            axi_rready <= 1'b0;                  
 			end                                    
 			else begin                                 
@@ -571,7 +707,7 @@ module axi_full_core#(
 	end                                            
                                                                       
 	//Flag any read response errors                                         
-	assign read_resp_error = axi_rready & AXI_FULL_IF.AXI_RVALID & AXI_FULL_IF.AXI_RRESP[1];  
+	assign read_resp_error = axi_rready & M_AXI_RVALID & M_AXI_RRESP[1];  
 
 
 	//----------------------------------
@@ -623,7 +759,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1 ) begin                                                                                                 
 			write_burst_counter <= 'b0;                                                                         
 		end                                                                                                   
-		else if (AXI_FULL_IF.AXI_AWREADY && axi_awvalid) begin
+		else if (M_AXI_AWREADY && axi_awvalid) begin
 			write_burst_counter <= write_burst_counter + 1'b1;
 		end
 		else if(writes_done)begin                                                                                                  
@@ -637,7 +773,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                                                                 
 			read_burst_counter <= 'b0;                                                                          
 		end                                                                                                   
-		else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin                                    
+		else if (M_AXI_ARREADY && axi_arvalid) begin                                    
 			read_burst_counter <= read_burst_counter + 1'b1;
 		end                                                                                                   
 		else if(reads_done)begin                                                                                                  
@@ -896,10 +1032,10 @@ module axi_full_core#(
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
 					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
-					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
-						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+					if(M_AXI_RVALID && axi_rready) begin
+						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_r_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin
@@ -957,8 +1093,8 @@ module axi_full_core#(
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
 					block_target_addr[block_is_busy_next]	<=	loop_counter << 8;//target wr address = loop_counter * 2048 / 8
-					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
-						dec_c_data	[block_is_busy_next]	<=	AXI_FULL_IF.AXI_RDATA;
+					if(M_AXI_RVALID && axi_rready) begin
+						dec_c_data	[block_is_busy_next]	<=	M_AXI_RDATA;
 						dec_c_valid	[block_is_busy_next]	<=	1;
 					end
 					else begin
@@ -1015,10 +1151,10 @@ module axi_full_core#(
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
 					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
-					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
-						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
+					if(M_AXI_RVALID && axi_rready) begin
+						homo_add_c1			[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0;
 						homo_add_c1_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
-						homo_add_c2			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
+						homo_add_c2			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0;
 						homo_add_c2_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
 					end
 					else begin
@@ -1078,10 +1214,10 @@ module axi_full_core#(
 					task_cmd[block_lowest_zero_bit]			<=	0;
 					task_req[block_lowest_zero_bit]			<=	0;
 					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
-					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
-						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
+					if(M_AXI_RVALID && axi_rready) begin
+						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	M_AXI_RDATA : 0;
 						scalar_mul_c1_valid		[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						scalar_mul_const		[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						scalar_mul_const		[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	M_AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						scalar_mul_const_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin
@@ -1135,7 +1271,7 @@ module axi_full_core#(
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
 		else if (start_single_burst_write)
 			burst_write_active <= 1'b1;
-		else if (AXI_FULL_IF.AXI_BVALID && axi_bready)
+		else if (M_AXI_BVALID && axi_bready)
 			burst_write_active <= 0;
 	end                                                                                                       
 	 // Check for last write completion.
@@ -1148,7 +1284,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			writes_done <= 1'b0;
 		//The writes_done should be associated with a bready response
-		else if (AXI_FULL_IF.AXI_BVALID && (write_burst_counter == 1) && axi_bready)
+		else if (M_AXI_BVALID && (write_burst_counter == 1) && axi_bready)
 			writes_done <= 1'b1;
 		else                                                                                                    
 			writes_done <= 0;                                                                           
@@ -1164,7 +1300,7 @@ module axi_full_core#(
 		//The burst_write_active is asserted when a write burst transaction is initiated                        
 		else if (start_single_burst_read)                                                                       
 			burst_read_active <= 1'b1;                                                                            
-		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && AXI_FULL_IF.AXI_RLAST)                                                     
+		else if (M_AXI_RVALID && axi_rready && M_AXI_RLAST)                                                     
 			burst_read_active <= 0;                                                                               
 	end                                                                                                     
 
@@ -1179,7 +1315,7 @@ module axi_full_core#(
 		if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1)                                                                                 
 			reads_done <= 1'b0;
 		//The reads_done should be associated with a rready response
-		else if (AXI_FULL_IF.AXI_RVALID && axi_rready && (read_index == `AXI_BURST_LEN-1) && (read_burst_counter == 1))
+		else if (M_AXI_RVALID && axi_rready && (read_index == C_M_AXI_BURST_LEN-1) && (read_burst_counter == 1))
 			reads_done <= 1'b1;                                                                                   
 		else                                                                                                    
 			reads_done <= 0;                                                                             

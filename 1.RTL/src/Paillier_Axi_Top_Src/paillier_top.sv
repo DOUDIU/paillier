@@ -605,8 +605,10 @@ montgomery_iddmm_top #(
 );
 
 dual_port_ram#(
-    `ifndef Modelsim_Sim
+    `ifdef Vivado_Sim
         .filename       ("../../../../../1.RTL/data/ram_lamda.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_lamda.txt")
     `else
         .filename       ("..\\1.RTL\\data\\ram_lamda.txt")
     `endif
@@ -623,8 +625,10 @@ dual_port_ram#(
 );
 
 dual_port_ram#(
-    `ifndef Modelsim_Sim
+    `ifdef Vivado_Sim
         .filename       ("../../../../../1.RTL/data/ram_mu.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_mu.txt")
     `else
         .filename       ("..\\1.RTL\\data\\ram_mu.txt")
     `endif
@@ -641,8 +645,10 @@ dual_port_ram#(
 );
 
 dual_port_ram#(
-    `ifndef Modelsim_Sim
+    `ifdef Vivado_Sim
         .filename       ("../../../../../1.RTL/data/ram_N.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_N.txt")
     `else
         .filename       ("..\\1.RTL\\data\\ram_N.txt")
     `endif

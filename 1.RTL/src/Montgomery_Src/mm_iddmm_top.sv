@@ -408,8 +408,10 @@ generate
 endgenerate
 
 dual_port_ram#(
-    `ifndef Modelsim_Sim
+    `ifdef Vivado_Sim
         .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_me_m.txt")
     `else
         .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
     `endif
@@ -426,8 +428,10 @@ dual_port_ram#(
 );
 
 dual_port_ram#(
-    `ifndef Modelsim_Sim
+    `ifdef Vivado_Sim
         .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_me_rou.txt")
     `else
         .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
     `endif

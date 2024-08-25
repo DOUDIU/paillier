@@ -209,7 +209,7 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/paillier_axi_top.v">
+      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/paillier_axi_top.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>

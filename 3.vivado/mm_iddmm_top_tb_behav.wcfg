@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
-      <ZoomEndTime time="2,100.001 ns"></ZoomEndTime>
-      <Cursor1Time time="0.000 ns"></Cursor1Time>
+      <ZoomStartTime time="46,187.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="46,292.601 ns"></ZoomEndTime>
+      <Cursor1Time time="46,275.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="269"></NameColumnWidth>
-      <ValueColumnWidth column_width="159"></ValueColumnWidth>
+      <ValueColumnWidth column_width="147"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="27" />
+   <WVObjectSize size="31" />
    <wvobject type="divider" fp_name="divider282">
       <obj_property name="label">mm</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -89,55 +89,73 @@
       <obj_property name="UseCustomSignalColor">true</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider281">
-      <obj_property name="label">mmp</obj_property>
+      <obj_property name="label">iddmm_top</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/state_now" type="array">
-      <obj_property name="ElementShortName">state_now[2:0]</obj_property>
-      <obj_property name="ObjectShortName">state_now[2:0]</obj_property>
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /clk" type="logic">
+      <obj_property name="ElementShortName">clk</obj_property>
+      <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/state_next" type="array">
-      <obj_property name="ElementShortName">state_next[2:0]</obj_property>
-      <obj_property name="ObjectShortName">state_next[2:0]</obj_property>
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /rst_n" type="logic">
+      <obj_property name="ElementShortName">rst_n</obj_property>
+      <obj_property name="ObjectShortName">rst_n</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_ena" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_ena" type="array">
       <obj_property name="ElementShortName">wr_ena[2:0]</obj_property>
       <obj_property name="ObjectShortName">wr_ena[2:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_addr" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_addr" type="array">
       <obj_property name="ElementShortName">wr_addr[4:0]</obj_property>
       <obj_property name="ObjectShortName">wr_addr[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_x" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_x" type="array">
       <obj_property name="ElementShortName">wr_x[127:0]</obj_property>
       <obj_property name="ObjectShortName">wr_x[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_y" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_y" type="array">
       <obj_property name="ElementShortName">wr_y[127:0]</obj_property>
       <obj_property name="ObjectShortName">wr_y[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_m" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_m" type="array">
       <obj_property name="ElementShortName">wr_m[127:0]</obj_property>
       <obj_property name="ObjectShortName">wr_m[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /wr_m1" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /wr_m1" type="array">
       <obj_property name="ElementShortName">wr_m1[127:0]</obj_property>
       <obj_property name="ObjectShortName">wr_m1[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /task_req" type="logic">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /task_req" type="logic">
       <obj_property name="ElementShortName">task_req</obj_property>
       <obj_property name="ObjectShortName">task_req</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /task_end" type="logic">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /task_end" type="logic">
       <obj_property name="ElementShortName">task_end</obj_property>
       <obj_property name="ObjectShortName">task_end</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /task_grant" type="logic">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /task_grant" type="logic">
       <obj_property name="ElementShortName">task_grant</obj_property>
       <obj_property name="ObjectShortName">task_grant</obj_property>
    </wvobject>
-   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_mmp_iddmm_sp /task_res" type="array">
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /task_res" type="array">
       <obj_property name="ElementShortName">task_res[127:0]</obj_property>
       <obj_property name="ObjectShortName">task_res[127:0]</obj_property>
+   </wvobject>
+   <wvobject type="divider" fp_name="divider682">
+      <obj_property name="label">iddmm_ctrl</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /iddmm_ctrl/state_now" type="array">
+      <obj_property name="ElementShortName">state_now[3:0]</obj_property>
+      <obj_property name="ObjectShortName">state_now[3:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /iddmm_ctrl/i_cnt_reg" type="array">
+      <obj_property name="ElementShortName">i_cnt_reg[4:0]</obj_property>
+      <obj_property name="ObjectShortName">i_cnt_reg[4:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/mm_iddmm_top_tb/mm_iddmm_top_inst/\genblk1.u_iddmm_top /iddmm_ctrl/j_cnt_reg" type="array">
+      <obj_property name="ElementShortName">j_cnt_reg[5:0]</obj_property>
+      <obj_property name="ObjectShortName">j_cnt_reg[5:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
    </wvobject>
 </wave_config>

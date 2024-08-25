@@ -44,7 +44,6 @@
     <Option Name="SimulatorGccVersionRiviera" Val="9.3.0"/>
     <Option Name="SimulatorGccVersionActiveHdl" Val="9.3.0"/>
     <Option Name="BoardPart" Val=""/>
-    <Option Name="SourceMgmtMode" Val="DisplayOnly"/>
     <Option Name="ActiveSimSet" Val="paillier_axi_top_tb"/>
     <Option Name="DefaultLib" Val="xil_defaultlib"/>
     <Option Name="ProjectType" Val="Default"/>
@@ -59,7 +58,7 @@
     <Option Name="IPUserFilesDir" Val="$PIPUSERFILESDIR"/>
     <Option Name="IPStaticSourceDir" Val="$PIPUSERFILESDIR/ipstatic"/>
     <Option Name="EnableBDX" Val="FALSE"/>
-    <Option Name="WTXSimLaunchSim" Val="1174"/>
+    <Option Name="WTXSimLaunchSim" Val="1216"/>
     <Option Name="WTModelSimLaunchSim" Val="0"/>
     <Option Name="WTQuestaLaunchSim" Val="0"/>
     <Option Name="WTIesLaunchSim" Val="0"/>
@@ -98,63 +97,7 @@
           <Attr Name="IsVisible" Val="1"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../1.RTL/src/Interface_Src/axi_types_pkg.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Interface_Src/axi_if.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/src/Ram_Src/dual_port_ram.v">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_mul_128_to_128.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_top.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_cal.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_mul128_to_256.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_ctrl.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_sub.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
@@ -168,6 +111,27 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../1.RTL/src/Interface_Src/axi_types_pkg.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/axi_full_core.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/fifo.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_adder1.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -175,7 +139,42 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/mm_iddmm_top.sv">
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_cal.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_ctrl.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_mul128_to_256.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_mul_128_to_128.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_sub.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/iddmm_top.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
@@ -189,7 +188,21 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
+      <File Path="$PPRDIR/../1.RTL/src/Montgomery_Src/mm_iddmm_top.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
       <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/montgomery_iddmm_top.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/paillier_top.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
@@ -210,22 +223,9 @@
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
-      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/fifo.sv">
+      <File Path="$PPRDIR/../1.RTL/src/Interface_Src/axi_if.sv">
         <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/paillier_top.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/src/Paillier_Axi_Top_Src/axi_full_core.sv">
-        <FileInfo>
+          <Attr Name="AutoDisabled" Val="1"/>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
           <Attr Name="UsedIn" Val="simulation"/>
@@ -265,15 +265,15 @@
     </FileSet>
     <FileSet Name="paillier_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/paillier_top_tb" RelGenDir="$PGENDIR/paillier_top_tb">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/paillier_top_tb_behav.wcfg">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/sim/Paillier_Axi_Top_Sim/paillier_top_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/paillier_top_tb_behav.wcfg">
+        <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -293,18 +293,6 @@
     </FileSet>
     <FileSet Name="paillier_axi_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/paillier_axi_top_tb" RelGenDir="$PGENDIR/paillier_axi_top_tb">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/paillier_axi_top_tb_behav.wcfg">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
-      <File Path="$PPRDIR/../1.RTL/sim/Paillier_Axi_Top_Sim/paillier_axi_top_tb.sv">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="synthesis"/>
-          <Attr Name="UsedIn" Val="implementation"/>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/sim/Paillier_Axi_Top_Sim/Virtual_Axi_Full_Memory.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
@@ -316,6 +304,18 @@
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/../1.RTL/sim/Paillier_Axi_Top_Sim/paillier_axi_top_tb.sv">
+        <FileInfo>
+          <Attr Name="UsedIn" Val="synthesis"/>
+          <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/paillier_axi_top_tb_behav.wcfg">
+        <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -335,15 +335,15 @@
     </FileSet>
     <FileSet Name="me_iddmm_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/me_iddmm_top_tb" RelGenDir="$PGENDIR/me_iddmm_top_tb">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/me_iddmm_top_tb_behav.wcfg">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/sim/Montgomery_Src_Sim/me_iddmm_top_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/me_iddmm_top_tb_behav.wcfg">
+        <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -363,15 +363,15 @@
     </FileSet>
     <FileSet Name="mm_iddmm_top_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/mm_iddmm_top_tb" RelGenDir="$PGENDIR/mm_iddmm_top_tb">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/mm_iddmm_top_tb_behav.wcfg">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/sim/Montgomery_Src_Sim/mm_iddmm_top_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/mm_iddmm_top_tb_behav.wcfg">
+        <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -420,15 +420,15 @@
     </FileSet>
     <FileSet Name="iddmm_mul_tb" Type="SimulationSrcs" RelSrcDir="$PSRCDIR/iddmm_mul_tb" RelGenDir="$PGENDIR/iddmm_mul_tb">
       <Filter Type="Srcs"/>
-      <File Path="$PPRDIR/iddmm_mul_tb_behav.wcfg">
-        <FileInfo>
-          <Attr Name="UsedIn" Val="simulation"/>
-        </FileInfo>
-      </File>
       <File Path="$PPRDIR/../1.RTL/sim/Montgomery_Src_Sim/iddmm_mul_tb.sv">
         <FileInfo>
           <Attr Name="UsedIn" Val="synthesis"/>
           <Attr Name="UsedIn" Val="implementation"/>
+          <Attr Name="UsedIn" Val="simulation"/>
+        </FileInfo>
+      </File>
+      <File Path="$PPRDIR/iddmm_mul_tb_behav.wcfg">
+        <FileInfo>
           <Attr Name="UsedIn" Val="simulation"/>
         </FileInfo>
       </File>
@@ -466,12 +466,11 @@
     </Simulator>
   </Simulators>
   <Runs Version="1" Minor="20">
-    <Run Id="synth_0" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7vx690tffg1761-2" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="true" IncrementalCheckpoint="$PSRCDIR/utils_1/imports/synth_0/paillier_axi_top.dcp" WriteIncrSynthDcp="false" State="current" Dir="$PRUNDIR/synth_0" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_0" AutoRQSDir="$PSRCDIR/utils_1/imports/synth_0">
+    <Run Id="synth_0" Type="Ft3:Synth" SrcSet="sources_1" Part="xc7vx690tffg1761-2" ConstrsSet="constrs_1" Description="Vivado Synthesis Defaults" AutoIncrementalCheckpoint="true" IncrementalCheckpoint="$PSRCDIR/utils_1/imports/synth_0/paillier_axi_top.dcp" WriteIncrSynthDcp="false" State="current" IncludeInArchive="true" IsChild="false" AutoIncrementalDir="$PSRCDIR/utils_1/imports/synth_0" AutoRQSDir="$PSRCDIR/utils_1/imports/synth_0">
       <Strategy Version="1" Minor="2">
         <StratHandle Name="Vivado Synthesis Defaults" Flow="Vivado Synthesis 2023"/>
         <Step Id="synth_design"/>
       </Strategy>
-      <GeneratedRun Dir="$PRUNDIR" File="gen_run.xml"/>
       <ReportStrategy Name="Vivado Synthesis Default Reports" Flow="Vivado Synthesis 2023"/>
       <Report Name="ROUTE_DESIGN.REPORT_METHODOLOGY" Enabled="1"/>
       <RQSFiles/>

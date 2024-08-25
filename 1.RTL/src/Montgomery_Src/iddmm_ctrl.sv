@@ -1,5 +1,3 @@
-
-
 module iddmm_ctrl#(
         parameter K = 128
     ,   parameter N = 32
@@ -30,7 +28,7 @@ module iddmm_ctrl#(
 reg         [ADDR_W-1   :0]     i_cnt_reg;
 reg         [ADDR_W     :0]     j_cnt_reg;
 reg         [ADDR_W-1   :0]     output_cnt;
-reg         [ADDR_W-1   :0]     output_cnt_d1;
+reg                             task_req_d1;
 assign      rd_data_addr_i  =   i_cnt_reg;
 assign      rd_data_addr_j  =   j_cnt_reg;
 assign      task_res        =   cal_sign ? fifo_rd_data_sub : fifo_rd_data_a;
@@ -55,25 +53,37 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 always@(*) begin
-    case(state_next)
+    case(state_now)
         STA_IDLE: begin
-            if(task_req) begin
+            if(!task_req_d1 & task_req) begin
                 state_next  =   STA_START;
+            end
+            else begin
+                state_next  =   STA_IDLE;
             end
         end
         STA_START: begin
             if((i_cnt_reg == N - 1) && (j_cnt_reg == N)) begin
                 state_next  =   STA_WAIT;
             end
+            else begin
+                state_next  =   STA_START;
+            end
         end
         STA_WAIT: begin
             if(cal_done) begin
                 state_next  =   STA_OUTPUT;
             end
+            else begin
+                state_next  =   STA_WAIT;
+            end
         end
         STA_OUTPUT: begin
-            if(output_cnt_d1 == N - 1) begin
+            if(output_cnt == N - 1) begin
                 state_next  =   STA_IDLE;
+            end
+            else begin
+                state_next  =   STA_OUTPUT;
             end
         end
         default: begin
@@ -92,12 +102,13 @@ always@(posedge clk or negedge rst_n) begin
         fifo_rd_en      <=  0;
         task_grant      <=  0;
         task_end        <=  0;
+        task_req_d1     <=  0;
     end
     else begin
         i_cnt           <=  i_cnt_reg;
         j_cnt           <=  j_cnt_reg;
-        output_cnt_d1   <=  output_cnt;
-        case(state_next)
+        task_req_d1     <=  task_req;
+        case(state_now)
             STA_IDLE: begin
                 i_cnt_reg       <=  0;
                 j_cnt_reg       <=  0;

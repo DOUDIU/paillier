@@ -60,11 +60,16 @@
 #include "xil_cache.h"
 #include "ff.h"
 #include "xstatus.h"
+#include "xtime_l.h"
 
 #define DDR_BASEARDDR           XPAR_DDR_MEM_BASEADDR
 #define REGISTER_BASEARDDR      XPAR_PAILLIER_0_BASEADDR
 #define KEY_DEVICE_ID           XPAR_AXI_GPIO_0_DEVICE_ID
 #define LED_DEVICE_ID           XPAR_AXI_GPIO_1_DEVICE_ID
+
+// #define XPAR_CPU_CORTEXA53_0_TIMESTAMP_CLK_FREQ 99990000
+#define COUNTS_PER_USECOND ( (COUNTS_PER_SECOND + 1000000/2 - 1 ) / 1000000 )
+#define COUNTS_PER_MSECOND ( (COUNTS_PER_SECOND + 1000/2 - 1 ) / 1000 )
 
 XGpio LEDInst;
 XGpio KEYInst;
@@ -222,6 +227,10 @@ u32 enc_r [64] = {
 u32 dest_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
 u32 src_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
 
+XTime xtTimeBegin, xtTimeEnd;
+u64 u64_sleep_cycles;
+u64 u64_sleep_us_passed = 0;
+
 int main(){
     init_platform();
     
@@ -343,11 +352,20 @@ void start_single_acceleration(){
     Xil_Out32(REGISTER_BASEARDDR + 8 , 0xa);
 
     printf("write acceleration types and start signal\n");
+
+    XTime_GetTime(&xtTimeBegin);
+
     Xil_Out32(REGISTER_BASEARDDR, 0x1);
     Xil_Out32(REGISTER_BASEARDDR, 0x0);
 
-    printf("wait the stop signal is asserted\n");
+    // printf("wait the stop signal is asserted\n");
     while(Xil_In32(REGISTER_BASEARDDR + 4) == 0);
+
+    XTime_GetTime(&xtTimeEnd);
+    u64_sleep_cycles = xtTimeEnd - xtTimeBegin;
+    u64_sleep_us_passed = u64_sleep_cycles/(COUNTS_PER_USECOND);
+    xil_printf("soft_operation_to_be_measured takes %d cycles\n", u64_sleep_cycles);
+    xil_printf("equal to %d us\n", u64_sleep_us_passed);
 
     Xil_DCacheFlushRange(DDR_BASEARDDR, COUNTS * 2 * loop_num);
 

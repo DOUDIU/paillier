@@ -72,10 +72,9 @@ def reg_m1_print():
     p1=((-1*(gmpy2.invert(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
     print('m1_n:\n0x{:x}\n'.format(p1))
 
-    m = ((p - 1) * (q - 1))
-    print('m1_inv:\n0x{:x}\n'.format(m))
-    # p1=((-1*(gmpy2.invert(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
-    # print('m1_inv:\n0x{:x}\n'.format(p1))
+    m = ((p - 1) * (q - 1)) + n
+    p1=((-1*(gmpy2.invert(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
+    print('m1_inv:\n0x{:x}\n'.format(p1))
 
 
 if __name__=='__main__':

@@ -103,17 +103,18 @@ def mod_inv(a,m):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_fpga_example( n, lamba, mu, cyphertext):
-    inverse_modular = n
-    while inverse_modular == n:
-        inverse_modular = paillier.getprimeover(2048)
-    # inverse_modular = ((p-1)*(q-1))
+    # inverse_modular = n
+    # while inverse_modular == n:
+    #     inverse_modular = paillier.getprimeover(2048)
+    inverse_modular = ((p-1)*(q-1)) + n
     n_inverse = mod_inv(public_key.n, inverse_modular)
 
     result_step1 = paillier.powmod(cyphertext, lamba, n ** 2) - 1
     result_step2 = paillier.mulmod(result_step1, n_inverse, inverse_modular)
     decrypt_text = paillier.mulmod(result_step2, mu, n)
 
-    print('optimized decrypion result: 0x{:x}'.format(decrypt_text))
+    # print('optimized decrypion result: 0x\n{:x}'.format(decrypt_text))
+    return decrypt_text
 
 #CRT
 def decrypt_crt_example( p, q, g,cyphertext):
@@ -136,16 +137,16 @@ def decrypt_crt_example( p, q, g,cyphertext):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_example():
-    RESULT_LOG = open("result_log.txt",'w').close()
-    print("Encoding a large positive number. With a BASE {} encoding scheme".format(ExampleEncodedNumber.BASE))
+    # RESULT_LOG = open("result_log.txt",'w').close()
+    # print("Encoding a large positive number. With a BASE {} encoding scheme".format(ExampleEncodedNumber.BASE))
     original_data = random.SystemRandom().randrange(1, n//3)
-    print("original data: 0x{:x}".format(original_data))
+    # print("original data: 0x\n{:x}".format(original_data))
     encoded = ExampleEncodedNumber.encode(public_key, original_data)
 
-    print("Encrypting the encoded number")
+    # print("Encrypting the encoded number")
     encrypted = public_key.encrypt(encoded)
 
-    print("Decrypting...")
+    # print("Decrypting...")
     decrypted_but_encoded = private_key.decrypt_encoded(encrypted, ExampleEncodedNumber)
 
     lamda = math.lcm(private_key.p - 1, private_key.q - 1)
@@ -165,17 +166,16 @@ def decrypt_example():
     a = paillier.powmod(encrypted.ciphertext(False), lamda, public_key.nsquare)
     b = (a - 1) // public_key.n
     c = b * mu % public_key.n
-    print("Decrypted: 0x{:x}".format(c))
-    print('official decrypted: 0x{:x}'.format(decrypted_but_encoded.decode()))
+    # print("Decrypted: 0x{:x}".format(c))
+    # print('official decrypted: 0x{:x}'.format(decrypted_but_encoded.decode()))
 
-    decrypt_fpga_example(public_key.n, lamda, mu, encrypted.ciphertext(False))
+    opt_dec_result = decrypt_fpga_example(public_key.n, lamda, mu, encrypted.ciphertext(False))
+
+    assert c == decrypted_but_encoded.decode()
+    assert c == opt_dec_result, "c = 0x{:x}\n opt = 0x{:x}\n".format(c, opt_dec_result)
 
     # print("Checking the decrypted number is what we started with")
-    assert abs(original_data - decrypted_but_encoded.decode()) < 1e-12
-
-    print('original_data: 0x{:x}'.format(original_data))
-    
-
+    # assert abs(original_data - decrypted_but_encoded.decode()) < 1e-12
 
 #(g**m * r**n) mod n**2
 def encrypt_fpga_example():
@@ -353,4 +353,5 @@ if __name__ == "__main__":
     # data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
     # data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
 
-    decrypt_example()
+    for i in range(1000):
+        decrypt_example()

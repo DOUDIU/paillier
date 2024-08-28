@@ -103,7 +103,10 @@ def mod_inv(a,m):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_fpga_example( n, lamba, mu, cyphertext):
-    inverse_modular = ((p-1)*(q-1))
+    inverse_modular = n
+    while inverse_modular == n:
+        inverse_modular = paillier.getprimeover(2048)
+    # inverse_modular = ((p-1)*(q-1))
     n_inverse = mod_inv(public_key.n, inverse_modular)
 
     result_step1 = paillier.powmod(cyphertext, lamba, n ** 2) - 1
@@ -135,7 +138,8 @@ def decrypt_crt_example( p, q, g,cyphertext):
 def decrypt_example():
     RESULT_LOG = open("result_log.txt",'w').close()
     print("Encoding a large positive number. With a BASE {} encoding scheme".format(ExampleEncodedNumber.BASE))
-    original_data = 2 ** 20 + 23*17
+    original_data = random.SystemRandom().randrange(1, n//3)
+    print("original data: 0x{:x}".format(original_data))
     encoded = ExampleEncodedNumber.encode(public_key, original_data)
 
     print("Encrypting the encoded number")

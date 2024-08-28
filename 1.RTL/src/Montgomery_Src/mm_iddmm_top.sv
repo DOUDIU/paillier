@@ -6,6 +6,7 @@ module mm_iddmm_top#(
         input                       clk         
     ,   input                       rst_n       
 
+    ,   input   [1  :0]             mm_type
     ,   input                       mm_start
     ,   input   [K-1:0]             mm_x
     ,   input                       mm_x_valid
@@ -27,6 +28,12 @@ module mm_iddmm_top#(
     ,   input   [K-1:0]             iddmm_task_res
 );
 localparam ADDR_W   =   $clog2(N);
+
+typedef enum logic [1:0] {
+    MM_N2           ,
+    MM_N            ,
+    MM_INV          
+} MM_TYPE;
 
 typedef enum logic [2:0] {
     STA_IDLE        ,
@@ -70,9 +77,13 @@ reg                             result_valid            ;
 reg     [K-1            : 0]    result_out              ;
 
 
-wire    [K-1            : 0]    ram_rou_rd_data         ;
+wire    [K-1            : 0]    ram_rou_n2_rd_data      ;
+wire    [K-1            : 0]    ram_rou_n_rd_data       ;
+wire    [K-1            : 0]    ram_rou_inv_rd_data     ;
 
-wire    [K-1            : 0]    ram_m_rd_data           ;
+wire    [K-1            : 0]    ram_m_n2_rd_data        ;
+wire    [K-1            : 0]    ram_m_n_rd_data         ;
+wire    [K-1            : 0]    ram_m_inv_rd_data       ; 
 
 wire                            ram_result0_wr_en       ;
 wire    [K-1            : 0]    ram_result0_rd_data     ;
@@ -130,10 +141,36 @@ end
 always@(*) begin
     case(state_now) 
         STA_MM_X_ROU: begin
-            wr_y_reg    =   ram_rou_rd_data;
+            case(mm_type)
+                MM_N2: begin
+                    wr_y_reg    =   ram_rou_n2_rd_data;
+                end
+                MM_N: begin
+                    wr_y_reg    =   ram_rou_n_rd_data;
+                end
+                MM_INV: begin
+                    wr_y_reg    =   ram_rou_inv_rd_data;
+                end
+                default: begin
+                    wr_y_reg    =   ram_rou_n2_rd_data;
+                end
+            endcase
         end
         STA_MM_Y_ROU: begin
-            wr_y_reg    =   ram_rou_rd_data;
+            case(mm_type)
+                MM_N2: begin
+                    wr_y_reg    =   ram_rou_n2_rd_data;
+                end
+                MM_N: begin
+                    wr_y_reg    =   ram_rou_n_rd_data;
+                end
+                MM_INV: begin
+                    wr_y_reg    =   ram_rou_inv_rd_data;
+                end
+                default: begin
+                    wr_y_reg    =   ram_rou_n2_rd_data;
+                end
+            endcase
         end
         STA_MM_R1_R2: begin
             wr_y_reg    =   ram_result1_rd_data;
@@ -147,7 +184,22 @@ always@(*) begin
     endcase
 end
 
-assign      wr_m_reg    =   ram_m_rd_data;
+always@(*) begin
+    case(mm_type)
+        MM_N2: begin
+            wr_m_reg    =   ram_m_n2_rd_data;
+        end
+        MM_N: begin
+            wr_m_reg    =   ram_m_n_rd_data;
+        end
+        MM_INV: begin
+            wr_m_reg    =   ram_m_inv_rd_data;
+        end
+        default: begin
+            wr_m_reg    =   ram_m_n2_rd_data;
+        end
+    endcase
+end
 
 assign      mm_m1_reg   =   mm_m1;
 
@@ -424,7 +476,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_m_rd_data      )
+    ,   .rd_data        (ram_m_n2_rd_data   )
 );
 
 dual_port_ram#(
@@ -444,7 +496,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        ()
+    ,   .rd_data        (ram_m_n_rd_data    )
 );
 
 dual_port_ram#(
@@ -464,7 +516,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        ()
+    ,   .rd_data        (ram_m_inv_rd_data  )
 );
 
 dual_port_ram#(
@@ -484,7 +536,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        (ram_rou_rd_data    )
+    ,   .rd_data        (ram_rou_n2_rd_data )
 );
 
 dual_port_ram#(
@@ -504,7 +556,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        ()
+    ,   .rd_data        (ram_rou_n_rd_data  )
 );
 
 dual_port_ram#(
@@ -524,7 +576,7 @@ dual_port_ram#(
     ,   .wr_data        ()
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
-    ,   .rd_data        ()
+    ,   .rd_data        (ram_rou_inv_rd_data)
 );
 
 dual_port_ram#(

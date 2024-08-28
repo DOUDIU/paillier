@@ -409,15 +409,15 @@ endgenerate
 
 dual_port_ram#(
     `ifdef Vivado_Sim
-        .filename       ("../../../../../1.RTL/data/ram_me_m.txt")
+        .filename       ("../../../../../1.RTL/data/ram_mm_m_n2.txt")
     `elsif Vivado_Syn
-        .filename       ("../../../1.RTL/data/ram_me_m.txt")
+        .filename       ("../../../1.RTL/data/ram_mm_m_n2.txt")
     `else
-        .filename       ("..\\1.RTL\\data\\ram_me_m.txt")
+        .filename       ("..\\1.RTL\\data\\ram_mm_m_n2.txt")
     `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_m(
+)ram_mm_m_n2(
         .clk            (clk                )
     ,   .wr_en          (0)
     ,   .wr_addr        ()
@@ -429,15 +429,55 @@ dual_port_ram#(
 
 dual_port_ram#(
     `ifdef Vivado_Sim
-        .filename       ("../../../../../1.RTL/data/ram_me_rou.txt")
+        .filename       ("../../../../../1.RTL/data/ram_mm_m_n.txt")
     `elsif Vivado_Syn
-        .filename       ("../../../1.RTL/data/ram_me_rou.txt")
+        .filename       ("../../../1.RTL/data/ram_mm_m_n.txt")
     `else
-        .filename       ("..\\1.RTL\\data\\ram_me_rou.txt")
+        .filename       ("..\\1.RTL\\data\\ram_mm_m_n.txt")
     `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_rou(
+)ram_mm_m_n(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        ()
+);
+
+dual_port_ram#(
+    `ifdef Vivado_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mm_m_n_inv.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_mm_m_n_inv.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mm_m_n_inv.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_m_n_inv(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        ()
+);
+
+dual_port_ram#(
+    `ifdef Vivado_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mm_rou_n2.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_mm_rou_n2.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mm_rou_n2.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_rou_n2(
         .clk            (clk                )
     ,   .wr_en          (0)
     ,   .wr_addr        ()
@@ -445,6 +485,46 @@ dual_port_ram#(
     ,   .rd_en          (1)
     ,   .rd_addr        (wr_addr            )
     ,   .rd_data        (ram_rou_rd_data    )
+);
+
+dual_port_ram#(
+    `ifdef Vivado_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mm_rou_n.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_mm_rou_n.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mm_rou_n.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_rou_n(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        ()
+);
+
+dual_port_ram#(
+    `ifdef Vivado_Sim
+        .filename       ("../../../../../1.RTL/data/ram_mm_rou_n_inv.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_mm_rou_n_inv.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_mm_rou_n_inv.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_mm_rou_n_inv(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (wr_addr            )
+    ,   .rd_data        ()
 );
 
 dual_port_ram#(

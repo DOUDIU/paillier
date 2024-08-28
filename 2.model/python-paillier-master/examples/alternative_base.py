@@ -92,7 +92,6 @@ def encode_and_encrypt_example():
     assert abs(2.1 ** 20 - decrypted_but_encoded.decode()) < 1e-12
 
 def mod_inv(a,m):
-    print('start')
     if math.gcd(a,m)!=1:
         return None
     u1,u2,u3 = 1,0,a
@@ -104,13 +103,11 @@ def mod_inv(a,m):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_fpga_example( n, lamba, mu, cyphertext):
-    tem = 2 ** public_key.n
-    print("tem = 0x{:x}".format(tem))
-    n_inverse = mod_inv(public_key.n, tem)
-    print('n_inverse result: 0x{:x}'.format(n_inverse))
+    inverse_modular = ((p-1)*(q-1))
+    n_inverse = mod_inv(public_key.n, inverse_modular)
 
     result_step1 = paillier.powmod(cyphertext, lamba, n ** 2) - 1
-    result_step2 = paillier.mulmod(result_step1, n_inverse, 2 ** n)
+    result_step2 = paillier.mulmod(result_step1, n_inverse, inverse_modular)
     decrypt_text = paillier.mulmod(result_step2, mu, n)
 
     print('optimized decrypion result: 0x{:x}'.format(decrypt_text))

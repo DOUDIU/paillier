@@ -566,20 +566,6 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-// NR_Div L_Func(
-//         .clk            (clk            )
-//     ,   .rst_n          (rst_n          )
-
-//     ,   .valid_in       (L_start        )
-
-//     ,   .dividend_in    (L_x            )
-//     ,   .divisor_in     (L_y            )
-//     ,   .data_vld_in    (L_data_valid   )
-
-//     ,   .quotient_out   (L_result       )
-//     ,   .data_vld_out   (L_valid        )
-// );
-
 montgomery_iddmm_top #(
         .K              (K              )
     ,   .N              (N              )

@@ -286,7 +286,7 @@ always@(*) begin
                 end
             end
             STA_STORE_RESULT: begin
-                state_next  <=  task_end ? IDLE : STA_STORE_RESULT;
+                state_next  =  task_end ? IDLE : STA_STORE_RESULT;
             end
             default: begin
                 state_next  =  IDLE;

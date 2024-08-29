@@ -463,16 +463,15 @@ generate
 		end
 	end 
 	else if(PAILLIER_MODE == 2'b01) begin
-		// string	file_path_dec_m = "../../../../../5.data/result_dec_m.txt";
-		// string	file_path_dec_r = "../../../../../5.data/result_dec_r.txt";
-		// string	file_path_dec_decrypted = "../../../../../5.data/result_dec_decrypted.txt";
-		// initial begin
-		// 	paillier_initial_memory_task(file_path_dec_m, file_path_dec_r, 4096, 4096);
-		// end
+		string	file_path_dec_c = "../../../../../5.data/result_enc_encrypted.txt";
+		string	file_path_dec_decrypted = "../../../../../5.data/result_enc_m.txt";
+		initial begin
+			paillier_initial_memory_task(file_path_dec_c, "none", 4096, 0);
+		end
 
-		// initial begin
-		// 	paillier_memory_monitor_task(file_path_dec_decrypted, 4096);
-		// end
+		initial begin
+			paillier_memory_monitor_task(file_path_dec_decrypted, 2048);
+		end
 	end
 	else if(PAILLIER_MODE == 2'b10) begin
 		string	file_path_homomorphic_addition_a 		= "../../../../../5.data/homomorphic_addition_a.txt";
@@ -511,15 +510,18 @@ endgenerate
 			$display("Error opening file: %s", file_path_a);
 			$finish;
 		end
-		fp_b = $fopen(file_path_b, "r");
-		if (fp_b == 0) begin
-			$display("Error opening file: %s", file_path_b);
-			$finish;
+		if(file_path_b != "none") begin
+			fp_b = $fopen(file_path_b, "r");
+			if (fp_b == 0) begin
+				$display("Error opening file: %s", file_path_b);
+				$finish;
+			end
 		end
 
 		for(p = 0; p < TEST_TIMES; p = p + 1) begin
 			write_file_to_memory(fp_a, ((DATA_SIZE_1+DATA_SIZE_2)/`AXI_DATA_WIDTH)*p, DATA_SIZE_1);
-			write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/`AXI_DATA_WIDTH)*p + DATA_SIZE_1/`AXI_DATA_WIDTH, DATA_SIZE_2);
+			if(file_path_b != "none")
+				write_file_to_memory(fp_b, ((DATA_SIZE_1+DATA_SIZE_2)/`AXI_DATA_WIDTH)*p + DATA_SIZE_1/`AXI_DATA_WIDTH, DATA_SIZE_2);
 		end
 
 		$fclose(fp_a);

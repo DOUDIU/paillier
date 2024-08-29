@@ -40,7 +40,7 @@ module axi_full_core#(
 	,	input 							paillier_start
 	,	input 			[1	:0]			paillier_mode
 	,	input 			[63	:0]			paillier_counts
-	,	output	reg						paillier_finished = 0
+	,	output	   						paillier_finished
 
 //----------------------------------------------------
 // paillier accelerator interface
@@ -85,6 +85,7 @@ module axi_full_core#(
 
 	// Add user definition here
 	reg		[63  						: 0]	loop_counter;
+	reg											loop_end;
 
 	reg		[BLOCK_COUNT - 1 			: 0]	block_is_busy;
 	reg		[$clog2(BLOCK_COUNT) - 1 	: 0]	block_is_busy_next;
@@ -98,6 +99,9 @@ module axi_full_core#(
 	reg 	[$clog2(BLOCK_COUNT) - 1 	: 0]	fifo_lowest_zero_bit;
 
 	reg		[1 							: 0]	single_task_read_cnt;
+
+	reg											paillier_finished_reg;
+	assign 	paillier_finished		=			paillier_finished_reg;
 
 	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
 		if (M_AXI_ARESETN == 0) begin
@@ -151,18 +155,22 @@ module axi_full_core#(
 	// initialize read transactions and comparison of read data with the 
 	// written data words.
 
-	typedef enum logic [3:0] {
+	typedef enum logic [4:0] {
 		IDLE_WAIT				,
 		STA_ENCRYPTION			,
 		STA_DECRYPTION			,
 		STA_HOMOMORPHIC_ADD		,
 		STA_SCALAR_MUL			,
+		STA_ENCRYPTION_D1		,
 		STA_ENCRYPTION_RD		,
 		STA_ENCRYPTION_WR 		,
+		STA_DECRYPTION_D1		,
 		STA_DECRYPTION_RD		,
 		STA_DECRYPTION_WR		,
+		STA_HOMOMORPHIC_ADD_D1	,
 		STA_HOMOMORPHIC_ADD_RD	,
 		STA_HOMOMORPHIC_ADD_WR	,
+		STA_SCALAR_MUL_D1		,
 		STA_SCALAR_MUL_RD		,
 		STA_SCALAR_MUL_WR		
 	} FSM_STATE;
@@ -645,6 +653,18 @@ module axi_full_core#(
 		end                                                        
 	end
 
+                                   
+	always@(posedge M_AXI_ACLK or negedge M_AXI_ARESETN) begin
+		if(!M_AXI_ARESETN) begin
+			loop_end	<= 0;
+		end
+		else if(loop_counter == paillier_counts) begin
+			loop_end	<= 1;
+		end
+		else begin
+			loop_end	<= 0;
+		end
+	end
 
 	//implement master command interface state machine
 
@@ -677,7 +697,7 @@ module axi_full_core#(
 			end
 
 			STA_ENCRYPTION: begin
-				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+				if ((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_ENCRYPTION_RD;
@@ -685,7 +705,7 @@ module axi_full_core#(
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_ENCRYPTION_WR;
 				end
-				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+				else if ((loop_end) & (!block_is_busy)) begin
 					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
@@ -693,9 +713,12 @@ module axi_full_core#(
 					state_next	=	STA_ENCRYPTION;
 				end
 			end
+			STA_ENCRYPTION_D1: begin
+				state_next	=	STA_ENCRYPTION;
+			end
 			STA_ENCRYPTION_RD: begin
 				if (reads_done) begin
-					state_next	=	STA_ENCRYPTION;
+					state_next	=	STA_ENCRYPTION_D1;
 				end
 				else begin
 					state_next	=	STA_ENCRYPTION_RD;
@@ -711,7 +734,7 @@ module axi_full_core#(
 			end
 
 			STA_DECRYPTION: begin
-				if ((loop_counter != paillier_counts) & (!all_block_is_busy)) begin
+				if ((!loop_end) & (!all_block_is_busy)) begin
 					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_DECRYPTION_RD;
@@ -719,7 +742,7 @@ module axi_full_core#(
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_DECRYPTION_WR;
 				end
-				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+				else if ((loop_end) & (!block_is_busy)) begin
 					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
@@ -727,9 +750,12 @@ module axi_full_core#(
 					state_next	=	STA_DECRYPTION;
 				end
 			end
+			STA_DECRYPTION_D1: begin
+				state_next	=	STA_DECRYPTION;
+			end
 			STA_DECRYPTION_RD: begin
 				if (reads_done) begin
-					state_next	=	STA_DECRYPTION;
+					state_next	=	STA_DECRYPTION_D1;
 				end
 				else begin
 					state_next	=	STA_DECRYPTION_RD;
@@ -745,7 +771,7 @@ module axi_full_core#(
 			end
 
 			STA_HOMOMORPHIC_ADD: begin
-				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+				if ((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_HOMOMORPHIC_ADD_RD;
@@ -753,7 +779,7 @@ module axi_full_core#(
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_HOMOMORPHIC_ADD_WR;
 				end
-				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+				else if ((loop_end) & (!block_is_busy)) begin
 					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
@@ -761,9 +787,12 @@ module axi_full_core#(
 					state_next	=	STA_HOMOMORPHIC_ADD;
 				end
 			end
+			STA_HOMOMORPHIC_ADD_D1: begin
+				state_next	=	STA_HOMOMORPHIC_ADD;
+			end
 			STA_HOMOMORPHIC_ADD_RD: begin
 				if (reads_done) begin
-					state_next	=	STA_HOMOMORPHIC_ADD;
+					state_next	=	STA_HOMOMORPHIC_ADD_D1;
 				end
 				else begin
 					state_next	=	STA_HOMOMORPHIC_ADD_RD;
@@ -779,7 +808,7 @@ module axi_full_core#(
 			end
 
 			STA_SCALAR_MUL: begin
-				if ((loop_counter != paillier_counts) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
+				if ((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 					//switch when the loop counter is not equal to paillier_counts, meanwhile
 					//all blocks is not busy or single read rask is not finished
 					state_next	=	STA_SCALAR_MUL_RD;
@@ -787,7 +816,7 @@ module axi_full_core#(
 				else if (!all_fifo_is_empty) begin
 					state_next	=	STA_SCALAR_MUL_WR;
 				end
-				else if ((loop_counter == paillier_counts) & (!block_is_busy)) begin
+				else if ((loop_end) & (!block_is_busy)) begin
 					//switch when all block is not busy and the loop counter is equal to paillier_counts
 					state_next	=	IDLE_WAIT;
 				end
@@ -795,9 +824,12 @@ module axi_full_core#(
 					state_next	=	STA_SCALAR_MUL;
 				end
 			end
+			STA_SCALAR_MUL_D1: begin
+				state_next	=	STA_SCALAR_MUL;
+			end
 			STA_SCALAR_MUL_RD: begin
 				if (reads_done) begin
-					state_next	=	STA_SCALAR_MUL;
+					state_next	=	STA_SCALAR_MUL_D1;
 				end
 				else begin
 					state_next	=	STA_SCALAR_MUL_RD;
@@ -816,7 +848,7 @@ module axi_full_core#(
 			end
 		endcase
 	end
-	
+
 	always@(posedge M_AXI_ACLK) begin                                                                                                     
 		if (M_AXI_ARESETN == 1'b0 ) begin                                                                                                 
 			// reset condition                                                                                  
@@ -832,7 +864,7 @@ module axi_full_core#(
 			fifo_is_busy_next		<=	0;
 
 			single_task_read_cnt	<=	0;
-			paillier_finished 		<=	0;
+			paillier_finished_reg 	<=	0;
 			for(j = 0; j < BLOCK_COUNT;	j = j + 1) begin
 				task_req	[j]	<=	0;
 				task_cmd	[j]	<=	0;
@@ -870,7 +902,7 @@ module axi_full_core#(
 					loop_counter	<=	0;
 
 					if(state_next != IDLE_WAIT) begin
-						paillier_finished	<=	0;
+						paillier_finished_reg	<=	0;
 					end
 				end
 
@@ -888,7 +920,7 @@ module axi_full_core#(
 					end
 
 					if(state_next == IDLE_WAIT) begin
-						paillier_finished	<=	1;
+						paillier_finished_reg	<=	1;
 					end
 				end
 
@@ -916,7 +948,7 @@ module axi_full_core#(
 							start_single_burst_read <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_ENCRYPTION) begin
+					if(reads_done) begin
 						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
@@ -932,7 +964,7 @@ module axi_full_core#(
 							start_single_burst_write <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_ENCRYPTION) begin
+					if(writes_done) begin
 						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
 					end
 				end
@@ -949,7 +981,7 @@ module axi_full_core#(
 					end
 
 					if(state_next == IDLE_WAIT) begin
-						paillier_finished	<=	1;
+						paillier_finished_reg	<=	1;
 					end
 				end
 
@@ -973,7 +1005,7 @@ module axi_full_core#(
 							start_single_burst_read <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_DECRYPTION) begin
+					if(reads_done) begin
 						loop_counter			<=	loop_counter + 1;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
 					end
@@ -988,7 +1020,7 @@ module axi_full_core#(
 							start_single_burst_write <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_DECRYPTION) begin
+					if(writes_done) begin
 						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
 					end
 				end
@@ -1007,7 +1039,7 @@ module axi_full_core#(
 					end
 
 					if(state_next == IDLE_WAIT) begin
-						paillier_finished	<=	1;
+						paillier_finished_reg	<=	1;
 					end
 				end
 
@@ -1035,7 +1067,7 @@ module axi_full_core#(
 							start_single_burst_read <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_HOMOMORPHIC_ADD) begin
+					if(reads_done) begin
 						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
@@ -1051,7 +1083,7 @@ module axi_full_core#(
 							start_single_burst_write <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_HOMOMORPHIC_ADD) begin
+					if(writes_done) begin
 						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
 					end
 				end
@@ -1070,7 +1102,7 @@ module axi_full_core#(
 					end
 
 					if(state_next == IDLE_WAIT) begin
-						paillier_finished	<=	1;
+						paillier_finished_reg	<=	1;
 					end
 				end
 
@@ -1098,7 +1130,7 @@ module axi_full_core#(
 							start_single_burst_read <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_SCALAR_MUL) begin
+					if(reads_done) begin
 						loop_counter			<=	loop_counter + (single_task_read_cnt == 1);// Carry after the last data is read.
 						single_task_read_cnt	<=	single_task_read_cnt < 1  ? single_task_read_cnt + 1 : 0;
 						block_is_busy 			<= 	block_is_busy | (1 << block_is_busy_next);
@@ -1114,7 +1146,7 @@ module axi_full_core#(
 							start_single_burst_write <= 1'b0; //Negate to generate a pulse
 						end
 					end
-					if(state_next == STA_SCALAR_MUL) begin
+					if(writes_done) begin
 						block_is_busy	<= 	block_is_busy & (~(1 << fifo_is_busy_next));
 					end
 				end

@@ -38,6 +38,7 @@ reg                 carry_last              ;
 wire    [255        :0]     result_x_mul_y          ;
 reg     [K-1        :0]     x_d1                    ;
 reg     [K-1        :0]     y_d1                    ;
+reg                         p1_d1                   ;
 wire    [K-1        :0]     x_d1_reg                ;
 wire    [K-1        :0]     y_d1_reg                ;
 reg     [K-1        :0]     x_d2                    ;
@@ -47,6 +48,15 @@ reg     [127        :0]     a_stage_0_d     [0:8]   ;
 reg                         carry_stage_0_d [0:8]   ;
 reg     [ADDR_W-1   :0]     i_cnt_stage_0_d [0:8]   ;
 reg     [ADDR_W     :0]     j_cnt_stage_0_d [0:8]   ;
+
+always@(posedge clk or negedge rst_n) begin//The delay operation is used to optimize the timing.
+    if(!rst_n) begin
+        p1_d1 <= 0;
+    end
+    else begin
+        p1_d1 <= p1;
+    end
+end
 
 always@(posedge clk or negedge rst_n) begin//The delay operation is used to optimize the timing.
     if(!rst_n) begin
@@ -154,7 +164,7 @@ reg     [255        :0]     s_stage_2_d     [0:5]   ;
 iddmm_mul_128_to_128 iddmm_mul_1(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
-    ,   .x              (p1             )
+    ,   .x              (p1_d1          )
     ,   .y              (s              )
     ,   .result         (result_p1_mul_s)
 );

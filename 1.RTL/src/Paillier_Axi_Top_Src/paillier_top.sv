@@ -57,8 +57,7 @@ reg     [K-1            : 0]    ram_mm_wr_data          ;
 reg     [ADDR_W-1       : 0]    ram_mm_rd_addr          ;
 wire    [K-1            : 0]    ram_mm_rd_data          ;
 
-wire    [K-1            : 0]    ram_L_rd_data           ;
-
+wire    [K-1            : 0]    ram_dec_inv_val_data    ;
 
 
 reg     [K-1            : 0]    me_x_reg                ;
@@ -77,6 +76,7 @@ reg     [$clog2(N)-1    : 0]    me_result_0_cnt     =   0;
 
 reg     [K-1            : 0]    mm_x_reg                ;
 reg     [K-1            : 0]    mm_y_reg                ;
+reg     [1              : 0]    mm_type_0               ;
 reg                             mm_start_0              ;
 reg     [$clog2(N)-1    : 0]    mm_addr                 ;
 reg     [$clog2(N)-1    : 0]    mm_addr_d1              ;
@@ -88,16 +88,11 @@ wire    [K-1            : 0]    mm_result_0             ;
 wire                            mm_valid_0              ;
 reg     [$clog2(N)-1    : 0]    mm_result_0_cnt     =   0;
 
-reg                             L_start                 ;
-reg     [$clog2(N)-1    : 0]    L_addr                  ;
-reg     [$clog2(N)-1    : 0]    L_addr_d1               ;
-reg     [K-1            : 0]    L_x                     ;
-reg     [K-1            : 0]    L_y                     ;
-reg                             L_data_valid            ;
-wire    [K-1            : 0]    L_result                ;
-wire                            L_valid                 ;
-
-reg     [$clog2(N)-1    : 0]    L_result_cnt        =   0;
+typedef enum logic [1:0] {
+    MM_N2           ,
+    MM_N            ,
+    MM_INV          
+} MM_TYPE;
 
 typedef enum logic [3:0] {
     STA_IDLE                    ,
@@ -105,8 +100,8 @@ typedef enum logic [3:0] {
     STA_ENCRYPTION_MM_STEP0     ,
     STA_ENCRYPTION_MM_STEP1     ,
     STA_DECRYPTION_ME           ,
-    STA_DECRYPTION_L            ,
-    STA_DECRYPTION_MM           ,
+    STA_DECRYPTION_MM_STEP0     ,
+    STA_DECRYPTION_MM_STEP1     ,
     STA_HOMOMORPHIC_ADD         ,
     STA_SCALAR_MUL              ,
     STA_END                     
@@ -178,9 +173,6 @@ always@(*) begin
         STA_ENCRYPTION_MM_STEP0: begin
             ram_N_rd_addr   =   mm_addr;
         end
-        STA_DECRYPTION_L: begin
-            ram_N_rd_addr   =   L_addr;
-        end
         default: begin
             ram_N_rd_addr   =   0;
         end
@@ -192,8 +184,8 @@ always@(*) begin
         STA_ENCRYPTION_MM_STEP1: begin
             ram_me_rd_addr  =   mm_addr;
         end
-        STA_DECRYPTION_L: begin
-            ram_me_rd_addr  =   L_addr;
+        STA_DECRYPTION_MM_STEP0: begin
+            ram_me_rd_addr  =   mm_addr;
         end
         default: begin
             ram_me_rd_addr  =   0;
@@ -204,6 +196,9 @@ end
 always@(*) begin
     case(state_now)
         STA_ENCRYPTION_MM_STEP1: begin
+            ram_mm_rd_addr  =   mm_addr;
+        end
+        STA_DECRYPTION_MM_STEP1: begin
             ram_mm_rd_addr  =   mm_addr;
         end
         default: begin
@@ -239,8 +234,12 @@ always@(*) begin
             mm_x_reg    =   ram_me_rd_data;
             mm_y_reg    =   ram_mm_rd_data;
         end
-        STA_DECRYPTION_MM: begin
-            mm_x_reg    =   ram_L_rd_data;
+        STA_DECRYPTION_MM_STEP0: begin
+            mm_x_reg    =   ram_me_rd_data;
+            mm_y_reg    =   ram_dec_inv_val_data;
+        end
+        STA_DECRYPTION_MM_STEP1: begin
+            mm_x_reg    =   ram_mm_rd_data;
             mm_y_reg    =   ram_mu_rd_data;
         end
         default: begin
@@ -248,11 +247,6 @@ always@(*) begin
             mm_y_reg    =   mm_y_0;
         end
     endcase
-end
-
-always@(*) begin
-    L_x         =       ram_me_rd_data;
-    L_y         =       ram_N_rd_data;
 end
 
 always @(posedge clk or negedge rst_n) begin
@@ -304,26 +298,26 @@ always@(*) begin
         end
         STA_DECRYPTION_ME: begin
             if(me_result_0_cnt == N - 1) begin
-                state_next  =   STA_DECRYPTION_L;
+                state_next  =   STA_DECRYPTION_MM_STEP0;
             end
             else begin
                 state_next  =   STA_DECRYPTION_ME;
             end
         end
-        STA_DECRYPTION_L: begin
-            if(L_result_cnt == N - 1) begin
-                state_next  =   STA_DECRYPTION_MM;
+        STA_DECRYPTION_MM_STEP0: begin
+            if(mm_result_0_cnt == N - 1) begin
+                state_next  =   STA_DECRYPTION_MM_STEP1;
             end
             else begin
-                state_next  =   STA_DECRYPTION_L;
+                state_next  =   STA_DECRYPTION_MM_STEP0;
             end
         end
-        STA_DECRYPTION_MM: begin
+        STA_DECRYPTION_MM_STEP1: begin
             if(mm_result_0_cnt == N - 1) begin
                 state_next  =   STA_IDLE;
             end
             else begin
-                state_next  =   STA_DECRYPTION_MM;
+                state_next  =   STA_DECRYPTION_MM_STEP1;
             end
         end
         STA_HOMOMORPHIC_ADD: begin
@@ -361,19 +355,14 @@ always@(posedge clk or negedge rst_n) begin
 
         mm_addr             <=  0;
         mm_addr_d1          <=  0;
+        
+        mm_type_0           <=  MM_N2;
         mm_start_0          <=  0;
         mm_x_0              <=  0;
         mm_y_0              <=  0;
         mm_x_valid_0        <=  0;
         mm_y_valid_0        <=  0;
         mm_result_0_cnt     <=  0;
-
-
-        L_addr              <=  0;
-        L_addr_d1           <=  0;
-        L_start             <=  0;
-        L_data_valid        <=  0;
-        L_result_cnt        <=  0;
 
         enc_out_data        <=  0;
         enc_out_valid       <=  0;
@@ -383,18 +372,16 @@ always@(posedge clk or negedge rst_n) begin
     else begin
         mm_addr_d1          <=  mm_addr; 
         me_addr_d1          <=  me_addr;
-        L_addr_d1           <=  L_addr;
         case(state_now)
             STA_IDLE: begin
                 me_result_0_cnt     <=      0;
                 mm_result_0_cnt     <=      0;
-                L_result_cnt        <=      0;
                 mm_addr             <=      0;
                 me_addr             <=      0;
-                L_addr              <=      0;
                 task_end            <=      0;
                 enc_out_data        <=      0;
                 enc_out_valid       <=      0;
+                mm_type_0           <=  MM_N2;
                 if(state_next == STA_ENCRYPTION_ME) begin
                     me_start_0          <=      1;
                 end
@@ -483,32 +470,34 @@ always@(posedge clk or negedge rst_n) begin
                 if(me_valid_0) begin
                     me_result_0_cnt     <=  (me_result_0_cnt < N-1) ? (me_result_0_cnt + 1) : me_result_0_cnt;
                 end
-
-                if(state_next   ==  STA_DECRYPTION_L) begin
-                    L_addr              <=  0;
-                    L_start             <=  1;
-                end
-            end
-            STA_DECRYPTION_L: begin
-                L_start             <=  0;
-                L_addr              <=  L_addr < N - 1 ? L_addr + 1 : L_addr;
-                if(L_addr_d1 < N - 1) begin
-                    L_data_valid        <=  1;
-                end
-                else begin
-                    L_data_valid        <=  0;
-                end
-
-                if(L_valid) begin
-                    L_result_cnt        <=  L_result_cnt + 1;
-                end
-
-                if(state_next   ==  STA_DECRYPTION_MM) begin
+                if(state_next   ==  STA_DECRYPTION_MM_STEP0) begin
                     mm_addr             <=  0;
                     mm_start_0          <=  1;
+                    mm_type_0           <=  MM_INV;
                 end
             end
-            STA_DECRYPTION_MM: begin
+            STA_DECRYPTION_MM_STEP0: begin
+                mm_start_0          <=  0;
+                mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
+                if(mm_addr_d1 < N - 1) begin
+                    mm_x_valid_0        <=  1;
+                    mm_y_valid_0        <=  1;
+                end
+                else begin
+                    mm_x_valid_0        <=  0;
+                    mm_y_valid_0        <=  0;
+                end
+                if(mm_valid_0) begin
+                    mm_result_0_cnt     <=  mm_result_0_cnt + 1;
+                end
+
+                if(state_next   ==  STA_DECRYPTION_MM_STEP1) begin
+                    mm_addr             <=  0;
+                    mm_start_0          <=  1;
+                    mm_type_0           <=  MM_N;
+                end
+            end
+            STA_DECRYPTION_MM_STEP1: begin
                 mm_start_0          <=  0;
                 if(!mm_start_0) begin//delay 1 cycle to clear mm_addr_d1
                     mm_addr             <=  mm_addr < N - 1 ? mm_addr + 1 : mm_addr;
@@ -573,6 +562,7 @@ montgomery_iddmm_top #(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
 
+    ,   .mm_type        (mm_type_0      )
     ,   .mm_start       (mm_start_0     )
     ,   .mm_x           (mm_x_reg       )
     ,   .mm_x_valid     (mm_x_valid_0   )
@@ -651,6 +641,26 @@ dual_port_ram#(
 );
 
 dual_port_ram#(
+    `ifdef Vivado_Sim
+        .filename       ("../../../../../1.RTL/data/ram_dec_inv_val.txt")
+    `elsif Vivado_Syn
+        .filename       ("../../../1.RTL/data/ram_dec_inv_val.txt")
+    `else
+        .filename       ("..\\1.RTL\\data\\ram_dec_inv_val.txt")
+    `endif
+    ,   .RAM_WIDTH      (K                  )
+    ,   .ADDR_LINE      ($clog2(N)          )
+)ram_dec_inv_val(
+        .clk            (clk                )
+    ,   .wr_en          (0)
+    ,   .wr_addr        ()
+    ,   .wr_data        ()
+    ,   .rd_en          (1)
+    ,   .rd_addr        (mm_addr            )
+    ,   .rd_data        (ram_dec_inv_val_data)
+);
+
+dual_port_ram#(
         .filename       ("none")
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
@@ -692,20 +702,6 @@ dual_port_dram#(
     ,   .rd_en          (1                  )
     ,   .rd_addr        (ram_mm_rd_addr     )
     ,   .rd_data        (ram_mm_rd_data     )
-);
-
-dual_port_ram#(
-        .filename       ("none")
-    ,   .RAM_WIDTH      (K                  )
-    ,   .ADDR_LINE      ($clog2(N)          )
-)ram_L_result(
-        .clk            (clk                )
-    ,   .wr_en          (L_valid            )
-    ,   .wr_addr        (L_result_cnt       )
-    ,   .wr_data        (L_result           )
-    ,   .rd_en          (1                  )
-    ,   .rd_addr        (mm_addr            )
-    ,   .rd_data        (ram_L_rd_data      )
 );
 
 

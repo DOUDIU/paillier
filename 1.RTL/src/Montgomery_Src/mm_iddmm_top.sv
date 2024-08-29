@@ -47,9 +47,14 @@ typedef enum logic [2:0] {
 FSM_STATE  state_now;
 FSM_STATE  state_next;
 
-wire    [K-1    : 0]    mm_m1                       ;
+wire    [K-1    : 0]    mm_m1_n2                    ;
+wire    [K-1    : 0]    mm_m1_n                     ;
+wire    [K-1    : 0]    mm_m1_inv                   ;
 
-assign  mm_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
+//m1=(-1*(mod_inv(m,2**K)))%2**K
+assign  mm_m1_n2    =   128'hb885007f9c90c3f3beb79b92378fe7f;
+assign  mm_m1_n     =   128'hf14bf14f3b9eb93fcfc300c2853938c1;
+assign  mm_m1_inv   =   128'h9070cb8b8be9930f83c3fe53c21784b1;
 
 wire    [2              : 0]    wr_ena                  ;
 reg                             wr_ena_x                ;
@@ -65,7 +70,7 @@ reg     [K-1            : 0]    wr_m                    ;
 reg     [K-1            : 0]    wr_x_reg                ;
 reg     [K-1            : 0]    wr_y_reg                ;
 reg     [K-1            : 0]    wr_m_reg                ;
-wire    [K-1            : 0]    mm_m1_reg               ;
+reg     [K-1            : 0]    mm_m1_reg               ;
 
 reg                             task_req                ;
 
@@ -201,7 +206,22 @@ always@(*) begin
     endcase
 end
 
-assign      mm_m1_reg   =   mm_m1;
+always@(*) begin
+    case(mm_type)
+        MM_N2: begin
+            mm_m1_reg   =   mm_m1_n2;
+        end
+        MM_N: begin
+            mm_m1_reg   =   mm_m1_n;
+        end
+        MM_INV: begin
+            mm_m1_reg   =   mm_m1_inv;
+        end
+        default: begin
+            mm_m1_reg   =   mm_m1_n2;
+        end
+    endcase
+end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n | mm_start)begin
@@ -501,15 +521,15 @@ dual_port_ram#(
 
 dual_port_ram#(
     `ifdef Vivado_Sim
-        .filename       ("../../../../../1.RTL/data/ram_mm_m_n_inv.txt")
+        .filename       ("../../../../../1.RTL/data/ram_mm_m_inv.txt")
     `elsif Vivado_Syn
-        .filename       ("../../../1.RTL/data/ram_mm_m_n_inv.txt")
+        .filename       ("../../../1.RTL/data/ram_mm_m_inv.txt")
     `else
-        .filename       ("..\\1.RTL\\data\\ram_mm_m_n_inv.txt")
+        .filename       ("..\\1.RTL\\data\\ram_mm_m_inv.txt")
     `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_m_n_inv(
+)ram_mm_m_inv(
         .clk            (clk                )
     ,   .wr_en          (0)
     ,   .wr_addr        ()
@@ -561,15 +581,15 @@ dual_port_ram#(
 
 dual_port_ram#(
     `ifdef Vivado_Sim
-        .filename       ("../../../../../1.RTL/data/ram_mm_rou_n_inv.txt")
+        .filename       ("../../../../../1.RTL/data/ram_mm_rou_inv.txt")
     `elsif Vivado_Syn
-        .filename       ("../../../1.RTL/data/ram_mm_rou_n_inv.txt")
+        .filename       ("../../../1.RTL/data/ram_mm_rou_inv.txt")
     `else
-        .filename       ("..\\1.RTL\\data\\ram_mm_rou_n_inv.txt")
+        .filename       ("..\\1.RTL\\data\\ram_mm_rou_inv.txt")
     `endif
     ,   .RAM_WIDTH      (K                  )
     ,   .ADDR_LINE      ($clog2(N)          )
-)ram_mm_rou_n_inv(
+)ram_mm_rou_inv(
         .clk            (clk                )
     ,   .wr_en          (0)
     ,   .wr_addr        ()

@@ -51,7 +51,7 @@ def ram_pre_cal_mm_n():
     data_seperate_printf_new(rou,128,4096//128,0,file_path)
 
 def ram_pre_cal_mm_inv():
-    m = ((p - 1) * (q - 1))
+    m = ((p - 1) * (q - 1)) + n
 
     file_path = '1.RTL/data/ram_mm_m_inv.txt'
     data_seperate_printf_new(m,128,4096//128,0,file_path)
@@ -76,6 +76,11 @@ def reg_m1_print():
     p1=((-1*(gmpy2.invert(m,beta)))%beta)%(2**128)#The lower 128-bit data is reserved.
     print('m1_inv:\n0x{:x}\n'.format(p1))
 
+def ram_pre_dec():
+    dec_inv_m = ((p-1)*(q-1)) + n
+    inv_val = gmpy2.invert(n, dec_inv_m)
+    file_path = '1.RTL/data/ram_dec_inv_val.txt'
+    data_seperate_printf_new(inv_val,128,4096//128,0,file_path)
 
 if __name__=='__main__':
     ram_pre_cal_me_n2()
@@ -85,3 +90,4 @@ if __name__=='__main__':
 
     reg_m1_print()
 
+    ram_pre_dec()

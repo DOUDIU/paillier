@@ -2,25 +2,24 @@ module montgomery_iddmm_top#(
         parameter K             = 128
     ,   parameter N             = 32
 )(
-        input                   clk         
-    ,   input                   rst_n       
-
-    ,   input       [3:0]       state_now
+        input                   clk
+    ,   input                   rst_n
 
     ,   input                   me_start
     ,   input       [K-1:0]     me_x
     ,   input                   me_x_valid
     ,   input       [K-1:0]     me_y
     ,   input                   me_y_valid
-    ,   output      [K-1:0]     me_result   
+    ,   output      [K-1:0]     me_result
     ,   output                  me_valid
 
+    ,   input       [1  :0]     mm_type
     ,   input                   mm_start
     ,   input       [K-1:0]     mm_x
     ,   input                   mm_x_valid
     ,   input       [K-1:0]     mm_y
     ,   input                   mm_y_valid
-    ,   output      [K-1:0]     mm_result   
+    ,   output      [K-1:0]     mm_result
     ,   output                  mm_valid
 );
 
@@ -96,6 +95,7 @@ me_iddmm_top #(
 )me_4096_inst_0(
         .clk                (clk            )
     ,   .rst_n              (rst_n          )
+
     ,   .me_start           (me_start       )
     ,   .me_x               (me_x           )
     ,   .me_x_valid         (me_x_valid     )
@@ -114,7 +114,6 @@ me_iddmm_top #(
     ,   .iddmm_task_end     (task_end_me    )
     ,   .iddmm_task_grant   (task_grant_me  )    
     ,   .iddmm_task_res     (task_res_me    )
-
 );
 
 mm_iddmm_top #(
@@ -124,6 +123,8 @@ mm_iddmm_top #(
 )mm_4096_inst_0(
         .clk                (clk            )
     ,   .rst_n              (rst_n          )
+
+    ,   .mm_type            (mm_type        )
     ,   .mm_start           (mm_start       )
     ,   .mm_x               (mm_x           )
     ,   .mm_x_valid         (mm_x_valid     )

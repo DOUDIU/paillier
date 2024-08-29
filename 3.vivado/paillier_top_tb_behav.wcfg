@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="59,664,977.400 ns"></ZoomStartTime>
-      <ZoomEndTime time="59,665,186.801 ns"></ZoomEndTime>
-      <Cursor1Time time="59,665,015.000 ns"></Cursor1Time>
+      <ZoomStartTime time="58,661,349.800 ns"></ZoomStartTime>
+      <ZoomEndTime time="58,661,769.801 ns"></ZoomEndTime>
+      <Cursor1Time time="58,661,425.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="269"></NameColumnWidth>
-      <ValueColumnWidth column_width="165"></ValueColumnWidth>
+      <ValueColumnWidth column_width="159"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="38" />
+   <WVObjectSize size="31" />
    <wave_markers>
       <marker time="59665325000" label="" />
       <marker time="46675000" label="" />
@@ -77,6 +77,14 @@
       <obj_property name="ElementShortName">enc_r_valid</obj_property>
       <obj_property name="ObjectShortName">enc_r_valid</obj_property>
    </wvobject>
+   <wvobject fp_name="/paillier_top_tb/dec_c_data" type="array">
+      <obj_property name="ElementShortName">dec_c_data[127:0]</obj_property>
+      <obj_property name="ObjectShortName">dec_c_data[127:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/paillier_top_tb/dec_c_valid" type="logic">
+      <obj_property name="ElementShortName">dec_c_valid</obj_property>
+      <obj_property name="ObjectShortName">dec_c_valid</obj_property>
+   </wvobject>
    <wvobject fp_name="/paillier_top_tb/paillier_top_inst/homo_add_c1" type="array">
       <obj_property name="ElementShortName">homo_add_c1[127:0]</obj_property>
       <obj_property name="ObjectShortName">homo_add_c1[127:0]</obj_property>
@@ -124,77 +132,42 @@
    <wvobject fp_name="group493" type="group">
       <obj_property name="label">me</obj_property>
       <obj_property name="DisplayName">label</obj_property>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_flag" type="logic">
-         <obj_property name="ElementShortName">mm_flag</obj_property>
-         <obj_property name="ObjectShortName">mm_flag</obj_property>
+      <obj_property name="isExpanded"></obj_property>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_start" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/rst_n" type="logic">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_start" type="logic">
          <obj_property name="ElementShortName">me_start</obj_property>
          <obj_property name="ObjectShortName">me_start</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_x" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_x" type="array">
          <obj_property name="ElementShortName">me_x[127:0]</obj_property>
          <obj_property name="ObjectShortName">me_x[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_x_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_x_valid" type="logic">
          <obj_property name="ElementShortName">me_x_valid</obj_property>
          <obj_property name="ObjectShortName">me_x_valid</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_y" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_y" type="array">
          <obj_property name="ElementShortName">me_y[127:0]</obj_property>
          <obj_property name="ObjectShortName">me_y[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_y_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_y_valid" type="logic">
          <obj_property name="ElementShortName">me_y_valid</obj_property>
          <obj_property name="ObjectShortName">me_y_valid</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_result" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_result" type="array">
          <obj_property name="ElementShortName">me_result[127:0]</obj_property>
          <obj_property name="ObjectShortName">me_result[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/me_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/me_4096_inst_0/me_valid" type="logic">
          <obj_property name="ElementShortName">me_valid</obj_property>
          <obj_property name="ObjectShortName">me_valid</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_ena" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_ena[2:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_ena[2:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_addr" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_addr[4:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_addr[4:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_x" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_x[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_x[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_y" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_y[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_y[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_m" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_m[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_m[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_wr_m1" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_m1[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_m1[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_task_req" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_req</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_req</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_task_end" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_end</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_end</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_task_grant" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_grant</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_grant</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/me_4096_inst_0/iddmm_task_res" type="array">
-         <obj_property name="ElementShortName">iddmm_task_res[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_res[127:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="divider" fp_name="divider79">
@@ -205,134 +178,101 @@
       <obj_property name="label">mm</obj_property>
       <obj_property name="DisplayName">label</obj_property>
       <obj_property name="isExpanded"></obj_property>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/mm_addr" type="array">
-         <obj_property name="ElementShortName">mm_addr[4:0]</obj_property>
-         <obj_property name="ObjectShortName">mm_addr[4:0]</obj_property>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/mm_addr_d1" type="array">
-         <obj_property name="ElementShortName">mm_addr_d1[4:0]</obj_property>
-         <obj_property name="ObjectShortName">mm_addr_d1[4:0]</obj_property>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/rst_n" type="logic">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/enc_tem_buf_for_m" type="array">
-         <obj_property name="ElementShortName">enc_tem_buf_for_m[31:0][127:0]</obj_property>
-         <obj_property name="ObjectShortName">enc_tem_buf_for_m[31:0][127:0]</obj_property>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_type" type="array">
+         <obj_property name="ElementShortName">mm_type[1:0]</obj_property>
+         <obj_property name="ObjectShortName">mm_type[1:0]</obj_property>
       </wvobject>
-      <wvobject type="divider" fp_name="divider496">
-         <obj_property name="label">paillier_top</obj_property>
-         <obj_property name="DisplayName">label</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_start" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_start" type="logic">
          <obj_property name="ElementShortName">mm_start</obj_property>
          <obj_property name="ObjectShortName">mm_start</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_x" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_x" type="array">
          <obj_property name="ElementShortName">mm_x[127:0]</obj_property>
          <obj_property name="ObjectShortName">mm_x[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_x_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_x_valid" type="logic">
          <obj_property name="ElementShortName">mm_x_valid</obj_property>
          <obj_property name="ObjectShortName">mm_x_valid</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_y" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_y" type="array">
          <obj_property name="ElementShortName">mm_y[127:0]</obj_property>
          <obj_property name="ObjectShortName">mm_y[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_y_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_y_valid" type="logic">
          <obj_property name="ElementShortName">mm_y_valid</obj_property>
          <obj_property name="ObjectShortName">mm_y_valid</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_result" type="array">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_result" type="array">
          <obj_property name="ElementShortName">mm_result[127:0]</obj_property>
          <obj_property name="ObjectShortName">mm_result[127:0]</obj_property>
       </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/mm_valid" type="logic">
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/mm_4096_inst_0/mm_valid" type="logic">
          <obj_property name="ElementShortName">mm_valid</obj_property>
          <obj_property name="ObjectShortName">mm_valid</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_ena" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_ena[2:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_ena[2:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_addr" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_addr[4:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_addr[4:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_x" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_x[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_x[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_y" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_y[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_y[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_m" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_m[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_m[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_wr_m1" type="array">
-         <obj_property name="ElementShortName">iddmm_wr_m1[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_wr_m1[127:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_task_req" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_req</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_req</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_task_end" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_end</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_end</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_task_grant" type="logic">
-         <obj_property name="ElementShortName">iddmm_task_grant</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_grant</obj_property>
-      </wvobject>
-      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/mm_4096_inst_0/iddmm_task_res" type="array">
-         <obj_property name="ElementShortName">iddmm_task_res[127:0]</obj_property>
-         <obj_property name="ObjectShortName">iddmm_task_res[127:0]</obj_property>
       </wvobject>
    </wvobject>
    <wvobject type="divider" fp_name="divider480">
       <obj_property name="label">montgomery</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_ena" type="array">
-      <obj_property name="ElementShortName">wr_ena[2:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_ena[2:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_addr" type="array">
-      <obj_property name="ElementShortName">wr_addr[4:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_addr[4:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_x" type="array">
-      <obj_property name="ElementShortName">wr_x[127:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_x[127:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_y" type="array">
-      <obj_property name="ElementShortName">wr_y[127:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_y[127:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_m" type="array">
-      <obj_property name="ElementShortName">wr_m[127:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_m[127:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/wr_m1" type="array">
-      <obj_property name="ElementShortName">wr_m1[127:0]</obj_property>
-      <obj_property name="ObjectShortName">wr_m1[127:0]</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/task_req" type="logic">
-      <obj_property name="ElementShortName">task_req</obj_property>
-      <obj_property name="ObjectShortName">task_req</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/task_end" type="logic">
-      <obj_property name="ElementShortName">task_end</obj_property>
-      <obj_property name="ObjectShortName">task_end</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/task_grant" type="logic">
-      <obj_property name="ElementShortName">task_grant</obj_property>
-      <obj_property name="ObjectShortName">task_grant</obj_property>
-   </wvobject>
-   <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top/u_mmp_iddmm_sp/task_res" type="array">
-      <obj_property name="ElementShortName">task_res[127:0]</obj_property>
-      <obj_property name="ObjectShortName">task_res[127:0]</obj_property>
+   <wvobject fp_name="group173" type="group">
+      <obj_property name="label">montogomery</obj_property>
+      <obj_property name="DisplayName">label</obj_property>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/clk" type="logic">
+         <obj_property name="ElementShortName">clk</obj_property>
+         <obj_property name="ObjectShortName">clk</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/rst_n" type="logic">
+         <obj_property name="ElementShortName">rst_n</obj_property>
+         <obj_property name="ObjectShortName">rst_n</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_ena" type="array">
+         <obj_property name="ElementShortName">wr_ena[2:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_ena[2:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_addr" type="array">
+         <obj_property name="ElementShortName">wr_addr[4:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_addr[4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_x" type="array">
+         <obj_property name="ElementShortName">wr_x[127:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_x[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_y" type="array">
+         <obj_property name="ElementShortName">wr_y[127:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_y[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_m" type="array">
+         <obj_property name="ElementShortName">wr_m[127:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_m[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/wr_m1" type="array">
+         <obj_property name="ElementShortName">wr_m1[127:0]</obj_property>
+         <obj_property name="ObjectShortName">wr_m1[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/task_req" type="logic">
+         <obj_property name="ElementShortName">task_req</obj_property>
+         <obj_property name="ObjectShortName">task_req</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/task_end" type="logic">
+         <obj_property name="ElementShortName">task_end</obj_property>
+         <obj_property name="ObjectShortName">task_end</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/task_grant" type="logic">
+         <obj_property name="ElementShortName">task_grant</obj_property>
+         <obj_property name="ObjectShortName">task_grant</obj_property>
+      </wvobject>
+      <wvobject fp_name="/paillier_top_tb/paillier_top_inst/montgomery_iddmm_top_inst/u_iddmm_top/task_res" type="array">
+         <obj_property name="ElementShortName">task_res[127:0]</obj_property>
+         <obj_property name="ObjectShortName">task_res[127:0]</obj_property>
+      </wvobject>
    </wvobject>
 </wave_config>

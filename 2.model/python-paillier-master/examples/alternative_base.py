@@ -45,7 +45,6 @@ def data_seperate_printf_new(data,nbit,n,order,file_path):#0 reverse,1 normal
         for i in range(n-1,-1,-1):
             # print('128\'h{:x},'.format(data>>(i*nbit)&(2**nbit-1)),end='\n')
             print('{:x}'.format(data>>(i*nbit)&(2**nbit-1)),end='\n',file=RESULT_LOG)
-    print('\n')
 
 def data_seperate_printf_byte(data,nbit,n,order):#0 reverse,1 normal
     RESULT_LOG = open("result_log.txt",'a',encoding="utf-8")
@@ -103,16 +102,16 @@ def mod_inv(a,m):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_fpga_example( n, lamba, mu, cyphertext):
-    # inverse_modular = n
-    # while inverse_modular == n:
-    #     inverse_modular = paillier.getprimeover(2048)
     inverse_modular = ((p-1)*(q-1)) + n
     n_inverse = mod_inv(public_key.n, inverse_modular)
 
     result_step1 = paillier.powmod(cyphertext, lamba, n ** 2) - 1
+    print('result_step1: 0x{:x}\n'.format(result_step1))
     result_step2 = paillier.mulmod(result_step1, n_inverse, inverse_modular)
     decrypt_text = paillier.mulmod(result_step2, mu, n)
 
+    while 1:
+        a = 1
     # print('optimized decrypion result: 0x\n{:x}'.format(decrypt_text))
     return decrypt_text
 
@@ -137,9 +136,10 @@ def decrypt_crt_example( p, q, g,cyphertext):
 
 #(L(c^lamda mod n^2) * mu) mod n
 def decrypt_example():
-    # RESULT_LOG = open("result_log.txt",'w').close()
+    RESULT_LOG = open("result_log.txt",'w').close()
     # print("Encoding a large positive number. With a BASE {} encoding scheme".format(ExampleEncodedNumber.BASE))
-    original_data = random.SystemRandom().randrange(1, n//3)
+    # original_data = random.SystemRandom().randrange(1, n//3)
+    original_data = 102545 + (64 ** 8)
     # print("original data: 0x\n{:x}".format(original_data))
     encoded = ExampleEncodedNumber.encode(public_key, original_data)
 
@@ -151,7 +151,7 @@ def decrypt_example():
 
     lamda = math.lcm(private_key.p - 1, private_key.q - 1)
     mu = paillier.invert(lamda, public_key.n)
-    
+
     # file_path = '1.RTL/data/ram_lamda.txt'
     # data_seperate_printf_new(lamda,128,4096//128,0,file_path)
     # file_path = '1.RTL/data/ram_mu.txt'
@@ -163,13 +163,16 @@ def decrypt_example():
     # data_seperate_printf(mu,128, 4096//128,1)
     # data_seperate_printf(encrypted.ciphertext(False),128, 4096//128,1)
 
-    a = paillier.powmod(encrypted.ciphertext(False), lamda, public_key.nsquare)
+    enc_ciphertext = 0x2d46fce2a9a239735393f40689a3de6c2a7d72710510a6e96e1c05f70b07c020a6d3722b3bc964e7e380fb7c6a5f5105f4dd8de256af6bf7397ca64b2beb57f4c766ca4e0a9dbcdb7bf02f238e6274a36477a9f69f7e4696187b755e7280039d906e3f53a3f724a1c6c4d7566cce7bde3e36e2651e9cbcf90aac31bf7342a57c65766defb6c504e928df700aaad3700490a942d8589a87bd8a592b8b50b2ed947bc2268448f80073d1590746f897fd89f47d4c20c24a11d112ed6408ecc6168c18e5f4dc586d61fc440b3742de816e2b3e7f28e338849fd6b5a56f57751ec4f0ad24eecf286b5e1ee037bbb0b35f735d18dfa24fab9a2083b50f329fc9b0638280d06001753efaf62521c9cfe8488ad91dcb932843789273609e88aef2a941df49a5b56c9cec3f40ee7eda1678490db6099ee8087c1fbd877aefde8b54d034f3b044fc897670b453871db2ea47efb8d62be1592d34ce44351a9e0e0f065ac5cdc4cf44af5542941bf4d96b9bf2b31e37cafdf5373b8c11a7d3907c8fff7e7d2ced30a3ef89305acc7e1beb513b3cdb212f243109555b6b4be5a548063c0c88a866786e25e26da72bc94331b6506d17f77a7266c7303bf1596fd4603cbbaae24e6c150a8e9ffe4bc1c4ea66d3c60ce01c13b0d6d27b5e99a57e7d28c7fdd1db1af26e7771fd0425a0a4e6cdfd11c2f7dbc82c5c674fe9b19f3b7edac8e9fd6f16
+    data_seperate_printf(enc_ciphertext,128, 4096//128,1)
+
+    a = paillier.powmod(enc_ciphertext, lamda, public_key.nsquare)
     b = (a - 1) // public_key.n
     c = b * mu % public_key.n
     # print("Decrypted: 0x{:x}".format(c))
     # print('official decrypted: 0x{:x}'.format(decrypted_but_encoded.decode()))
 
-    opt_dec_result = decrypt_fpga_example(public_key.n, lamda, mu, encrypted.ciphertext(False))
+    opt_dec_result = decrypt_fpga_example(public_key.n, lamda, mu, enc_ciphertext)
 
     assert c == decrypted_but_encoded.decode()
     assert c == opt_dec_result, "c = 0x{:x}\n opt = 0x{:x}\n".format(c, opt_dec_result)
@@ -353,5 +356,5 @@ if __name__ == "__main__":
     # data_record_for_homomorphic_addition("../5.data/homomorphic_addition_a.txt","../5.data/homomorphic_addition_b.txt","../5.data/homomorphic_addition_result.txt",10)
     # data_record_for_scalar_postive_multiplication("../5.data/scalar_postive_multiplication_m.txt","../5.data/scalar_postive_multiplication_const.txt","../5.data/scalar_postive_multiplication_result.txt",10)
 
-    for i in range(1000):
+    # for i in range(1000):
         decrypt_example()

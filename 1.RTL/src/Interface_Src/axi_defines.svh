@@ -26,5 +26,5 @@
         `define AXI_LITE_DATA_WIDTH 32
     `endif
 
-
+    `define Vivado_Sim
 `endif

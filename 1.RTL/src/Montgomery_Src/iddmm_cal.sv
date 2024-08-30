@@ -38,7 +38,7 @@ reg                 carry_last              ;
 wire    [255        :0]     result_x_mul_y          ;
 reg     [K-1        :0]     x_d1                    ;
 reg     [K-1        :0]     y_d1                    ;
-reg                         p1_d1                   ;
+reg     [K-1        :0]     p1_d1                   ;
 wire    [K-1        :0]     x_d1_reg                ;
 wire    [K-1        :0]     y_d1_reg                ;
 reg     [K-1        :0]     x_d2                    ;

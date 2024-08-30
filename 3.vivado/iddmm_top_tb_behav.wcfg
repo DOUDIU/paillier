@@ -11,12 +11,12 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="11,532.600 ns"></ZoomStartTime>
-      <ZoomEndTime time="11,748.101 ns"></ZoomEndTime>
-      <Cursor1Time time="11,575.000 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="2,161.001 ns"></ZoomEndTime>
+      <Cursor1Time time="705.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="283"></NameColumnWidth>
+      <NameColumnWidth column_width="277"></NameColumnWidth>
       <ValueColumnWidth column_width="90"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="43" />
@@ -80,6 +80,7 @@
    <wvobject fp_name="group422" type="group">
       <obj_property name="label">IDDMM_CAL</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+      <obj_property name="isExpanded"></obj_property>
       <wvobject fp_name="/iddmm_top_tb/clk" type="logic">
          <obj_property name="ElementShortName">clk</obj_property>
          <obj_property name="ObjectShortName">clk</obj_property>
@@ -91,6 +92,30 @@
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt" type="array">
          <obj_property name="ElementShortName">j_cnt[5:0]</obj_property>
          <obj_property name="ObjectShortName">j_cnt[5:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/a" type="array">
+         <obj_property name="ElementShortName">a[127:0]</obj_property>
+         <obj_property name="ObjectShortName">a[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/x" type="array">
+         <obj_property name="ElementShortName">x[127:0]</obj_property>
+         <obj_property name="ObjectShortName">x[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/y" type="array">
+         <obj_property name="ElementShortName">y[127:0]</obj_property>
+         <obj_property name="ObjectShortName">y[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/p" type="array">
+         <obj_property name="ElementShortName">p[127:0]</obj_property>
+         <obj_property name="ObjectShortName">p[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/p1" type="array">
+         <obj_property name="ElementShortName">p1[127:0]</obj_property>
+         <obj_property name="ObjectShortName">p1[127:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/p1_d1" type="logic">
+         <obj_property name="ElementShortName">p1_d1</obj_property>
+         <obj_property name="ObjectShortName">p1_d1</obj_property>
       </wvobject>
       <wvobject type="divider" fp_name="divider423">
          <obj_property name="label">Pipe 0</obj_property>

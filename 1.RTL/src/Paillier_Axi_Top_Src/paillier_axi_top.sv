@@ -1,6 +1,6 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 25
+        parameter BLOCK_COUNT   = 29
 	,	parameter K             = 128
     ,   parameter N             = 32
 //----------------------------------------------------

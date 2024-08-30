@@ -32,7 +32,7 @@ module paillier_axi_top#(
 
     wire    		            paillier_start                                  ;
     wire    [1:0]	            paillier_mode                                   ;
-    wire    [63:0]	            paillier_counts                                 ;
+    wire    [31:0]	            paillier_counts                                 ;
     wire    			        paillier_finished                               ;
 
     wire    [1  :0]             task_cmd                [0 : BLOCK_COUNT - 1]   ;

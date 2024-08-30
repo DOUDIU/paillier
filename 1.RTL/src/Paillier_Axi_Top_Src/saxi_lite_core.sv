@@ -2,7 +2,7 @@
 		// Users to add ports here
 		output				paillier_start,
 		output		[1:0]	paillier_mode,
-		output		[63:0]	paillier_counts,
+		output		[31:0]	paillier_counts,
 
 		input				paillier_finished,
 
@@ -66,7 +66,7 @@
 	// Add user logic here
 	assign paillier_start = slv_reg0[0];
 	assign paillier_mode = slv_reg0[2:1];
-	assign paillier_counts = {slv_reg3,slv_reg2};
+	assign paillier_counts = slv_reg2;
 
 	reg	paillier_finished_d1;
 	reg paillier_finished_d2;
@@ -180,8 +180,8 @@
 		if (S_AXI_ARESETN == 1'b0) begin
 			slv_reg0 <= 0;
 			slv_reg1 <= 0;
-			slv_reg2 <= 32'h0;
-			slv_reg3 <= 32'h186A0;
+			slv_reg2 <= 32'h186A0;
+			slv_reg3 <= 0;
 		end 
 		else begin
 			if (slv_reg_wren) begin

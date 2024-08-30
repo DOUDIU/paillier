@@ -39,7 +39,7 @@ module axi_full_core#(
 // paillier control interface
 	,	input 							paillier_start
 	,	input 			[1	:0]			paillier_mode
-	,	input 			[63	:0]			paillier_counts
+	,	input 			[31	:0]			paillier_counts
 	,	output	   						paillier_finished
 
 //----------------------------------------------------
@@ -84,7 +84,7 @@ module axi_full_core#(
 	}PAILLIER_MODE;
 
 	// Add user definition here
-	reg		[63  						: 0]	loop_counter;
+	reg		[31  						: 0]	loop_counter;
 	reg											loop_end;
 
 	reg		[BLOCK_COUNT - 1 			: 0]	block_is_busy;

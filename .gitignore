@@ -2,6 +2,7 @@
 !2.model/paillier-master
 !2.model/montgomery
 !2.model/python-paillier-master
+!2.model/script
 
 3.vivado/*
 !3.vivado/*.xpr
@@ -9,11 +10,13 @@
 
 4.questasim/*
 
+6.vitis/*
+!6.vitis/paillier
 
 visio
 word
 
-
+*.txt
 
 
 

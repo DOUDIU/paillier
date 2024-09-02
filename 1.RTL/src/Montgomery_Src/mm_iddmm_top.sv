@@ -1,3 +1,24 @@
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//algorithm achievement:
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//pre calculate
+    // rou = fastExpMod(2,2*k,m)
+
+//step0
+    // result0 = mont_r2mm(x,rou,m,k)
+//step1
+    // result1 = mont_r2mm(y,rou,m,k)
+//step2
+    // result2 = mont_r2mm(result0,result1,m,k)
+//step3
+    // result3 = mont_r2mm(result2,1,m,k)
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+
+//function:result = x*y mod m
+
 module mm_iddmm_top#(
         parameter K                     = 128
     ,   parameter N                     = 32
@@ -103,25 +124,6 @@ wire    [K-1            : 0]    ram_y_rd_data           ;
 
 assign ram_result0_wr_en = ((state_now == STA_MM_X_ROU) | (state_now == STA_MM_R1_R2)) & task_grant;
 assign ram_result1_wr_en = (state_now == STA_MM_Y_ROU) & task_grant;
-
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-//algorithm achievement:
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-//pre calculate
-    // rou = fastExpMod(2,2*k,m)
-
-//step0
-    // result0 = mont_r2mm(x,rou,m,k)
-//step1
-    // result1 = mont_r2mm(y,rou,m,k)
-//step2
-    // result2 = mont_r2mm(result0,result1,m,k)
-//step3
-    // result3 = mont_r2mm(result2,1,m,k)
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
 
 always@(*) begin
     case(state_now) 

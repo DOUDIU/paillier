@@ -1,23 +1,24 @@
-`timescale 1ns / 1ps
-//////////////////////////////////////////////////////////////////////////////////
-// Company: 
-// Engineer: 
-// 
-// Create Date: 2023/08/13 12:45:13
-// Design Name: 
-// Module Name: me_iddmm_top
-// Project Name: 
-// Target Devices: 
-// Tool Versions: 
-// Description: 
-// 
-// Dependencies: 
-// 
-// Revision:
-// Revision 0.01 - File Created
-// Additional Comments:
-// 
-//////////////////////////////////////////////////////////////////////////////////
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+//algorithm achievement:
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
+// rou = fastExpMod(2,2*nbit,p)
+// result = mont_r2mm(rou,1,p,nbit)
+
+//step0
+// result2 = mont_r2mm(xx,rou,p,nbit) 
+
+//step1
+// for(i) in range(nbit-1,-1,-1):
+//     result = mont_r2mm(result,result,p,nbit)
+//     if((yy>>i)&1==1):
+//         result = mont_r2mm(result,result2,p,nbit)
+
+//step2
+// result = mont_r2mm(result,1,p,nbit)
+//---------------------------------------------------------------------
+//---------------------------------------------------------------------
 
 //function:result = x^^y mod m
 
@@ -159,28 +160,6 @@ always@(*) begin
         end
     endcase
 end
-
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-//algorithm achievement:
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
-// rou = fastExpMod(2,2*nbit,p)
-// result = mont_r2mm(rou,1,p,nbit)
-
-//step0
-// result2 = mont_r2mm(xx,rou,p,nbit) 
-
-//step1
-// for(i) in range(nbit-1,-1,-1):
-//     result = mont_r2mm(result,result,p,nbit)
-//     if((yy>>i)&1==1):
-//         result = mont_r2mm(result,result2,p,nbit)
-
-//step2
-// result = mont_r2mm(result,1,p,nbit)
-//---------------------------------------------------------------------
-//---------------------------------------------------------------------
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n | me_start)begin

@@ -25,6 +25,7 @@ module iddmm_top#(
 wire    [K-1        :0]     a               ;
 wire    [K-1        :0]     x               ;
 wire    [K-1        :0]     y               ;
+wire    [K-1        :0]     y_adv           ;
 wire    [K-1        :0]     p               ;
 wire    [ADDR_W-1   :0]     i_cnt           ;
 wire    [ADDR_W     :0]     j_cnt           ;
@@ -122,6 +123,19 @@ dual_port_ram#(
     ,   .rd_en              (1                  )
     ,   .rd_addr            (rd_data_addr_i     )
     ,   .rd_data            (y                  )
+);
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)          )
+)dual_port_ram_y_adv(
+        .clk                (clk                )
+    ,   .wr_en              (wr_ena[1]          )
+    ,   .wr_addr            (wr_addr            )
+    ,   .wr_data            (wr_y               )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr_i + 1 )
+    ,   .rd_data            (y_adv              )
 );
 dual_port_ram#(
         .filename           ("none"             )

@@ -2,8 +2,8 @@
 //result = x*y*mod_inv(r,m)%m 
 //r is the bitwidth of x,y,m
 module iddmm_top#(
-        parameter K = 128                       // K bits in every group
-    ,   parameter N = 32                        // Number of groups
+        parameter K = 256                       // K bits in every group
+    ,   parameter N = 16                        // Number of groups
     ,   parameter ADDR_W = $clog2(N)
 )(
         input                           clk

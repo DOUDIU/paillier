@@ -1,6 +1,6 @@
 module iddmm_ctrl#(
-        parameter K = 128
-    ,   parameter N = 32
+        parameter K = 256
+    ,   parameter N = 16
     ,   parameter ADDR_W = $clog2(N)
 )(
         input                           clk

@@ -1,11 +1,12 @@
 module iddmm_top_tb();
 
-parameter   K       =   128         ;// K bits in every group
-parameter   N       =   32          ;// Number of groups
+parameter   K       =   256         ;// K bits in every group
+parameter   N       =   16          ;// Number of groups
 parameter   ADDR_W  =   $clog2(N)   ;
 
 reg [K-1  :0]   wr_m1_                [0:3] = {
-    128'hecd18b11b6a41b9bb3ef4fcae3ba221f,
+    256'h976ccf456fa1fb3bce136b8776f3a682ecd18b11b6a41b9bb3ef4fcae3ba221f,
+    // 128'hecd18b11b6a41b9bb3ef4fcae3ba221f,
     128'hb885007f9c90c3f3beb79b92378fe7f,
     128'hb885007f9c90c3f3beb79b92378fe7f,
     128'hb885007f9c90c3f3beb79b92378fe7f
@@ -55,7 +56,7 @@ wire    [K-1        :0]     task_res        ;
 task single_request(input num);
     integer i;
 
-    for(i = 0; i < 32; i = i + 1) begin
+    for(i = 0; i < N; i = i + 1) begin
         wr_ena      <=  3'b111;
         wr_addr     <=  i;
         wr_x        <=  big_x [num][i*K +: K];
@@ -71,7 +72,7 @@ task single_request(input num);
     task_req    <=  0;
 
     wait(task_grant);
-    for(i = 0; i < 32; i = i + 1) begin
+    for(i = 0; i < N; i = i + 1) begin
         @(posedge clk);
         iddmm_result[i*K +: K]   <=  task_res;
     end
@@ -95,7 +96,7 @@ initial begin
     wr_m1       <=  0;
     task_req    <=  0;
     @(posedge rst_n);
-    for(int i = 0; i < 4; i = i + 1) begin
+    for(int i = 0; i < 1; i = i + 1) begin
         single_request(i);
     end
     $stop;

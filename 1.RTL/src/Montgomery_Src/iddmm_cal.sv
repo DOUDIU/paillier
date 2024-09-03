@@ -1,6 +1,6 @@
 module iddmm_cal#(
-        parameter K = 128                       // K bits in every group
-    ,   parameter N = 32                        // Number of groups
+        parameter K = 256                       // K bits in every group
+    ,   parameter N = 16                        // Number of groups
     ,   parameter ADDR_W = $clog2(N)
 )(
         input                       clk
@@ -29,13 +29,13 @@ module iddmm_cal#(
 );
 integer i,j,k;
 
-wire    [127    :0] u                       ;
-wire    [128    :0] c                       ;
+wire    [K-1    :0] u                       ;
+wire    [K      :0] c                       ;
 reg                 carry                   ;
 reg                 carry_last              ;
 
 //pipe stage 0 ( 8 cycles )
-wire    [255        :0]     result_x_mul_y          ;
+wire    [2*K-1      :0]     result_x_mul_y          ;
 reg     [K-1        :0]     x_d1                    ;
 reg     [K-1        :0]     y_d1                    ;
 reg     [K-1        :0]     p1_d1                   ;
@@ -43,8 +43,8 @@ wire    [K-1        :0]     x_d1_reg                ;
 wire    [K-1        :0]     y_d1_reg                ;
 reg     [K-1        :0]     x_d2                    ;
 reg     [K-1        :0]     y_d2                    ;
-reg     [127        :0]     p_stage_0_d     [0:8]   ;
-reg     [127        :0]     a_stage_0_d     [0:8]   ;
+reg     [K-1        :0]     p_stage_0_d     [0:8]   ;
+reg     [K-1        :0]     a_stage_0_d     [0:8]   ;
 reg                         carry_stage_0_d [0:8]   ;
 reg     [ADDR_W-1   :0]     i_cnt_stage_0_d [0:8]   ;
 reg     [ADDR_W     :0]     j_cnt_stage_0_d [0:8]   ;

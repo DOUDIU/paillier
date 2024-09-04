@@ -11,18 +11,17 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="154.167 ns"></ZoomStartTime>
-      <ZoomEndTime time="579.168 ns"></ZoomEndTime>
-      <Cursor1Time time="379.167 ns"></Cursor1Time>
+      <ZoomStartTime time="463.500 ns"></ZoomStartTime>
+      <ZoomEndTime time="676.601 ns"></ZoomEndTime>
+      <Cursor1Time time="515.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="309"></NameColumnWidth>
-      <ValueColumnWidth column_width="94"></ValueColumnWidth>
+      <NameColumnWidth column_width="307"></NameColumnWidth>
+      <ValueColumnWidth column_width="90"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="43" />
+   <WVObjectSize size="44" />
    <wave_markers>
-      <marker time="335000" label="" />
-      <marker time="225000" label="" />
+      <marker time="515000" label="" />
    </wave_markers>
    <wvobject type="divider" fp_name="divider57">
       <obj_property name="label">POTRS</obj_property>
@@ -99,6 +98,10 @@
          <obj_property name="ObjectShortName">j_cnt[4:0]</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/loop_en" type="logic">
+         <obj_property name="ElementShortName">loop_en</obj_property>
+         <obj_property name="ObjectShortName">loop_en</obj_property>
+      </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/a" type="array">
          <obj_property name="ElementShortName">a[255:0]</obj_property>
          <obj_property name="ObjectShortName">a[255:0]</obj_property>
@@ -135,13 +138,39 @@
          <obj_property name="ElementShortName">mux_mul_y[255:0]</obj_property>
          <obj_property name="ObjectShortName">mux_mul_y[255:0]</obj_property>
       </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/result_x_mul_y_adv" type="array">
+         <obj_property name="ElementShortName">result_x_mul_y_adv[511:0]</obj_property>
+         <obj_property name="ObjectShortName">result_x_mul_y_adv[511:0]</obj_property>
+      </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/result_q_update" type="array">
-         <obj_property name="ElementShortName">result_q_update[511:0]</obj_property>
-         <obj_property name="ObjectShortName">result_q_update[511:0]</obj_property>
+         <obj_property name="ElementShortName">result_q_update[255:0]</obj_property>
+         <obj_property name="ObjectShortName">result_q_update[255:0]</obj_property>
       </wvobject>
       <wvobject type="divider" fp_name="divider1065">
          <obj_property name="label">prepare</obj_property>
          <obj_property name="DisplayName">label</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_0_d" type="array">
+         <obj_property name="ElementShortName">i_cnt_stage_0_d[0:10][3:0]</obj_property>
+         <obj_property name="ObjectShortName">i_cnt_stage_0_d[0:10][3:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_0_d[0]" type="array">
+         <obj_property name="ElementShortName">[0][3:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_0_d" type="array">
+         <obj_property name="ElementShortName">j_cnt_stage_0_d[0:10][4:0]</obj_property>
+         <obj_property name="ObjectShortName">j_cnt_stage_0_d[0:10][4:0]</obj_property>
+      </wvobject>
+      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_0_d[0]" type="array">
+         <obj_property name="ElementShortName">[0][4:0]</obj_property>
+         <obj_property name="ObjectShortName">[0][4:0]</obj_property>
+         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="CustomSignalColor">#00FFFF</obj_property>
+         <obj_property name="UseCustomSignalColor">true</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/x_reg" type="array">
          <obj_property name="ElementShortName">x_reg[255:0]</obj_property>
@@ -185,10 +214,6 @@
          <obj_property name="UseCustomSignalColor">true</obj_property>
          <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
       </wvobject>
-      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/carry_stage_0_d" type="array">
-         <obj_property name="ElementShortName">carry_stage_0_d[0:10]</obj_property>
-         <obj_property name="ObjectShortName">carry_stage_0_d[0:10]</obj_property>
-      </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/a_stage_0_d" type="array">
          <obj_property name="ElementShortName">a_stage_0_d[0:10][255:0]</obj_property>
          <obj_property name="ObjectShortName">a_stage_0_d[0:10][255:0]</obj_property>
@@ -210,22 +235,12 @@
          <obj_property name="DisplayName">label</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_1_d" type="array">
-         <obj_property name="ElementShortName">i_cnt_stage_1_d[0:1][3:0]</obj_property>
-         <obj_property name="ObjectShortName">i_cnt_stage_1_d[0:1][3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_1_d[0]" type="array">
-         <obj_property name="ElementShortName">[0][3:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="ElementShortName">i_cnt_stage_1_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">i_cnt_stage_1_d[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_1_d" type="array">
-         <obj_property name="ElementShortName">j_cnt_stage_1_d[0:1][4:0]</obj_property>
-         <obj_property name="ObjectShortName">j_cnt_stage_1_d[0:1][4:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_1_d[0]" type="array">
-         <obj_property name="ElementShortName">[0][4:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][4:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="ElementShortName">j_cnt_stage_1_d[4:0]</obj_property>
+         <obj_property name="ObjectShortName">j_cnt_stage_1_d[4:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/s" type="array">
          <obj_property name="ElementShortName">s[511:0]</obj_property>
@@ -236,30 +251,20 @@
          <obj_property name="DisplayName">label</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_2_d" type="array">
-         <obj_property name="ElementShortName">i_cnt_stage_2_d[0:5][3:0]</obj_property>
-         <obj_property name="ObjectShortName">i_cnt_stage_2_d[0:5][3:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/i_cnt_stage_2_d[0]" type="array">
-         <obj_property name="ElementShortName">[0][3:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][3:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="ElementShortName">i_cnt_stage_2_d[3:0]</obj_property>
+         <obj_property name="ObjectShortName">i_cnt_stage_2_d[3:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_2_d" type="array">
-         <obj_property name="ElementShortName">j_cnt_stage_2_d[0:5][4:0]</obj_property>
-         <obj_property name="ObjectShortName">j_cnt_stage_2_d[0:5][4:0]</obj_property>
-      </wvobject>
-      <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_2_d[0]" type="array">
-         <obj_property name="ElementShortName">[0][4:0]</obj_property>
-         <obj_property name="ObjectShortName">[0][4:0]</obj_property>
-         <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+         <obj_property name="ElementShortName">j_cnt_stage_2_d[4:0]</obj_property>
+         <obj_property name="ObjectShortName">j_cnt_stage_2_d[4:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/buf_temp" type="array">
          <obj_property name="ElementShortName">buf_temp[512:0]</obj_property>
          <obj_property name="ObjectShortName">buf_temp[512:0]</obj_property>
       </wvobject>
       <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/r_stage_1_d" type="array">
-         <obj_property name="ElementShortName">r_stage_1_d[0:1][511:0]</obj_property>
-         <obj_property name="ObjectShortName">r_stage_1_d[0:1][511:0]</obj_property>
+         <obj_property name="ElementShortName">r_stage_1_d[511:0]</obj_property>
+         <obj_property name="ObjectShortName">r_stage_1_d[511:0]</obj_property>
       </wvobject>
       <wvobject type="divider" fp_name="divider456">
          <obj_property name="label">Pipe 3</obj_property>
@@ -405,5 +410,9 @@
    <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/dual_port_ram_a/rd_data" type="array">
       <obj_property name="ElementShortName">rd_data[255:0]</obj_property>
       <obj_property name="ObjectShortName">rd_data[255:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/j_cnt_stage_0_d" type="array">
+      <obj_property name="ElementShortName">j_cnt_stage_0_d[0:10][4:0]</obj_property>
+      <obj_property name="ObjectShortName">j_cnt_stage_0_d[0:10][4:0]</obj_property>
    </wvobject>
 </wave_config>

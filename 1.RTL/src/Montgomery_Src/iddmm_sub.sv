@@ -1,23 +1,23 @@
 module iddmm_sub#(
-        parameter K = 128
-    ,   parameter N = 32
+        parameter K = 256
+    ,   parameter N = 16
     ,   parameter ADDR_W = $clog2(N)
 )(
         input                           clk
     ,   input                           rst_n
 
     ,   input       [ADDR_W-1:0]        sub_addr
-    ,   input       [127:0]             sub_a
-    ,   input       [127:0]             sub_b
+    ,   input       [K-1:0]             sub_a
+    ,   input       [K-1:0]             sub_b
 
     ,   output                          borrow_bit
-    ,   output      [127:0]             sub_result 
+    ,   output      [K-1:0]             sub_result 
 );
 
 //pipe stage 0
-wire    [128:0]         sub_tem_result;
+wire    [K  :0]         sub_tem_result;
 reg                     borrow_bit_reg;
-reg     [127:0]         sub_result_reg;
+reg     [K-1:0]         sub_result_reg;
 reg                     signed_reg;
 reg     [ADDR_W-1:0]    sub_addr_d1;
 
@@ -40,7 +40,7 @@ always@(posedge clk or negedge rst_n) begin
         borrow_bit_reg  <= 0;
     end
     else begin
-        borrow_bit_reg  <= !sub_tem_result[128];
+        borrow_bit_reg  <= !sub_tem_result[K];
     end
 end
 
@@ -49,7 +49,7 @@ always@(posedge clk or negedge rst_n) begin
         sub_result_reg  <= 0;
     end
     else begin
-        sub_result_reg  <= sub_tem_result[0+:128];
+        sub_result_reg  <= sub_tem_result[0+:K];
     end
 end
 

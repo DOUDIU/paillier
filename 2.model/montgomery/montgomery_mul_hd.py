@@ -253,9 +253,6 @@ def mont_iddmm(xx,yy,p,nbit,n):
 
             s = x_[j]*y_[i]
             print('{:x}'.format(s),end='\n',file=X_MUL_Y)
-            if (j==0) & (i!=n-1):
-                s_adv = x_[j]*y_[i+1]
-                print('{:x}'.format(s_adv),end='\n',file=X_MUL_Y_ADV)
 
             s = a[j]+s
             print('{:x}'.format(a[j]),end='\n',file=F_a)

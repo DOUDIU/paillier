@@ -29,6 +29,7 @@ wire    [K-1        :0]     y_adv           ;
 wire    [K-1        :0]     p               ;
 wire    [ADDR_W-1   :0]     i_cnt           ;
 wire    [ADDR_W     :0]     j_cnt           ;
+wire                        loop_en         ;
 wire    [ADDR_W     :0]     rd_data_addr_i  ;
 wire    [ADDR_W     :0]     rd_data_addr_j  ;
 
@@ -59,6 +60,7 @@ iddmm_ctrl iddmm_ctrl(
 
     ,   .i_cnt              (i_cnt              )
     ,   .j_cnt              (j_cnt              )
+    ,   .loop_en            (loop_en            )
 
     ,   .rd_data_addr_i     (rd_data_addr_i     )
     ,   .rd_data_addr_j     (rd_data_addr_j     )
@@ -78,6 +80,7 @@ iddmm_cal iddmm_cal(
 
     ,   .i_cnt              (i_cnt              )
     ,   .j_cnt              (j_cnt              )
+    ,   .loop_en            (loop_en            )
 
     ,   .a                  (a                  )
     ,   .x                  (x                  )

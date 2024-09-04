@@ -13,6 +13,7 @@ module iddmm_ctrl#(
 
     ,   output  reg [ADDR_W-1   :0]     i_cnt
     ,   output  reg [ADDR_W     :0]     j_cnt
+    ,   output  reg                     loop_en
 
     ,   output      [ADDR_W     :0]     rd_data_addr_i
     ,   output      [ADDR_W     :0]     rd_data_addr_j
@@ -33,9 +34,19 @@ assign      rd_data_addr_i  =   i_cnt_reg;
 assign      rd_data_addr_j  =   j_cnt_reg;
 assign      task_res        =   cal_sign ? fifo_rd_data_sub : fifo_rd_data_a;
 
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        loop_en         <=  0;
+    end
+    else begin
+        loop_en         <=  state_now == STA_LOOP;
+    end
+end
+
 typedef enum logic [3:0] {
     STA_IDLE                    ,
-    STA_START                   ,
+    STA_UPDATE_Q                ,
+    STA_LOOP                    ,
     STA_WAIT                    ,
     STA_OUTPUT
 } FSM_STATE;
@@ -56,18 +67,26 @@ always@(*) begin
     case(state_now)
         STA_IDLE: begin
             if(!task_req_d1 & task_req) begin
-                state_next  =   STA_START;
+                state_next  =   STA_UPDATE_Q;
             end
             else begin
                 state_next  =   STA_IDLE;
             end
         end
-        STA_START: begin
+        STA_UPDATE_Q: begin
+            if((i_cnt_reg == N - 1) && (j_cnt_reg == N)) begin
+                state_next  =   STA_LOOP;
+            end
+            else begin
+                state_next  =   STA_UPDATE_Q;
+            end
+        end
+        STA_LOOP: begin
             if((i_cnt_reg == N - 1) && (j_cnt_reg == N)) begin
                 state_next  =   STA_WAIT;
             end
             else begin
-                state_next  =   STA_START;
+                state_next  =   STA_LOOP;
             end
         end
         STA_WAIT: begin
@@ -114,12 +133,8 @@ always@(posedge clk or negedge rst_n) begin
                 fifo_rd_en      <=  0;
                 task_grant      <=  0;
                 task_end        <=  0;
-                if(state_next == STA_START) begin
-                    i_cnt_reg       <=  0;
-                    j_cnt_reg       <=  0;
-                end
             end
-            STA_START: begin
+            STA_UPDATE_Q, STA_LOOP: begin
                 i_cnt_reg       <=  j_cnt_reg == N ? i_cnt_reg + 1 : i_cnt_reg;
                 j_cnt_reg       <=  j_cnt_reg == N ? 0 : j_cnt_reg + 1;
             end

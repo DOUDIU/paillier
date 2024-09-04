@@ -200,6 +200,7 @@ module iddmm_mul_256_to_512(
     ,   input           [255    :0]     x
     ,   input           [255    :0]     y
     ,   output  reg     [511    :0]     result
+    ,   output          [255    :0]     result_low
 );
 wire [23:0]x10 = x[240   +:16];
 wire [23:0]x9  = x[216   +:24];
@@ -813,6 +814,8 @@ always @(posedge clk or negedge rst_n) begin
         sum_s4_1    <=  sum_s3_2 + (sum_s3_3 << 80);// << 264
     end
 end
+
+assign result_low = sum_s4_0[255:0];
 
 //pipe 5
 always @(posedge clk or negedge rst_n) begin

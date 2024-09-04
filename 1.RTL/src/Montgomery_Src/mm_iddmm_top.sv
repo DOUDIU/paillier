@@ -20,8 +20,8 @@
 //function:result = x*y mod m
 
 module mm_iddmm_top#(
-        parameter K                     = 128
-    ,   parameter N                     = 32
+        parameter K                     = 256
+    ,   parameter N                     = 16
     ,   parameter OUTSIDE_MONTGOMERY    = 0
 )(
         input                       clk         
@@ -73,9 +73,9 @@ wire    [K-1    : 0]    mm_m1_n                     ;
 wire    [K-1    : 0]    mm_m1_inv                   ;
 
 //m1=(-1*(mod_inv(m,2**K)))%2**K
-assign  mm_m1_n2    =   128'hb885007f9c90c3f3beb79b92378fe7f;
-assign  mm_m1_n     =   128'hf14bf14f3b9eb93fcfc300c2853938c1;
-assign  mm_m1_inv   =   128'h9070cb8b8be9930f83c3fe53c21784b1;
+assign  mm_m1_n2    =   256'hfc098670116ae3786b7d01c293d0911f0b885007f9c90c3f3beb79b92378fe7f;
+assign  mm_m1_n     =   256'h2e5ee427ce6bae493e142efa51be92aef14bf14f3b9eb93fcfc300c2853938c1;
+assign  mm_m1_inv   =   256'hbecd8da400b4d1c8d19fef3b89f04d489070cb8b8be9930f83c3fe53c21784b1;
 
 wire    [2              : 0]    wr_ena                  ;
 reg                             wr_ena_x                ;

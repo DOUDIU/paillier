@@ -1,7 +1,7 @@
 module mm_iddmm_top_tb();
 
-localparam K       = 128 ;
-localparam N       = 32  ;
+localparam K       = 256 ;
+localparam N       = 16  ;
 
 reg     clk = 0;
 reg     rst_n = 0;
@@ -69,7 +69,7 @@ task single_request(input num);
     mm_type     <=  num;
     @(posedge clk);
     mm_start    <=  0;
-    for(integer i = 0; i < 32; i = i + 1) begin
+    for(integer i = 0; i < N; i = i + 1) begin
         @(posedge clk);
         mm_x        <=  big_x[num][i*K+:K];
         mm_y        <=  big_y[num][i*K+:K];

@@ -658,17 +658,6 @@ reg [511:0] sum_s1_31;
 reg [511:0] sum_s1_32;
 reg [511:0] sum_s1_33;
 reg [511:0] sum_s1_34;
-reg [511:0] sum_s1_35;
-reg [511:0] sum_s1_36;
-reg [511:0] sum_s1_37;
-reg [511:0] sum_s1_38;
-reg [511:0] sum_s1_39;
-reg [511:0] sum_s1_40;
-reg [511:0] sum_s1_41;
-reg [511:0] sum_s1_42;
-reg [511:0] sum_s1_43;
-reg [511:0] sum_s1_44;
-reg [511:0] sum_s1_45;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -707,70 +696,43 @@ always @(posedge clk or negedge rst_n) begin
         sum_s1_32   <=  0;
         sum_s1_33   <=  0;
         sum_s1_34   <=  0;
-        sum_s1_35   <=  0;
-        sum_s1_36   <=  0;
-        sum_s1_37   <=  0;
-        sum_s1_38   <=  0;
-        sum_s1_39   <=  0;
-        sum_s1_40   <=  0;
-        sum_s1_41   <=  0;
-        sum_s1_42   <=  0;
-        sum_s1_43   <=  0;
-        sum_s1_44   <=  0;
-        sum_s1_45   <=  0;
     end
     else begin
-        sum_s1_0    <= x0y0 + (x0y1 << 16); 
-        sum_s1_1    <= x1y0 + (x0y2 << 8);// << 24
-        sum_s1_2    <= x1y1 + ((x0y3 + x2y0) << 8);// << 40
-        sum_s1_3    <= x1y2 + ((x0y4 + x2y1) << 8);// << 56
-        sum_s1_4    <= (x1y3 + x3y0) + ((x2y2 + x0y5) << 8);// << 72
-        sum_s1_5    <= (x1y4 + x3y1) + ((x0y6 + x2y3 + x4y0) << 8);// << 88
-        sum_s1_6    <= (x1y5 + x3y2) + ((x0y7 + x2y4 + x4y1) << 8);// << 104
-        sum_s1_7    <= x1y6 + x3y3 + x5y0; // << 120
-
-        sum_s1_8    <= x0y8 + x2y5 + x4y2; // << 128
-        sum_s1_9    <= x1y7 + x3y4 + x5y1;// << 136
-        sum_s1_10   <= x0y9 + x2y6 + x4y3 + x6y0;// << 144
-        sum_s1_11   <= x1y8 + x3y5 + x5y2;// << 152
-        sum_s1_12   <= x0y10 + x2y7 + x4y4 + x6y1;// << 160
-        sum_s1_13   <= x1y9 + x3y6 + x5y3 + x7y0;// << 168
-        sum_s1_14   <= x0y11 + x2y8 + x4y5 + x6y2;// << 176
-        sum_s1_15   <= x1y10 + x3y7 + x5y4 + x7y1;// << 184
-
-        sum_s1_16   <= x0y12 + x2y9 + x4y6 + x6y3 + x8y0;// << 192
-        sum_s1_17   <= x1y11 + x3y8 + x5y5 + x7y2;// << 200
-        sum_s1_18   <= x0y13 + x2y10 + x4y7 + x6y4 + x8y1;// << 208
-        sum_s1_19   <= x1y12 + x3y9 + x5y6 + x7y3 + x9y0;// << 216
-        sum_s1_20   <= x2y11 + x0y14 + x4y8 + x6y5 + x8y2;// << 224
-        sum_s1_21   <= x1y13 + x3y10 + x5y7 + x7y4 + x9y1;// << 232
-        sum_s1_22   <= x0y15 + x2y12 + x4y9 + x6y6 + x8y3 + x10y0;// << 240
-        sum_s1_23   <= x1y14 + x3y11 + x5y8 + x7y5 + x9y2;// << 248
-
-        sum_s1_24   <= x2y13 + x4y10 + x6y7 + x8y4 + x10y1;// << 256
-        sum_s1_25   <= x1y15 + x3y12 + x5y9 + x7y6 + x9y3;// << 264
-        sum_s1_26   <= x2y14 + x4y11 + x6y8 + x8y5 + x10y2;// << 272
-        sum_s1_27   <= x3y13 + x5y10 + x7y7 + x9y4;// << 280
-        sum_s1_28   <= x2y15 + x4y12 + x6y9 + x8y6 + x10y3;// << 288
-        sum_s1_29   <= x3y14 + x5y11 + x7y8 + x9y5;// << 296
-        sum_s1_30   <= x4y13 + x6y10 + x8y7 + x10y4;// << 304
-        sum_s1_31   <= x3y15 + x5y12 + x7y9 + x9y6;// << 312
-
-        sum_s1_32   <= x4y14 + x6y11 + x8y8 + x10y5;// << 320
-        sum_s1_33   <= x5y13 + x7y10 + x9y7;// << 328
-        sum_s1_34   <= x4y15 + x6y12 + x8y9 + x10y6;// << 336
-        sum_s1_35   <= x5y14 + x7y11 + x9y8;// << 344
-        sum_s1_36   <= x6y13 + x8y10 + x10y7;// << 352
-        sum_s1_37   <= x5y15 + x7y12 + x9y9;// << 360
-        sum_s1_38   <= x6y14 + x8y11 + x10y8;// << 368
-        sum_s1_39   <= x7y13 + x9y10;// << 376
-
-        sum_s1_40   <= x6y15 + x8y12 + x10y9;// << 384
-        sum_s1_41   <= x7y14 + x9y11 + ((x8y13 + x10y10) << 8);// << 392
-        sum_s1_42   <= x7y15 + x9y12 + ((x8y14 + x10y11) << 8);// << 408
-        sum_s1_43   <= x9y13 + ((x8y15 + x10y12) << 8);// << 424
-        sum_s1_44   <= x9y14 + (x10y13 << 8);// << 440
-        sum_s1_45   <= x9y15 + (x10y14 << 8) + (x10y15 << 24);// << 456
+        sum_s1_0    <= x0y0 + (x0y1 << 16) + ((x1y0 + (x0y2 << 8)) << 24); // << 0
+        sum_s1_1    <= x1y1 + ((x0y3 + x2y0) << 8) + ((x1y2 + ((x0y4 + x2y1) << 8)) << 16);// << 40
+        sum_s1_2    <= (x1y3 + x3y0) + ((x2y2 + x0y5) << 8) + ((x1y4 + x3y1) << 16);// << 72
+        sum_s1_3    <= (x0y6 + x2y3 + x4y0) + ((x1y5 + x3y2) << 8);// << 96
+        sum_s1_4    <= (x0y7 + x2y4 + x4y1) + ((x1y6 + x3y3 + x5y0) << 8);// << 112
+        sum_s1_5    <= (x0y8 + x2y5 + x4y2) + ((x1y7 + x3y4 + x5y1) << 8);// << 128
+        sum_s1_6    <= x0y9 + x2y6 + x4y3 + x6y0;// << 144
+        sum_s1_7    <= x1y8 + x3y5 + x5y2;// << 152
+        sum_s1_8    <= x0y10 + x2y7 + x4y4 + x6y1 + ((x1y9 + x3y6) << 8);// << 160
+        sum_s1_9    <= x5y3 + x7y0 + ((x0y11 + x2y8 + x4y5 + x6y2) << 8);// << 168
+        sum_s1_10   <= x1y10 + x3y7 + x5y4 + x7y1;// << 184
+        sum_s1_11   <= x0y12 + x2y9 + x4y6 + x6y3 + x8y0;// << 192
+        sum_s1_12   <= x1y11 + x3y8 + x5y5 + x7y2;// << 200
+        sum_s1_13   <= x0y13 + x2y10 + x4y7 + x6y4 + x8y1;// << 208
+        sum_s1_14   <= x1y12 + x3y9 + x5y6 + x7y3 + x9y0;// << 216
+        sum_s1_15   <= x2y11 + x0y14 + x4y8 + x6y5 + x8y2;// << 224
+        sum_s1_16   <= x1y13 + x3y10 + x5y7 + x7y4 + x9y1;// << 232
+        sum_s1_17   <= x0y15 + x2y12 + x4y9 + x6y6 + x8y3 + x10y0;// << 240
+        sum_s1_18   <= x1y14 + x3y11 + x5y8 + x7y5 + x9y2;// << 248
+        sum_s1_19   <= x2y13 + x4y10 + x6y7 + x8y4 + x10y1;// << 256
+        sum_s1_20   <= x1y15 + x3y12 + x5y9 + x7y6 + x9y3;// << 264
+        sum_s1_21   <= x2y14 + x4y11 + x6y8 + x8y5 + x10y2;// << 272
+        sum_s1_22   <= x3y13 + x5y10 + x7y7 + x9y4;// << 280
+        sum_s1_23   <= x2y15 + x4y12 + x6y9 + x8y6 + x10y3;// << 288
+        sum_s1_24   <= x3y14 + x5y11 + x7y8 + x9y5 + ((x4y13 + x6y10) << 8);// << 296
+        sum_s1_25   <= x8y7 + x10y4 + ((x3y15 + x5y12 + x7y9 + x9y6) << 8);// << 304
+        sum_s1_26   <= x4y14 + x6y11 + x8y8 + x10y5 + ((x5y13 + x7y10) << 8);// << 320
+        sum_s1_27   <= x9y7 + ((x4y15 + x6y12 + x8y9 + x10y6) << 8);// << 328
+        sum_s1_28   <= (x5y14 + x7y11 + x9y8) + ((x6y13 + x8y10 + x10y7) << 8);// << 344
+        sum_s1_29   <= (x5y15 + x7y12 + x9y9) + ((x6y14 + x8y11 + x10y8) << 8);// << 360
+        sum_s1_30   <= (x7y13 + x9y10) + ((x6y15 + x8y12 + x10y9) << 8);// << 376
+        sum_s1_31   <= x7y14 + x9y11 + ((x8y13 + x10y10) << 8);// << 392
+        sum_s1_32   <= x7y15 + x9y12 + ((x8y14 + x10y11) << 8) + ((x9y13) << 16);// << 408
+        sum_s1_33   <= x8y15 + x10y12 + ((x9y14) << 8) + ((x10y13) << 16);// << 432
+        sum_s1_34   <= x9y15 + (x10y14 << 8) + (x10y15 << 24);// << 456
     end
 end
 
@@ -787,17 +749,6 @@ reg [511 :0]  sum_s2_8;
 reg [511 :0]  sum_s2_9;
 reg [511 :0]  sum_s2_10;
 reg [511 :0]  sum_s2_11;
-reg [511 :0]  sum_s2_12;
-reg [511 :0]  sum_s2_13;
-reg [511 :0]  sum_s2_14;
-reg [511 :0]  sum_s2_15;
-reg [511 :0]  sum_s2_16;
-reg [511 :0]  sum_s2_17;
-reg [511 :0]  sum_s2_18;
-reg [511 :0]  sum_s2_19;
-reg [511 :0]  sum_s2_20;
-reg [511 :0]  sum_s2_21;
-reg [511 :0]  sum_s2_22;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -813,47 +764,17 @@ always @(posedge clk or negedge rst_n) begin
         sum_s2_9    <=  0;
         sum_s2_10   <=  0;
         sum_s2_11   <=  0;
-        sum_s2_12   <=  0;
-        sum_s2_13   <=  0;
-        sum_s2_14   <=  0;
-        sum_s2_15   <=  0;
-        sum_s2_16   <=  0;
-        sum_s2_17   <=  0;
-        sum_s2_18   <=  0;
-        sum_s2_19   <=  0;
-        sum_s2_20   <=  0;
-        sum_s2_21   <=  0;
-        sum_s2_22   <=  0;
     end
     else begin
-        sum_s2_0    <=  sum_s1_0 + (sum_s1_1 << 24);// << 0
-        sum_s2_1    <=  sum_s1_2 + (sum_s1_3 << 16);// << 40
-        sum_s2_2    <=  sum_s1_4 + (sum_s1_5 << 16);// << 72
-        sum_s2_3    <=  sum_s1_6 + (sum_s1_7 << 16);// << 104
-
-        sum_s2_4    <=  sum_s1_8 + (sum_s1_9 << 8);// << 128
-        sum_s2_5    <=  sum_s1_10 + (sum_s1_11 << 8);// << 144
-        sum_s2_6    <=  sum_s1_12 + (sum_s1_13 << 8);// << 160
-        sum_s2_7    <=  sum_s1_14 + (sum_s1_15 << 8);// << 176
-
-        sum_s2_8    <=  sum_s1_16 + (sum_s1_17 << 8);// << 192
-        sum_s2_9    <=  sum_s1_18 + (sum_s1_19 << 8);// << 208
-        sum_s2_10   <=  sum_s1_20 + (sum_s1_21 << 8);// << 224
-        sum_s2_11   <=  sum_s1_22 + (sum_s1_23 << 8);// << 240
-
-        sum_s2_12   <=  sum_s1_24 + (sum_s1_25 << 8);// << 256
-        sum_s2_13   <=  sum_s1_26 + (sum_s1_27 << 8);// << 272
-        sum_s2_14   <=  sum_s1_28 + (sum_s1_29 << 8);// << 288
-        sum_s2_15   <=  sum_s1_30 + (sum_s1_31 << 8);// << 304
-
-        sum_s2_16   <=  sum_s1_32 + (sum_s1_33 << 8);// << 320
-        sum_s2_17   <=  sum_s1_34 + (sum_s1_35 << 8);// << 336
-        sum_s2_18   <=  sum_s1_36 + (sum_s1_37 << 8);// << 352
-        sum_s2_19   <=  sum_s1_38 + (sum_s1_39 << 8);// << 368
-
-        sum_s2_20   <=  sum_s1_40 + (sum_s1_41 << 8);// << 384
-        sum_s2_21   <=  sum_s1_42 + (sum_s1_43 << 16);// << 408
-        sum_s2_22   <=  sum_s1_44 + (sum_s1_45 << 16);// << 440
+        sum_s2_0    <=  sum_s1_0 + (sum_s1_1 << 40) + (sum_s1_2 << 72) + (sum_s1_3 << 96);// << 0
+        sum_s2_1    <=  sum_s1_4 + (sum_s1_5 << 16) + (sum_s1_6 << 32) + (sum_s1_7 << 40);// << 112
+        sum_s2_2    <=  sum_s1_8 + (sum_s1_9 << 8) + (sum_s1_10 << 24) + (sum_s1_11 << 32);// << 160
+        sum_s2_3    <=  sum_s1_12 + (sum_s1_13 << 8) + (sum_s1_14 << 16) + (sum_s1_15 << 24);// << 200
+        sum_s2_4    <=  sum_s1_16 + (sum_s1_17 << 8) + (sum_s1_18 << 16) + (sum_s1_19 << 24);// << 232
+        sum_s2_5    <=  sum_s1_20 + (sum_s1_21 << 8) + (sum_s1_22 << 16) + (sum_s1_23 << 24);// << 264
+        sum_s2_6    <=  sum_s1_24 + (sum_s1_25 << 8) + (sum_s1_26 << 24) + (sum_s1_27 << 32);// << 296
+        sum_s2_7    <=  sum_s1_28 + (sum_s1_29 << 16) + (sum_s1_30 << 32) + (sum_s1_31 << 48);// << 344
+        sum_s2_8    <=  sum_s1_32 + (sum_s1_33 << 24) + (sum_s1_34 << 48);// << 408
     end
 end
 
@@ -862,14 +783,6 @@ reg [511 :0]  sum_s3_0;
 reg [511 :0]  sum_s3_1;
 reg [511 :0]  sum_s3_2;
 reg [511 :0]  sum_s3_3;
-reg [511 :0]  sum_s3_4;
-reg [511 :0]  sum_s3_5;
-reg [511 :0]  sum_s3_6;
-reg [511 :0]  sum_s3_7;
-reg [511 :0]  sum_s3_8;
-reg [511 :0]  sum_s3_9;
-reg [511 :0]  sum_s3_10;
-reg [511 :0]  sum_s3_11;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -877,100 +790,37 @@ always @(posedge clk or negedge rst_n) begin
         sum_s3_1    <=  0;
         sum_s3_2    <=  0;
         sum_s3_3    <=  0;
-        sum_s3_4    <=  0;
-        sum_s3_5    <=  0;
-        sum_s3_6    <=  0;
-        sum_s3_7    <=  0;
-        sum_s3_8    <=  0;
-        sum_s3_9    <=  0;
-        sum_s3_10   <=  0;
-        sum_s3_11   <=  0;
     end
     else begin
-        sum_s3_0    <=  sum_s2_0 + (sum_s2_1 << 40);// << 0
-        sum_s3_1    <=  sum_s2_2 + (sum_s2_3 << 32);// << 72
-        sum_s3_2    <=  sum_s2_4 + (sum_s2_5 << 16);// << 128
-        sum_s3_3    <=  sum_s2_6 + (sum_s2_7 << 16);// << 160
-
-        sum_s3_4    <=  sum_s2_8 + (sum_s2_9 << 16);// << 192
-        sum_s3_5    <=  sum_s2_10 + (sum_s2_11 << 16);// << 224
-        sum_s3_6    <=  sum_s2_12 + (sum_s2_13 << 16);// << 256
-        sum_s3_7    <=  sum_s2_14 + (sum_s2_15 << 16);// << 288
-
-        sum_s3_8    <=  sum_s2_16 + (sum_s2_17 << 16);// << 320
-        sum_s3_9    <=  sum_s2_18 + (sum_s2_19 << 16);// << 352
-        sum_s3_10   <=  sum_s2_20 + (sum_s2_21 << 24);// << 384
-        sum_s3_11   <=  sum_s2_22;// << 440
+        sum_s3_0    <=  sum_s2_0 + (sum_s2_1 << 112);// << 0
+        sum_s3_1    <=  sum_s2_2 + (sum_s2_3 << 40) + (sum_s2_4 << 72);// << 160
+        sum_s3_2    <=  sum_s2_5 + (sum_s2_6 << 32);// << 264
+        sum_s3_3    <=  sum_s2_7 + (sum_s2_8 << 64);// << 344
     end
 end
 
 // pipe 4
 reg [511 :0]  sum_s4_0;
 reg [511 :0]  sum_s4_1;
-reg [511 :0]  sum_s4_2;
-reg [511 :0]  sum_s4_3;
-reg [511 :0]  sum_s4_4;
-reg [511 :0]  sum_s4_5;
 
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         sum_s4_0    <=  0;
         sum_s4_1    <=  0;
-        sum_s4_2    <=  0;
-        sum_s4_3    <=  0;
-        sum_s4_4    <=  0;
-        sum_s4_5    <=  0;
     end
     else begin
-        sum_s4_0    <=  sum_s3_0 + (sum_s3_1 << 72);
-        sum_s4_1    <=  sum_s3_2 + (sum_s3_3 << 32);// << 128
-        sum_s4_2    <=  sum_s3_4 + (sum_s3_5 << 32);// << 192
-        sum_s4_3    <=  sum_s3_6 + (sum_s3_7 << 32);// << 256
-        sum_s4_4    <=  sum_s3_8 + (sum_s3_9 << 32);// << 320
-        sum_s4_5    <=  sum_s3_10 + (sum_s3_11 << 56);// << 384
+        sum_s4_0    <=  sum_s3_0 + (sum_s3_1 << 160);// << 0
+        sum_s4_1    <=  sum_s3_2 + (sum_s3_3 << 80);// << 264
     end
 end
 
 //pipe 5
-reg [511 :0]  sum_s5_0;
-reg [511 :0]  sum_s5_1;
-reg [511 :0]  sum_s5_2;
-
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        sum_s5_0    <=  0;
-        sum_s5_1    <=  0;
-        sum_s5_2    <=  0;
-    end
-    else begin
-        sum_s5_0    <=  sum_s4_0 + (sum_s4_1 << 128);
-        sum_s5_1    <=  sum_s4_2 + (sum_s4_3 << 64);// << 192
-        sum_s5_2    <=  sum_s4_4 + (sum_s4_5 << 64);// << 320
-    end
-end
-
-//pipe 6
-reg [511 :0]  sum_s6_0;
-reg [511 :0]  sum_s6_1;
-
-always @(posedge clk or negedge rst_n) begin
-    if(!rst_n) begin
-        sum_s6_0    <=  0;
-        sum_s6_1    <=  0;
-    end
-    else begin
-        sum_s6_0    <=  sum_s5_0;
-        sum_s6_1    <=  sum_s5_1 + (sum_s5_2 << 128);// << 192
-    end
-end
-
-//pipe 7
 always @(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         result      <=  0;
     end
     else begin
-        result      <=  sum_s6_0 + (sum_s6_1 << 192);
+        result      <=  sum_s4_0 + (sum_s4_1 << 264);
     end
 end
 

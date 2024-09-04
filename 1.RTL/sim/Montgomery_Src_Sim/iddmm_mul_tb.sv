@@ -25,7 +25,7 @@ task test_256_to_512();
         @(posedge clk);
     end
     assert(result == result_confirm)
-        // $display("Right:");
+        $display("Right:");
     else begin
         $display("Error: ");
         $display("result_confirm: %x",result_confirm);

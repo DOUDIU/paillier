@@ -30,37 +30,72 @@ module iddmm_cal#(
 );
 integer i,j,k;
 
-wire    [K-1    :0] u                       ;
-wire    [K      :0] c                       ;
-reg                 carry                   ;
-reg                 carry_last              ;
+wire    [K-1        :0]     u               ;
+wire    [K          :0]     c               ;
+reg                         carry           ;
+reg                         carry_last      ;
 
-// //q_calculation
-// //pipe stage 0 ( 8 cycles )
+reg     [K-1        :0]     p1_d1           ;
+always@(posedge clk or negedge rst_n) begin//The delay operation is used to optimize the timing.
+    if(!rst_n) begin
+        p1_d1 <= 0;
+    end
+    else begin
+        p1_d1 <= p1;
+    end
+end
 
-// reg     [K-1        :0]     p1_d1                   ;
-// reg     [K-1        :0]     mux_mul_x       ;
-// reg     [K-1        :0]     mux_mul_y       ;
+//q_calculation
+reg     [K-1        :0]     mux_mul_x           ;
+reg     [K-1        :0]     mux_mul_y           ;
+wire    [2*K-1      :0]     result_q_update     ;
+reg     [2*K-1      :0]     result_x_mul_y_adv  ;
 
-// iddmm_mul_256_to_512 iddmm_mul_q_update(
-//         .clk            (clk    )
-//     ,   .rst_n          (rst_n  )
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        result_x_mul_y_adv  <= 0;
+    end
+    else if((i_cnt == 0) & (j_cnt == 7)) begin
+        result_x_mul_y_adv  <= result_q_update;
+    end
+end
 
-//     ,   .x              ()
-//     ,   .y              ()
-//     ,   .result         ()
-// );
-// always@(posedge clk or negedge rst_n) begin//The delay operation is used to optimize the timing.
-//     if(!rst_n) begin
-//         p1_d1 <= 0;
-//     end
-//     else begin
-//         p1_d1 <= p1;
-//     end
-// end
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        mux_mul_x <= 0;
+        mux_mul_y <= 0;
+    end
+    else if((i_cnt == 0) & (j_cnt == 0)) begin
+        mux_mul_x <= x;
+        mux_mul_y <= y_adv;
+    end
+    else if((i_cnt_stage_3_d == 0) & (j_cnt_stage_3_d == 1))begin
+        mux_mul_x <= c;
+        mux_mul_y <= p1;
+    end
+    else begin
+        mux_mul_x <= 0;
+        mux_mul_y <= 0;
+    end
+end
 
+iddmm_mul_256_to_512 iddmm_mul_q_update(
+        .clk            (clk            )
+    ,   .rst_n          (rst_n          )
 
-//pipe stage 0 ( 8 cycles )
+    ,   .x              (mux_mul_x      )
+    ,   .y              (mux_mul_y      )
+    ,   .result         (result_q_update)
+);
+
+wire [255:0]    q;
+assign q = 256'h2e717d940fc87c4aa30d7acf3576bbc5ce4b7b95f0ae64d12d45da44c71b4120;
+//pipe stage 0 ( 6 cycles )
+reg     [K-1        :0]     x_reg                   ;
+reg     [K-1        :0]     y_reg                   ;
+reg     [K-1        :0]     q_reg                   ;
+reg     [K-1        :0]     p_reg                   ;
+
 wire    [2*K-1      :0]     result_x_mul_y          ;
 wire    [2*K-1      :0]     result_q_mul_p          ;
 
@@ -70,19 +105,26 @@ reg                         carry_stage_0_d [0:10]  ;
 reg     [ADDR_W-1   :0]     i_cnt_stage_0_d [0:10]  ;
 reg     [ADDR_W     :0]     j_cnt_stage_0_d [0:10]  ;
 
+always@(posedge clk) begin
+    x_reg       <= x;
+    y_reg       <= y;
+    q_reg       <= q;
+    p_reg       <= p;
+end
+
 iddmm_mul_256_to_512 iddmm_mul_0(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
-    ,   .x              (x              )
-    ,   .y              (y              )
+    ,   .x              (x_reg          )
+    ,   .y              (y_reg          )
     ,   .result         (result_x_mul_y )
 );
 
 iddmm_mul_256_to_512 iddmm_mul_1(
         .clk            (clk            )
     ,   .rst_n          (rst_n          )
-    ,   .x              (x              )//supposed to be q
-    ,   .y              (p              )
+    ,   .x              (q_reg          )
+    ,   .y              (p_reg          )
     ,   .result         (result_q_mul_p )
 );
 
@@ -98,7 +140,7 @@ always@(posedge clk or negedge rst_n) begin
     end
     else begin
         p_stage_0_d[0] <= p;
-        a_stage_0_d[0] <= a;
+        a_stage_0_d[0] <= (j_cnt == N) ? (a + carry) : a;
         carry_stage_0_d[0] <= carry;
         i_cnt_stage_0_d[0] <= i_cnt;
         j_cnt_stage_0_d[0] <= j_cnt;
@@ -112,22 +154,21 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-//pipe stage 1 ( 2 cycles )
+//pipe stage 1 ( 1 cycles )
 reg     [2*K-1      :0]     s                    ;
 reg     [2*K-1      :0]     r_stage_1_d     [0:1];
 reg     [K-1        :0]     p_stage_1_d     [0:1];
 reg     [ADDR_W-1   :0]     i_cnt_stage_1_d [0:1];
 reg     [ADDR_W     :0]     j_cnt_stage_1_d [0:1];
 
-iddmm_adder1 iddmm_adder1(
-        .clk            (clk                )
-    ,   .rst_n          (rst_n              )
-    ,   .j_cnt          (j_cnt_stage_0_d[10])
-    ,   .adder_a        (result_x_mul_y     )
-    ,   .adder_b        (a_stage_0_d[10]    )
-    ,   .carry_in       (carry_stage_0_d[10])
-    ,   .adder_result   (s                  )
-);
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        s <= 0;
+    end
+    else begin
+        s <= result_x_mul_y + a_stage_0_d[6];
+    end
+end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -140,9 +181,9 @@ always@(posedge clk or negedge rst_n) begin
     end
     else begin
         r_stage_1_d[0] <= result_q_mul_p;
-        p_stage_1_d[0] <= p_stage_0_d[10];
-        i_cnt_stage_1_d[0] <= i_cnt_stage_0_d[10];
-        j_cnt_stage_1_d[0] <= j_cnt_stage_0_d[10];
+        p_stage_1_d[0] <= p_stage_0_d[6];
+        i_cnt_stage_1_d[0] <= i_cnt_stage_0_d[6];
+        j_cnt_stage_1_d[0] <= j_cnt_stage_0_d[6];
         for(i = 1; i < 2; i = i + 1)begin
             r_stage_1_d[i] <= r_stage_1_d[i - 1];
             i_cnt_stage_1_d[i] <= i_cnt_stage_1_d[i - 1];
@@ -152,7 +193,7 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 //pipe stage 2 ( 1 cycles )
-reg     [2*K-1      :0]     buf_temp                ;
+reg     [2*K        :0]     buf_temp                ;
 reg     [K-1        :0]     p_stage_2_d     [0:5]   ;
 reg     [ADDR_W-1   :0]     i_cnt_stage_2_d [0:5]   ;
 reg     [ADDR_W     :0]     j_cnt_stage_2_d [0:5]   ;
@@ -162,7 +203,7 @@ always@(posedge clk or negedge rst_n) begin
         buf_temp <= 0;
     end
     else begin
-        buf_temp <= r_stage_1_d[1] + s;
+        buf_temp <= r_stage_1_d[0] + s;
     end
 end
 
@@ -175,9 +216,9 @@ always@(posedge clk or negedge rst_n) begin
         end
     end
     else begin
-        p_stage_2_d[0] <= p_stage_1_d[1];
-        i_cnt_stage_2_d[0] <= i_cnt_stage_1_d[1];
-        j_cnt_stage_2_d[0] <= j_cnt_stage_1_d[1];
+        p_stage_2_d[0] <= p_stage_1_d[0];
+        i_cnt_stage_2_d[0] <= i_cnt_stage_1_d[0];
+        j_cnt_stage_2_d[0] <= j_cnt_stage_1_d[0];
         for(i = 1; i < 6; i = i + 1)begin
             i_cnt_stage_2_d[i] <= i_cnt_stage_2_d[i - 1];
             j_cnt_stage_2_d[i] <= j_cnt_stage_2_d[i - 1];
@@ -191,14 +232,14 @@ reg     [K-1        :0]     p_stage_3_d;
 reg     [ADDR_W-1   :0]     i_cnt_stage_3_d;
 reg     [ADDR_W     :0]     j_cnt_stage_3_d;
 assign u = buf0[0  +:256];
-assign c = buf0[256+:129];
+assign c = buf0[256+:257];
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         buf0 <= 0;
     end
     else begin
-        buf0 <= buf_temp + buf0[256+:129];
+        buf0 <= buf_temp + buf0[256+:257];
     end
 end
 
@@ -216,9 +257,9 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 //pipe stage 4 ( 1 cycle )
-reg     [K-1        :0]     p_stage_6_d;
-reg     [ADDR_W-1   :0]     i_cnt_stage_6_d;
-reg     [ADDR_W     :0]     j_cnt_stage_6_d;
+reg     [K-1        :0]     p_stage_4_d;
+reg     [ADDR_W-1   :0]     i_cnt_stage_4_d;
+reg     [ADDR_W     :0]     j_cnt_stage_4_d;
 
 reg                         wr_a_en_reg;
 reg     [ADDR_W     :0]     wr_a_addr_reg;
@@ -226,7 +267,7 @@ reg     [K-1        :0]     wr_a_data_reg;
 
 assign  wr_a_en         =   wr_a_en_reg;
 assign  wr_a_addr       =   wr_a_addr_reg;
-assign  wr_a_data       =   i_cnt_stage_6_d == N - 1 ? 0 : wr_a_data_reg;
+assign  wr_a_data       =   i_cnt_stage_4_d == N - 1 ? 0 : wr_a_data_reg;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
@@ -263,14 +304,14 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        p_stage_6_d <= 0;
-        i_cnt_stage_6_d <= 0;
-        j_cnt_stage_6_d <= 0;
+        p_stage_4_d <= 0;
+        i_cnt_stage_4_d <= 0;
+        j_cnt_stage_4_d <= 0;
     end
     else begin
-        p_stage_6_d <= p_stage_3_d;
-        i_cnt_stage_6_d <= i_cnt_stage_3_d;
-        j_cnt_stage_6_d <= j_cnt_stage_3_d;
+        p_stage_4_d <= p_stage_3_d;
+        i_cnt_stage_4_d <= i_cnt_stage_3_d;
+        j_cnt_stage_4_d <= j_cnt_stage_3_d;
     end
 end
 
@@ -290,7 +331,7 @@ always@(posedge clk or negedge rst_n) begin
         fifo_wr_en_a_reg        <= 0;
         fifo_wr_data_a_reg      <= 0;
     end
-    else if(i_cnt_stage_6_d == N - 1) begin
+    else if(i_cnt_stage_4_d == N - 1) begin
         fifo_wr_en_a_reg        <= wr_a_en_reg;
         fifo_wr_data_a_reg      <= wr_a_data_reg;
     end
@@ -307,9 +348,9 @@ always@(posedge clk or negedge rst_n) begin
         j_cnt_stage_7_d <= 0;
     end
     else begin
-        p_stage_7_d <= p_stage_6_d;
-        i_cnt_stage_7_d <= i_cnt_stage_6_d;
-        j_cnt_stage_7_d <= j_cnt_stage_6_d;
+        p_stage_7_d <= p_stage_4_d;
+        i_cnt_stage_7_d <= i_cnt_stage_4_d;
+        j_cnt_stage_7_d <= j_cnt_stage_4_d;
     end
 end
 

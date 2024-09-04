@@ -94,8 +94,8 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        i_cnt_reg       <=  0;
-        j_cnt_reg       <=  0;
+        i_cnt_reg       <=  N-1;
+        j_cnt_reg       <=  2*N-1;
         i_cnt           <=  0;
         j_cnt           <=  0;
         output_cnt      <=  0;
@@ -110,20 +110,22 @@ always@(posedge clk or negedge rst_n) begin
         task_req_d1     <=  task_req;
         case(state_now)
             STA_IDLE: begin
-                i_cnt_reg       <=  0;
-                j_cnt_reg       <=  0;
                 output_cnt      <=  0;
                 fifo_rd_en      <=  0;
                 task_grant      <=  0;
                 task_end        <=  0;
+                if(state_next == STA_START) begin
+                    i_cnt_reg       <=  0;
+                    j_cnt_reg       <=  0;
+                end
             end
             STA_START: begin
                 i_cnt_reg       <=  j_cnt_reg == N ? i_cnt_reg + 1 : i_cnt_reg;
                 j_cnt_reg       <=  j_cnt_reg == N ? 0 : j_cnt_reg + 1;
             end
             STA_WAIT: begin
-                i_cnt_reg       <=  0;
-                j_cnt_reg       <=  0;
+                i_cnt_reg       <=  N-1;
+                j_cnt_reg       <=  2*N-1;
             end
             STA_OUTPUT: begin
                 output_cnt      <=  output_cnt + 1;
@@ -134,8 +136,8 @@ always@(posedge clk or negedge rst_n) begin
                 end
             end
             default: begin
-                i_cnt_reg       <=  0;
-                j_cnt_reg       <=  0;
+                i_cnt_reg       <=  N-1;
+                j_cnt_reg       <=  2*N-1;
                 i_cnt           <=  0;
                 j_cnt           <=  0;
                 output_cnt      <=  0;

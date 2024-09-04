@@ -82,6 +82,7 @@ iddmm_cal iddmm_cal(
     ,   .a                  (a                  )
     ,   .x                  (x                  )
     ,   .y                  (y                  )
+    ,   .y_adv              (y_adv              )
     ,   .p                  (p                  )
     ,   .p1                 (wr_m1              )
 

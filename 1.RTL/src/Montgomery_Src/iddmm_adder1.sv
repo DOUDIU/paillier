@@ -1,6 +1,6 @@
 module iddmm_adder1#(
-        parameter K = 128
-    ,   parameter N = 32
+        parameter K = 256
+    ,   parameter N = 16
     ,   parameter ADDR_W = $clog2(N)
 )(
         input                   clk
@@ -8,15 +8,15 @@ module iddmm_adder1#(
 
     ,   input   [ADDR_W :0]     j_cnt
 
-    ,   input   [255    :0]     adder_a
-    ,   input   [127    :0]     adder_b
+    ,   input   [2*K-1  :0]     adder_a
+    ,   input   [K-1    :0]     adder_b
     ,   input                   carry_in
 
-    ,   output  [255    :0]     adder_result
+    ,   output  [2*K-1  :0]     adder_result
 );
 
-reg     [255    :0]     adder_a_d1;
-reg     [128    :0]     add_b_carry;
+reg     [2*K-1  :0]     adder_a_d1;
+reg     [K      :0]     add_b_carry;
 
 //pipe 0
 always@(posedge clk or negedge rst_n) begin
@@ -41,7 +41,7 @@ always@(posedge clk or negedge rst_n) begin
 end
 
 //pipe 1
-reg [255    :0]     adder_result_reg;
+reg [2*K-1  :0]     adder_result_reg;
 assign adder_result = adder_result_reg;
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin

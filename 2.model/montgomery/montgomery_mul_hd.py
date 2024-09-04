@@ -221,6 +221,8 @@ def mont_iddmm(xx,yy,p,nbit,n):
         
     X_MUL_Y = open("X_MUL_Y.txt",'w').close()
     X_MUL_Y = open("X_MUL_Y.txt",'a',encoding="utf-8")
+    X_MUL_Y_ADV = open("X_MUL_Y_ADV.txt",'w').close()
+    X_MUL_Y_ADV = open("X_MUL_Y_ADV.txt",'a',encoding="utf-8")
     F_S = open("s.txt",'w').close()
     F_S = open("s.txt",'a',encoding="utf-8")
     F_Q = open("q.txt",'w').close()
@@ -238,6 +240,7 @@ def mont_iddmm(xx,yy,p,nbit,n):
     for i in range(n):
         c = 0
         print('Record X_MUL_Y, i ={:x}'.format(i),end='\n',file=X_MUL_Y)
+        print('Record X_MUL_Y_ADV, i ={:x}'.format(i),end='\n',file=X_MUL_Y_ADV)
         print('Record S, i ={:x}'.format(i),end='\n',file=F_S)
         print('Record q, i ={:x}'.format(i),end='\n',file=F_Q)
         print('Record Q_MUL_P, i ={:x}'.format(i),end='\n',file=F_Q_MUL_P)
@@ -250,6 +253,9 @@ def mont_iddmm(xx,yy,p,nbit,n):
 
             s = x_[j]*y_[i]
             print('{:x}'.format(s),end='\n',file=X_MUL_Y)
+            if (j==0) & (i!=n-1):
+                s_adv = x_[j]*y_[i+1]
+                print('{:x}'.format(s_adv),end='\n',file=X_MUL_Y_ADV)
 
             s = a[j]+s
             print('{:x}'.format(a[j]),end='\n',file=F_a)

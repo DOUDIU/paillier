@@ -23,8 +23,8 @@
 //function:result = x^^y mod m
 
 module me_iddmm_top#(
-        parameter K                     = 128
-    ,   parameter N                     = 32
+        parameter K                     = 256
+    ,   parameter N                     = 16
     ,   parameter OUTSIDE_MONTGOMERY    = 0
 )(
         input                       clk         
@@ -57,7 +57,7 @@ localparam ADDR_W   =   $clog2(N);
 wire    [K-1    : 0]    me_m1                       ;
 reg     [K-1    : 0]    yy                          ;
 
-assign  me_m1       =   128'hb885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
+assign  me_m1       =   256'hfc098670116ae3786b7d01c293d0911f0b885007f9c90c3f3beb79b92378fe7f;//m1=(-1*(mod_inv(m,2**K)))%2**K
 
 typedef enum logic [3:0] {
     IDLE                        ,

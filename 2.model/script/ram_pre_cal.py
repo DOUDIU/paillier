@@ -1,4 +1,5 @@
 import gmpy2
+import math
 K = 256
 N = 16
 
@@ -82,6 +83,17 @@ def ram_pre_dec():
     inv_val = gmpy2.invert(n, dec_inv_m)
     file_path = '1.RTL/data/ram_dec_inv_val.txt'
     data_seperate_printf_new(inv_val,K,N,0,file_path)
+
+    file_path = '1.RTL/data/ram_N.txt'
+    data_seperate_printf_new(n,K,N,0,file_path)
+
+    lamda = math.lcm(p - 1, q - 1)
+    file_path = '1.RTL/data/ram_lamda.txt'
+    data_seperate_printf_new(lamda,K,N,0,file_path)
+    
+    mu = gmpy2.invert(lamda, n)
+    file_path = '1.RTL/data/ram_mu.txt'
+    data_seperate_printf_new(mu,K,N,0,file_path)
 
 if __name__=='__main__':
     ram_pre_cal_me_n2()

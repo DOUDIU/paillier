@@ -1,6 +1,6 @@
 module montgomery_iddmm_top#(
-        parameter K             = 128
-    ,   parameter N             = 32
+        parameter K             = 256
+    ,   parameter N             = 16
 )(
         input                   clk
     ,   input                   rst_n

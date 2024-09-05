@@ -1,8 +1,8 @@
 module paillier_axi_top#(
 // Users to add parameters here
-        parameter BLOCK_COUNT   = 29
-	,	parameter K             = 128
-    ,   parameter N             = 32
+        parameter BLOCK_COUNT   = 8
+	,	parameter K             = 256
+    ,   parameter N             = 16
 //----------------------------------------------------
 // parameter of AXI-FULL slave port
 		// Base address of targeted slave

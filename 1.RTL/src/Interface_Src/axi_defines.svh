@@ -10,12 +10,12 @@
     `endif
 
     `ifndef AXI_DATA_WIDTH
-        `define AXI_DATA_WIDTH 128
+        `define AXI_DATA_WIDTH 256
     `endif
 
     `ifndef AXI_BURST_LEN
         // Burst Length. Supports 1, 2, 4, 8, 16, 32, 64, 128, 256 burst lengths
-        `define AXI_BURST_LEN 32
+        `define AXI_BURST_LEN 16
     `endif
 
     `ifndef AXI_LITE_ADDR_WIDTH

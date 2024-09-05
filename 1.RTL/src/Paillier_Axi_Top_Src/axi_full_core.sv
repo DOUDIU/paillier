@@ -21,9 +21,9 @@
 
 
 module axi_full_core#(
-	 	parameter BLOCK_COUNT 	=	18
-	,	parameter K 			=	128
-	,	parameter N				=	32
+	 	parameter BLOCK_COUNT 	=	8
+	,	parameter K 			=	256
+	,	parameter N				=	16
 
 	// Base address of targeted slave
 	,   parameter  TARGET_RD_ADDR	= 0
@@ -194,7 +194,7 @@ module axi_full_core#(
 	//read beat count in a burst
 	reg  [C_TRANSACTIONS_NUM : 0] 	read_index;
 	//size of `AXI_BURST_LEN length burst in bytes
-	wire [C_TRANSACTIONS_NUM+4 : 0] 	burst_size_bytes;
+	wire [C_TRANSACTIONS_NUM+5 : 0] 	burst_size_bytes;
 	//The burst counters are used to track the number of burst transfers of `AXI_BURST_LEN burst length needed to transfer 2^C_MASTER_LENGTH bytes of data.
 	reg  [C_NO_BURSTS_REQ : 0] 	write_burst_counter;
 	reg  [C_NO_BURSTS_REQ : 0] 	read_burst_counter;
@@ -265,7 +265,7 @@ module axi_full_core#(
 	//Read and Read Response (R)
 	assign AXI_FULL_IF.AXI_RREADY	= axi_rready;
 	//Burst size in bytes
-	assign burst_size_bytes	= `AXI_BURST_LEN * `AXI_DATA_WIDTH / 8;
+	assign burst_size_bytes	= (`AXI_BURST_LEN) * (`AXI_DATA_WIDTH) / 8;
 	// assign init_txn_pulse	= (!init_txn_ff2) && init_txn_ff;
 
 	//--------------------
@@ -929,9 +929,9 @@ module axi_full_core#(
 					task_req[block_lowest_zero_bit]			<=	0;
 					block_target_addr[block_is_busy_next]	<=	loop_counter << 9;//target wr address = loop_counter * 4096 / 8
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
-						enc_m_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						enc_m_data	[block_is_busy_next]	<=	read_index < (N / 2) ? (single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_m_valid	[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						enc_r_data	[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						enc_r_data	[block_is_busy_next]	<=	read_index < (N / 2) ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						enc_r_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin
@@ -1113,7 +1113,7 @@ module axi_full_core#(
 					if(AXI_FULL_IF.AXI_RVALID && axi_rready) begin
 						scalar_mul_c1			[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	AXI_FULL_IF.AXI_RDATA : 0;
 						scalar_mul_c1_valid		[block_is_busy_next]	<=	single_task_read_cnt ==	0 ?	1 : 0;
-						scalar_mul_const		[block_is_busy_next]	<=	read_index < 16 ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
+						scalar_mul_const		[block_is_busy_next]	<=	read_index < (N / 2) ? (single_task_read_cnt !=	0 ?	AXI_FULL_IF.AXI_RDATA : 0) : 0;//The code "read_index < 16?" is employed to extend the valid signal to 32 cycles.
 						scalar_mul_const_valid	[block_is_busy_next]	<=	single_task_read_cnt !=	0 ?	1 : 0;
 					end
 					else begin

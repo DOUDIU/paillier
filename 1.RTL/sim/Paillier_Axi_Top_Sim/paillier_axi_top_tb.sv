@@ -12,7 +12,7 @@ tvip_axi_if AXI_FULL_IF(M_AXI_ACLK, M_AXI_ARESETN);
 tvip_axi_if AXI_LITE_IF(S_LITE_AXI_ACLK, S_LITE_AXI_ARESETN);
 
 localparam _DATA_WIDTH_ = 32;
-localparam _PERIOD_ = 5;
+localparam _PERIOD_ = 4;
 initial begin
     M_AXI_ACLK      <=  0;
     M_AXI_ARESETN   <=  0;
@@ -26,16 +26,16 @@ end
 assign  S_LITE_AXI_ACLK     =   M_AXI_ACLK;
 assign  S_LITE_AXI_ARESETN  =   M_AXI_ARESETN;
 
-parameter   K                       = 128;
-parameter   N                       = 32;
+parameter   K                       = 256;
+parameter   N                       = 16;
 
 localparam  STA_ENCRYPTION          = 2'b00,
             STA_DECRYPTION          = 2'b01,
             STA_HOMOMORPHIC_ADD     = 2'b10,
             STA_SCALAR_MUL          = 2'b11;
 
-parameter   PAILLIER_MODE           = STA_ENCRYPTION;
-parameter   BLOCK_COUNT             = 5;
+parameter   PAILLIER_MODE           = STA_DECRYPTION;
+parameter   BLOCK_COUNT             = 3;
 parameter   TEST_TIMES              = 3;
 
 initial begin

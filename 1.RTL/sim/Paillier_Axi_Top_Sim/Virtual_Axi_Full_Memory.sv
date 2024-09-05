@@ -64,7 +64,7 @@
 	//ADDR_LSB = 2 for 32 bits (n downto 2) 
 	//ADDR_LSB = 3 for 42 bits (n downto 3)
 
-	localparam integer ADDR_LSB = (`AXI_DATA_WIDTH/32);
+	localparam integer ADDR_LSB = $clog2(`AXI_DATA_WIDTH/8);
 	localparam integer OPT_MEM_ADDR_BITS = 24-ADDR_LSB;//the address number = 80Mb/8 = 10485760(24bits)
 	localparam integer USER_NUM_MEM = 1;
 	//----------------------------------------------

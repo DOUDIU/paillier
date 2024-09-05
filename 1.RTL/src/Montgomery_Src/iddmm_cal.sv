@@ -131,7 +131,6 @@ iddmm_mul_256_to_512 iddmm_mul_1(
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         for(i = 0; i < 11; i = i + 1)begin
-            a_stage_0_d[i]      <= 0;
             p_stage_0_d[i]      <= 0;
             i_cnt_stage_0_d[i]  <= 0;
             j_cnt_stage_0_d[i]  <= 0;
@@ -140,13 +139,11 @@ always@(posedge clk or negedge rst_n) begin
     end
     else begin
         p_stage_0_d[0] <= p;
-        a_stage_0_d[0] <= (j_cnt == N) ? (a + carry) : a;
         i_cnt_stage_0_d[0] <= i_cnt;
         j_cnt_stage_0_d[0] <= j_cnt;
         loop_en_stage_0_d[0] <= loop_en;
         for(i = 1; i < 11; i = i + 1)begin
             p_stage_0_d[i] <= p_stage_0_d[i - 1];
-            a_stage_0_d[i] <= a_stage_0_d[i - 1];
             i_cnt_stage_0_d[i] <= i_cnt_stage_0_d[i - 1];
             j_cnt_stage_0_d[i] <= j_cnt_stage_0_d[i - 1];
             loop_en_stage_0_d[i] <= loop_en_stage_0_d[i - 1];

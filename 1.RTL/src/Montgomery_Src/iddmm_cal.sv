@@ -50,7 +50,6 @@ end
 reg     [K-1        :0]     mux_mul_x           ;
 reg     [K-1        :0]     mux_mul_x_reg       ;
 reg     [K-1        :0]     mux_mul_y           ;
-reg     [2*K-1      :0]     result_x_mul_y_adv  ;
 wire    [K-1        :0]     result_q_update     ;
 
 always@(posedge clk or negedge rst_n) begin
@@ -58,7 +57,7 @@ always@(posedge clk or negedge rst_n) begin
         mux_mul_x_reg   <= 0;
     end
     else begin
-        mux_mul_x_reg   <= u + result_x_mul_y_adv;
+        mux_mul_x_reg   <= u + result_q_update;
     end
 end
 
@@ -72,7 +71,7 @@ always@(posedge clk or negedge rst_n) begin
         mux_mul_y <= y_adv;
     end
     else if((i_cnt_stage_3_d == N - 1) & (j_cnt_stage_3_d == 1))begin
-        mux_mul_x <= result_x_mul_y_adv;
+        mux_mul_x <= result_q_update;
         mux_mul_y <= p1;
     end
     else if((j_cnt_stage_3_d == 2) & loop_en_stage_3_d)begin //delay 1 cycle, after the mux_mul_x_reg is calculated
@@ -81,14 +80,12 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
-iddmm_mul_256_to_512 iddmm_mul_q_update(
+iddmm_mul_256_to_256 iddmm_mul_q_update(
         .clk            (clk                )
     ,   .rst_n          (rst_n              )
-
     ,   .x              (mux_mul_x          )
     ,   .y              (mux_mul_y          )
-    ,   .result         (result_x_mul_y_adv )
-    ,   .result_low     (result_q_update    )
+    ,   .result         (result_q_update    )
 );
 
 //pipe stage 0 ( 7 cycles )

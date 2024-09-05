@@ -154,6 +154,34 @@ always@(posedge clk or negedge rst_n) begin
     end
 end
 
+reg     [K-1        :0]     a_tem                       ;
+reg     [K-1        :0]     a_d1                        ;
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        a_tem <= 0;
+        a_d1 <= 0;
+    end
+    else begin
+        a_tem <= a + carry;
+        a_d1 <= a;
+    end
+end
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 0; i < 11; i = i + 1)begin
+            a_stage_0_d[i]      <= 0;
+        end
+    end
+    else begin
+        a_stage_0_d[0] <= (j_cnt_stage_0_d[0] == N) ? a_tem : a_d1;
+        for(i = 1; i < 11; i = i + 1)begin
+            a_stage_0_d[i] <= a_stage_0_d[i - 1];
+        end
+    end
+end
+
 //pipe stage 1 ( 1 cycles )
 reg     [2*K-1      :0]     s                    ;
 reg     [2*K-1      :0]     r_stage_1_d          ;
@@ -167,7 +195,7 @@ always@(posedge clk or negedge rst_n) begin
         s <= 0;
     end
     else begin
-        s <= result_x_mul_y + a_stage_0_d[6];
+        s <= result_x_mul_y + a_stage_0_d[6-1];
     end
 end
 

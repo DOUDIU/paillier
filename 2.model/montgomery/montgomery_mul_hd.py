@@ -261,8 +261,10 @@ def mont_iddmm(xx,yy,p,nbit,n):
                 s = s+carry
             print('{:x}'.format(s),end='\n',file=F_S)
 
-            if j==0:
-                q = mm(s,k)*mm(p1,k)%beta#the number of DSPs could be optimized.
+            if j==0:#the number of DSPs could be optimized.
+                q=(mm(x_[j]*y_[i],k)+a[j])*mm(p1,k)
+                q = mm(q,k)
+                # q = mm(s,k)*mm(p1,k)%beta
             print('{:x}'.format(q),end='\n',file=F_Q)
 
             r   = q*p_[j]

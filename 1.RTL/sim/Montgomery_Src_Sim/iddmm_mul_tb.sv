@@ -4,6 +4,7 @@ reg                 clk         = 0 ;
 reg                 rst_n       = 0 ;
 reg     [255:0]     mul_x       = 0 ;
 reg     [255:0]     mul_y       = 0 ;
+wire    [255:0]     result_low      ;
 wire    [511:0]     result          ;
 
 wire    [511:0]     result_confirm;
@@ -21,15 +22,16 @@ task test_256_to_512();
         mul_x[i+:32]    <=  $random;
         mul_y[i+:32]    <=  $random;
     end
-    for(i = 0; i < 10; i = i + 1)begin
+    for(i = 0; i < 8; i = i + 1)begin
         @(posedge clk);
     end
-    assert(result == result_confirm)
+    assert((result == result_confirm) && (result_low == result_confirm[255:0]))
         $display("Right:");
     else begin
         $display("Error: ");
         $display("result_confirm: %x",result_confirm);
         $display("result_output : %x",result);
+        $display("result_output_low : %x",result_low);
     end
 endtask
 
@@ -49,5 +51,11 @@ iddmm_mul_256_to_512 iddmm_mul_256_to_512_inst(
     ,   .y              (mul_y          )
     ,   .result         (result         )
 );
-
+iddmm_mul_256_to_256 iddmm_mul_256_to_256_inst(
+        .clk            (clk            )
+    ,   .rst_n          (rst_n          )
+    ,   .x              (mul_x          )
+    ,   .y              (mul_y          )
+    ,   .result         (result_low     )
+);
 endmodule

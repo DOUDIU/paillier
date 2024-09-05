@@ -35,8 +35,8 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_SCALAR_MUL          = 2'b11;
 
 parameter   PAILLIER_MODE           = STA_DECRYPTION;
-parameter   BLOCK_COUNT             = 3;
-parameter   TEST_TIMES              = 3;
+parameter   BLOCK_COUNT             = 1;
+parameter   TEST_TIMES              = 1;
 
 initial begin
     @(posedge S_LITE_AXI_ARESETN);

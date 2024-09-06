@@ -34,7 +34,7 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_HOMOMORPHIC_ADD     = 2'b10,
             STA_SCALAR_MUL          = 2'b11;
 
-parameter   PAILLIER_MODE           = STA_DECRYPTION;
+parameter   PAILLIER_MODE           = STA_SCALAR_MUL;
 parameter   BLOCK_COUNT             = 1;
 parameter   TEST_TIMES              = 1;
 

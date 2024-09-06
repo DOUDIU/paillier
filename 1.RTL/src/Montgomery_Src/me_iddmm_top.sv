@@ -174,7 +174,6 @@ always@(posedge clk or negedge rst_n) begin
     end
     else begin
         ram_y_wr_en         <=  0;
-        ram_y_wr_addr       <=  0-1;
         ram_y_wr_data       <=  0;
     end
 end

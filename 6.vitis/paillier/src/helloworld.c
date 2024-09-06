@@ -52,7 +52,6 @@
 #include "xparameters_ps.h"
 #include "xil_io.h"
 #include "xgpiops.h"
-#include "xgpio.h"
 #include <unistd.h>
 #include <stdbool.h>
 #include "xscugic.h"
@@ -63,17 +62,18 @@
 #include "xtime_l.h"
 
 #define DDR_BASEARDDR           XPAR_DDR_MEM_BASEADDR
-#define REGISTER_BASEARDDR      XPAR_PAILLIER_0_BASEADDR
-#define KEY_DEVICE_ID           XPAR_AXI_GPIO_0_DEVICE_ID
-#define LED_DEVICE_ID           XPAR_AXI_GPIO_1_DEVICE_ID
+#define REGISTER_BASEARDDR      0xA0020000//XPAR_PAILLIER_AXI_TOP_NOR_0_BASEADDR
 
 // #define XPAR_CPU_CORTEXA53_0_TIMESTAMP_CLK_FREQ 99990000
 #define COUNTS_PER_USECOND ( (COUNTS_PER_SECOND + 1000000/2 - 1 ) / 1000000 )
 #define COUNTS_PER_MSECOND ( (COUNTS_PER_SECOND + 1000/2 - 1 ) / 1000 )
 
-XGpio LEDInst;
-XGpio KEYInst;
 static FATFS fatfs;
+
+typedef struct {
+    char *file_name;
+    int single_read_bytes;
+} file_info;
 
 int sd_mount();
 int platform_init_fs();
@@ -83,8 +83,8 @@ int sd_write_data(char *file_name,u32 src_addr,u32 byte_len);
 void wr_enc_to_ddr();
 void start_single_acceleration();
 int axi_gpio_init();
-void paillier_test();
-void read_sd_to_ddr();
+void paillier_enc_test();
+int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int read_counts);
 void read_ddr_to_sd();
 
 u32 enc_m [64] = {
@@ -222,7 +222,7 @@ u32 enc_r [64] = {
 };
 
 //single read byte counts
-#define COUNTS 256
+#define COUNTS 256 //2048 / 8
 #define loop_num 10
 u32 dest_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
 u32 src_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
@@ -234,12 +234,10 @@ u64 u64_sleep_us_passed = 0;
 int main(){
     init_platform();
     
-    axi_gpio_init();
-
     // Xil_DCacheDisable();
     // Xil_ICacheDisable();
 
-    paillier_test();
+    paillier_enc_test();
 
     while(1);
 
@@ -247,11 +245,14 @@ int main(){
     return 0;
 }
 
-void paillier_test(){
+void paillier_enc_test(){
+    file_info file_a = {"result_enc_m.bin", 2048/8};
+    file_info file_b = {"result_enc_r.bin", 2048/8};
+
 #ifdef SELF_TEST_MODE
     wr_enc_to_ddr();
 #else
-    read_sd_to_ddr();
+    read_sd_to_ddr(DDR_BASEARDDR, &file_a, &file_b, loop_num);
 #endif
 
     start_single_acceleration();
@@ -266,24 +267,13 @@ void read_ddr_to_sd(){
 
     f_open(&fil,"result_enc.bin", FA_CREATE_ALWAYS | FA_WRITE);
     f_lseek(&fil, 0);
-/*
-    //The following is usable. The reason has not been discovered yet.
-    // for(int j = 0; j < loop_num; j++){
-    //     target_addr = DDR_BASEARDDR + j * COUNTS * 2;
-    //     for(int i = COUNTS * 2 / 4 - 1; i >= 0; i--){
-    //         src_str[i] = Xil_In32(target_addr);
-    //         target_addr += 4;
-    //     }
-    //     f_write(&fil, (void*)src_str, 2 * COUNTS, &bw);
-    // }
-*/
     f_write(&fil, DDR_BASEARDDR, COUNTS * 2 * loop_num, &bw);
     f_close(&fil);
 
     printf("read ddr to sd finished\n");
 }
 
-void read_sd_to_ddr(){
+int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int read_counts){
     int status;
     status = sd_mount();
     if(status != XST_SUCCESS){
@@ -295,53 +285,39 @@ void read_sd_to_ddr(){
     UINT br;
     UINTPTR target_addr;
 
-    f_open(&fil, "result_enc_m.bin", FA_READ);
+    int OFFSET_ADDR = file_a->single_read_bytes + file_b->single_read_bytes;
+
+    f_open(&fil, file_a->file_name, FA_READ);
     f_lseek(&fil, 0);
-    for(int j = 0; j < loop_num; j++){
-        target_addr = DDR_BASEARDDR + j * COUNTS * 2;
-        f_read(&fil, (void*)(dest_str), COUNTS, &br);
-        for(int i = COUNTS / 4 - 1; i >= 0; i--){
+    for(int j = 0; j < read_counts; j++){
+        target_addr = BASE_ARDDR + j * OFFSET_ADDR;
+        f_read(&fil, (void*)(dest_str), file_a->single_read_bytes, &br);
+        for(int i = file_a->single_read_bytes / 4 - 1; i >= 0; i--){
             Xil_Out32(target_addr, Xil_EndianSwap32(dest_str[i]));
             target_addr += 4;
         }
     }
     f_close(&fil);
 
-    target_addr = DDR_BASEARDDR + COUNTS;
-    f_open(&fil, "result_enc_r.bin", FA_READ);
+    if(file_b->file_name == "none"){    
+        Xil_DCacheFlushRange(BASE_ARDDR, OFFSET_ADDR * read_counts);
+        return 1;
+    }
+
+    f_open(&fil, file_b->file_name, FA_READ);
     f_lseek(&fil, 0);
-    for(int j = 0; j < loop_num; j++){
-        target_addr = DDR_BASEARDDR + COUNTS + j * COUNTS * 2;
-        f_read(&fil, (u32)(dest_str), COUNTS, &br);
-        for(int i = COUNTS / 4 - 1; i >= 0; i--){
+    for(int j = 0; j < read_counts; j++){
+        target_addr = BASE_ARDDR + file_a->single_read_bytes + j * OFFSET_ADDR;
+        f_read(&fil, (u32)(dest_str), file_b->single_read_bytes, &br);
+        for(int i = file_b->single_read_bytes / 4 - 1; i >= 0; i--){
             Xil_Out32(target_addr, Xil_EndianSwap32(dest_str[i]));
             target_addr += 4;
         }
     }
     f_close(&fil);
     
-    Xil_DCacheFlushRange(DDR_BASEARDDR, COUNTS * 2 * loop_num);
-
-/*
-  #ifdef SEQ_STORE
-    sd_read_data("result_enc_m.bin",(u32)(DDR_BASEARDDR), COUNTS);
-    sd_read_data("result_enc_r.bin",(u32)(DDR_BASEARDDR + COUNTS), COUNTS);
-    Xil_DCacheFlushRange(DDR_BASEARDDR, 512);
-  #else
-    UINTPTR target_addr = DDR_BASEARDDR;
-    sd_read_data("result_enc_m.bin",(u32)(dest_str), COUNTS);
-    for(int i = COUNTS / 4 - 1; i >= 0; i--){
-        Xil_Out32(target_addr, dest_str[i]);
-        target_addr += 4; 
-    }
-    sd_read_data("result_enc_r.bin",(u32)(dest_str), COUNTS);
-    for(int i = COUNTS / 4 - 1; i >= 0; i--){
-        Xil_Out32(target_addr, dest_str[i]);
-        target_addr += 4; 
-    }
-    Xil_DCacheFlushRange(DDR_BASEARDDR, 512);
-  #endif
-*/
+    Xil_DCacheFlushRange(BASE_ARDDR, OFFSET_ADDR * read_counts);
+    return 1;
 }
 
 void start_single_acceleration(){
@@ -372,21 +348,6 @@ void start_single_acceleration(){
     printf("acceleration finish\n");
 
     sleep(1);
-}
-
-int axi_gpio_init(){
-	int status;
-    status = XGpio_Initialize(&KEYInst, KEY_DEVICE_ID); // initial KEY
-    if(status != XST_SUCCESS)
-        printf("key_init failed\n");
-    status = XGpio_Initialize(&LEDInst, LED_DEVICE_ID);  // initial LED
-    if(status != XST_SUCCESS)
-        printf("led_init failed\n");
-        
-    // if(status != XST_SUCCESS) return XST_FAILURE;
-    XGpio_SetDataDirection(&KEYInst, 1, 3); // set KEY IO direction as in
-    XGpio_SetDataDirection(&LEDInst, 1, 0); // set LED IO direction as out
-    XGpio_DiscreteWrite(&LEDInst, 1, 0x03);// at initial, all LED turn off
 }
 
 void wr_enc_to_ddr(){

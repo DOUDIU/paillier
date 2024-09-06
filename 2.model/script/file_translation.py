@@ -23,14 +23,14 @@ def convert_endianness(hex_str):
     reversed_bytes = bytearray(reversed(byte_array))
     return ''.join(f'{b:02x}' for b in reversed_bytes)
 
-current_directory = './5.data'
-os.chdir('./5.data')
-current_directory = os.getcwd()
-txt_files = [f for f in os.listdir(current_directory) if f.endswith('.txt')]
-for file in txt_files:
-    print(file)
-    new_file = file.replace('.txt', '.bin')
-    hex_data_to_bin_file(file, new_file)
+current_directory = './data'
+os.chdir('./data')
+# current_directory = os.getcwd()
+# txt_files = [f for f in os.listdir(current_directory) if f.endswith('.txt')]
+# for file in txt_files:
+#     print(file)
+#     new_file = file.replace('.txt', '.bin')
+#     hex_data_to_bin_file(file, new_file)
 
 with open('result_enc.bin', 'rb') as bin_file:
     with open('result_enc_fpga_big_end.txt', 'w') as txt_file:

@@ -75,17 +75,26 @@ typedef struct {
     int single_read_bytes;
 } file_info;
 
+typedef enum {
+    PAILLIER_ENC,
+    PAILLIER_DEC,
+    PAILLIER_HOM_ADD,
+    PAILLIER_SCALAR_MUL
+} ACC_PAILLIER_TYPE;
+
+const char* ACC_TYPE_NAME[] = {"PAILLIER_ENC", "PAILLIER_DEC", "PAILLIER_HOM_ADD", "PAILLIER_SCALAR_MUL"};
+
 int sd_mount();
 int platform_init_fs();
 int sd_read_data(char *file_name,u32 src_addr,u32 byte_len);
 int sd_write_data(char *file_name,u32 src_addr,u32 byte_len);
 
 void wr_enc_to_ddr();
-void start_single_acceleration();
+void start_single_acceleration(int ACC_COUNTS, ACC_PAILLIER_TYPE TYPE);
 int axi_gpio_init();
-void paillier_enc_test();
-int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int read_counts);
-void read_ddr_to_sd();
+void paillier_enc_test(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, file_info *file_result, int ACC_COUNTS, ACC_PAILLIER_TYPE ACC_TYPE);
+int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int ACC_COUNTS);
+void read_ddr_to_sd(UINTPTR BASE_ARDDR, file_info *file_a, int ACC_COUNTS);
 
 u32 enc_m [64] = {
     0x65be121b,
@@ -222,10 +231,8 @@ u32 enc_r [64] = {
 };
 
 //single read byte counts
-#define COUNTS 256 //2048 / 8
-#define loop_num 10
-u32 dest_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
-u32 src_str[COUNTS / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
+u32 dest_str[4096 / 8 / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
+u32 src_str[4096 / 8 / 4] __attribute__ ((__aligned__(1024)));//aligned to 1024 bytes
 
 XTime xtTimeBegin, xtTimeEnd;
 u64 u64_sleep_cycles;
@@ -233,11 +240,14 @@ u64 u64_sleep_us_passed = 0;
 
 int main(){
     init_platform();
-    
-    // Xil_DCacheDisable();
-    // Xil_ICacheDisable();
 
-    paillier_enc_test();
+    int ACC_COUNTS = 100000;
+
+    file_info file_a = {"result_enc_m.bin", 2048/8};
+    file_info file_b = {"result_enc_r.bin", 2048/8};
+    file_info file_result = {"result_enc.bin", 4096/8};
+    ACC_PAILLIER_TYPE CURRENT_TYPE = PAILLIER_ENC;
+    paillier_enc_test(DDR_BASEARDDR, &file_a, &file_b, &file_result, ACC_COUNTS, CURRENT_TYPE);
 
     while(1);
 
@@ -245,35 +255,35 @@ int main(){
     return 0;
 }
 
-void paillier_enc_test(){
-    file_info file_a = {"result_enc_m.bin", 2048/8};
-    file_info file_b = {"result_enc_r.bin", 2048/8};
+void paillier_enc_test(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, file_info *file_result, int ACC_COUNTS, ACC_PAILLIER_TYPE ACC_TYPE){
 
 #ifdef SELF_TEST_MODE
     wr_enc_to_ddr();
 #else
-    read_sd_to_ddr(DDR_BASEARDDR, &file_a, &file_b, loop_num);
+    read_sd_to_ddr(DDR_BASEARDDR, file_a, file_b, ACC_COUNTS);
+    Xil_DCacheFlushRange(DDR_BASEARDDR, (file_a->single_read_bytes + file_b->single_read_bytes) * ACC_COUNTS);
 #endif
 
-    start_single_acceleration();
+    start_single_acceleration(ACC_COUNTS, ACC_TYPE);
+    Xil_DCacheFlushRange(DDR_BASEARDDR, (file_result->single_read_bytes) * ACC_COUNTS);
 
-    read_ddr_to_sd();
+    read_ddr_to_sd(DDR_BASEARDDR, file_result, ACC_COUNTS);
 }
 
-void read_ddr_to_sd(){
+void read_ddr_to_sd(UINTPTR BASE_ARDDR, file_info *file_result, int ACC_COUNTS){
     FIL fil;
     UINT bw;
     UINTPTR target_addr;
 
-    f_open(&fil,"result_enc.bin", FA_CREATE_ALWAYS | FA_WRITE);
+    f_open(&fil,file_result->file_name, FA_CREATE_ALWAYS | FA_WRITE);
     f_lseek(&fil, 0);
-    f_write(&fil, DDR_BASEARDDR, COUNTS * 2 * loop_num, &bw);
+    f_write(&fil, DDR_BASEARDDR, (file_result->single_read_bytes) * ACC_COUNTS, &bw);
     f_close(&fil);
 
     printf("read ddr to sd finished\n");
 }
 
-int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int read_counts){
+int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int ACC_COUNTS){
     int status;
     status = sd_mount();
     if(status != XST_SUCCESS){
@@ -289,7 +299,7 @@ int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int
 
     f_open(&fil, file_a->file_name, FA_READ);
     f_lseek(&fil, 0);
-    for(int j = 0; j < read_counts; j++){
+    for(int j = 0; j < ACC_COUNTS; j++){
         target_addr = BASE_ARDDR + j * OFFSET_ADDR;
         f_read(&fil, (void*)(dest_str), file_a->single_read_bytes, &br);
         for(int i = file_a->single_read_bytes / 4 - 1; i >= 0; i--){
@@ -299,14 +309,13 @@ int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int
     }
     f_close(&fil);
 
-    if(file_b->file_name == "none"){    
-        Xil_DCacheFlushRange(BASE_ARDDR, OFFSET_ADDR * read_counts);
+    if(file_b->file_name == "none"){
         return 1;
     }
 
     f_open(&fil, file_b->file_name, FA_READ);
     f_lseek(&fil, 0);
-    for(int j = 0; j < read_counts; j++){
+    for(int j = 0; j < ACC_COUNTS; j++){
         target_addr = BASE_ARDDR + file_a->single_read_bytes + j * OFFSET_ADDR;
         f_read(&fil, (u32)(dest_str), file_b->single_read_bytes, &br);
         for(int i = file_b->single_read_bytes / 4 - 1; i >= 0; i--){
@@ -315,23 +324,21 @@ int read_sd_to_ddr(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b, int
         }
     }
     f_close(&fil);
-    
-    Xil_DCacheFlushRange(BASE_ARDDR, OFFSET_ADDR * read_counts);
+
     return 1;
 }
 
-void start_single_acceleration(){
+void start_single_acceleration(int ACC_COUNTS, ACC_PAILLIER_TYPE TYPE){
     printf("the value of stop register: %d\n", Xil_In32(REGISTER_BASEARDDR + 4));
 
-    printf("write acceleration accounts\n");
-    Xil_Out32(REGISTER_BASEARDDR + 12, 0x0);
-    Xil_Out32(REGISTER_BASEARDDR + 8 , 0xa);
+    printf("write acceleration accounts: %d\n", ACC_COUNTS);
+    Xil_Out32(REGISTER_BASEARDDR + 8 , ACC_COUNTS);
 
-    printf("write acceleration types and start signal\n");
+    printf("write acceleration types and start signal: %s %d\n", ACC_TYPE_NAME[TYPE], 1);
 
     XTime_GetTime(&xtTimeBegin);
 
-    Xil_Out32(REGISTER_BASEARDDR, 0x1);
+    Xil_Out32(REGISTER_BASEARDDR, (0x1) | (TYPE << 1));
     Xil_Out32(REGISTER_BASEARDDR, 0x0);
 
     // printf("wait the stop signal is asserted\n");
@@ -342,8 +349,6 @@ void start_single_acceleration(){
     u64_sleep_us_passed = u64_sleep_cycles/(COUNTS_PER_USECOND);
     xil_printf("soft_operation_to_be_measured takes %d cycles\n", u64_sleep_cycles);
     xil_printf("equal to %d us\n", u64_sleep_us_passed);
-
-    Xil_DCacheFlushRange(DDR_BASEARDDR, COUNTS * 2 * loop_num);
 
     printf("acceleration finish\n");
 

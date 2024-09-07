@@ -394,7 +394,7 @@
 
 	// implement Block RAM(s)
 	// reg  [8-1:0] byte_ram [0:`AXI_DATA_WIDTH/8-1][0 : 33554430];
-	reg  [8-1:0] byte_ram [0:`AXI_DATA_WIDTH/8-1][0 : 1023];
+	reg  [8-1:0] byte_ram [0:`AXI_DATA_WIDTH/8-1][0 : 10230];
 	generate 
 	  	for(i=0; i<= USER_NUM_MEM-1; i=i+1) begin:BRAM_GEN
 			wire mem_rden;

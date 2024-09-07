@@ -239,16 +239,16 @@ u64 u64_sleep_cycles;
 u64 u64_sleep_us_passed = 0;
 
 const file_info file_a_arr[] = {
-    {"result_enc_m.bin", 2048/8},
-    {"result_enc_encrypted.bin", 4096/8},
-    {"homomorphic_addition_a.bin", 4096/8},
-    {"scalar_postive_multiplication_m.bin", 4096/8}
+    {"enc_m.bin", 2048/8},
+    {"enc_result.bin", 4096/8},
+    {"hom_add_a.bin", 4096/8},
+    {"scalar_mul_m.bin", 4096/8}
 };
 const file_info file_b_arr[] = {
-    {"result_enc_r.bin", 2048/8},
+    {"enc_r.bin", 2048/8},
     {"none", 0},
-    {"homomorphic_addition_b.bin", 4096/8},
-    {"scalar_postive_multiplication_const.bin", 2048/8}
+    {"hom_add_b.bin", 4096/8},
+    {"scalar_mul_const.bin", 2048/8}
 };
 const file_info file_result_arr[] = {
     {"result_enc.bin", 4096/8},
@@ -258,20 +258,23 @@ const file_info file_result_arr[] = {
 };
 int main(){
     init_platform();
+    Xil_DCacheDisable();
+    Xil_ICacheDisable();
 
-    int ACC_COUNTS = 100000;
+    int ACC_COUNTS = 100;
     file_info file_a;
     file_info file_b;
     file_info file_result;
     ACC_PAILLIER_TYPE CURRENT_TYPE;
 
-    for(int i = 0; i < 4; i++){
+    // for(int i = 0; i < 4; i++){
+    int i = PAILLIER_HOM_ADD;
         file_a = file_a_arr[i];
         file_b = file_b_arr[i];
         file_result = file_result_arr[i];
         CURRENT_TYPE = i;
         paillier_enc_test(DDR_BASEARDDR, &file_a, &file_b, &file_result, ACC_COUNTS, CURRENT_TYPE);
-    }
+    // }
 
     while(1);
 
@@ -285,11 +288,11 @@ void paillier_enc_test(UINTPTR BASE_ARDDR, file_info *file_a, file_info *file_b,
     wr_enc_to_ddr();
 #else
     read_sd_to_ddr(DDR_BASEARDDR, file_a, file_b, ACC_COUNTS);
-    Xil_DCacheFlushRange(DDR_BASEARDDR, (file_a->single_read_bytes + file_b->single_read_bytes) * ACC_COUNTS);
+    // Xil_DCacheFlushRange(DDR_BASEARDDR, (file_a->single_read_bytes + file_b->single_read_bytes) * ACC_COUNTS);
 #endif
 
     start_single_acceleration(ACC_COUNTS, ACC_TYPE);
-    Xil_DCacheFlushRange(DDR_BASEARDDR, (file_result->single_read_bytes) * ACC_COUNTS);
+    // Xil_ICacheInvalidateRange(DDR_BASEARDDR, (file_result->single_read_bytes) * ACC_COUNTS);
 
     read_ddr_to_sd(DDR_BASEARDDR, file_result, ACC_COUNTS);
 }

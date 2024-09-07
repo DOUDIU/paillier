@@ -504,10 +504,13 @@ module axi_full_core#(
 
 
 	// Next address after ARREADY indicates previous address acceptance  
-	always @(posedge M_AXI_ACLK) begin                                                              
-	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin                                                          
-	        axi_araddr <= 'b0;                                           
-		end                                                            
+	always @(posedge M_AXI_ACLK) begin
+	    if (M_AXI_ARESETN == 0 || init_txn_pulse == 1'b1) begin
+	        axi_araddr <= 'b0;
+		end
+		else if ((state_now == IDLE_WAIT) & paillier_start) begin
+			axi_araddr	<=	'b0;
+		end
 	    else if (AXI_FULL_IF.AXI_ARREADY && axi_arvalid) begin
 			case(state_now)
 				STA_ENCRYPTION_RD: begin
@@ -526,11 +529,11 @@ module axi_full_core#(
 					axi_araddr	<=	axi_araddr + burst_size_bytes;
 				end
 			endcase
-		end                                                            
-	    else begin                                                            
-	      	axi_araddr <= axi_araddr;       
-		end                               
-	end                                                                
+		end
+	    else begin
+	      	axi_araddr <= axi_araddr;
+		end
+	end
 
 
 	//--------------------------------

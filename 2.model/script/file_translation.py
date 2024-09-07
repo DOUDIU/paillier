@@ -91,35 +91,23 @@ def output_translate():
         os.makedirs(dstdir_path)
     translate_bin_to_txt(srcdir_path, dstdir_path)
 
-def resylt_compare():
-    file1 = "enc_result.txt"
-    file2 = "./output_data_txt/result_enc.txt"
-    if compare_lines(file1, file2, COMPARE_COUNTS):
-        print("两个文件相同。")
-    else:
-        print("两个文件不相同。")
-
-    file1 = "enc_m.txt"
-    file2 = "./output_data_txt/result_dec.txt"
-    if compare_lines(file1, file2, COMPARE_COUNTS):
-        print("两个文件相同。")
-    else:
-        print("两个文件不相同。")
-
-    file1 = "hom_add_result.txt"
-    file2 = "./output_data_txt/result_hom_add.txt"
-    if compare_lines(file1, file2, COMPARE_COUNTS):
-        print("两个文件相同。")
-    else:
-        print("两个文件不相同。")
-
-    file1 = "scalar_mul_result.txt"
-    file2 = "./output_data_txt/result_scalar_mul.txt"
-    if compare_lines(file1, file2, COMPARE_COUNTS):
-        print("两个文件相同。")
-    else:
-        print("两个文件不相同。")
+def result_compare():
+    srcdir_path = ".\output_data_txt"
+    dstdir_path = ".\original_data_result"
+    current_directory = os.getcwd()
+    subfolder_file_path = os.path.join(current_directory, srcdir_path)
+    txt_files = [f for f in os.listdir(subfolder_file_path) if f.endswith('.txt')]
+    for file in txt_files:
+        print(file)
+        aim_file = os.path.join(dstdir_path, file)
+        file = os.path.join(srcdir_path, file)
+        if compare_lines(aim_file, file, COMPARE_COUNTS):
+            print("两个文件相同。")
+        else:
+            print("两个文件不相同。")
 
 if __name__=='__main__':
     os.chdir('./data')
-    input_translate()
+    # input_translate()
+    # output_translate()
+    result_compare()

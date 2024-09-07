@@ -240,7 +240,7 @@ u64 u64_sleep_us_passed = 0;
 
 const file_info file_a_arr[] = {
     {"enc_m.bin", 2048/8},
-    {"enc_result.bin", 4096/8},
+    {"dec_c.bin", 4096/8},
     {"hom_add_a.bin", 4096/8},
     {"scalar_mul_m.bin", 4096/8}
 };
@@ -251,17 +251,17 @@ const file_info file_b_arr[] = {
     {"scalar_mul_const.bin", 2048/8}
 };
 const file_info file_result_arr[] = {
-    {"result_enc.bin", 4096/8},
-    {"result_dec.bin", 2048/8},
-    {"result_hom_add.bin", 4096/8},
-    {"result_scalar_mul.bin", 4096/8}
+    {"enc_result.bin", 4096/8},
+    {"dec_result.bin", 2048/8},
+    {"hom_add_result.bin", 4096/8},
+    {"scalar_mul_result.bin", 4096/8}
 };
 int main(){
     init_platform();
     Xil_DCacheDisable();
     Xil_ICacheDisable();
 
-    int ACC_COUNTS = 100;
+    int ACC_COUNTS = 100000;
     file_info file_a;
     file_info file_b;
     file_info file_result;

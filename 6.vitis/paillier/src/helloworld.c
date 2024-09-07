@@ -238,16 +238,40 @@ XTime xtTimeBegin, xtTimeEnd;
 u64 u64_sleep_cycles;
 u64 u64_sleep_us_passed = 0;
 
+const file_info file_a_arr[] = {
+    {"result_enc_m.bin", 2048/8},
+    {"result_enc_encrypted.bin", 4096/8},
+    {"homomorphic_addition_a.bin", 4096/8},
+    {"scalar_postive_multiplication_m.bin", 4096/8}
+};
+const file_info file_b_arr[] = {
+    {"result_enc_r.bin", 2048/8},
+    {"none", 0},
+    {"homomorphic_addition_b.bin", 4096/8},
+    {"scalar_postive_multiplication_const.bin", 2048/8}
+};
+const file_info file_result_arr[] = {
+    {"result_enc.bin", 4096/8},
+    {"result_dec.bin", 2048/8},
+    {"result_hom_add.bin", 4096/8},
+    {"result_scalar_mul.bin", 4096/8}
+};
 int main(){
     init_platform();
 
     int ACC_COUNTS = 100000;
+    file_info file_a;
+    file_info file_b;
+    file_info file_result;
+    ACC_PAILLIER_TYPE CURRENT_TYPE;
 
-    file_info file_a = {"result_enc_m.bin", 2048/8};
-    file_info file_b = {"result_enc_r.bin", 2048/8};
-    file_info file_result = {"result_enc.bin", 4096/8};
-    ACC_PAILLIER_TYPE CURRENT_TYPE = PAILLIER_ENC;
-    paillier_enc_test(DDR_BASEARDDR, &file_a, &file_b, &file_result, ACC_COUNTS, CURRENT_TYPE);
+    for(int i = 0; i < 4; i++){
+        file_a = file_a_arr[i];
+        file_b = file_b_arr[i];
+        file_result = file_result_arr[i];
+        CURRENT_TYPE = i;
+        paillier_enc_test(DDR_BASEARDDR, &file_a, &file_b, &file_result, ACC_COUNTS, CURRENT_TYPE);
+    }
 
     while(1);
 

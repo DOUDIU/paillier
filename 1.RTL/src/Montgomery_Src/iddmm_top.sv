@@ -25,11 +25,14 @@ module iddmm_top#(
 wire    [K-1        :0]     a               ;
 wire    [K-1        :0]     x               ;
 wire    [K-1        :0]     y               ;
+wire    [K-1        :0]     y_adv           ;
 wire    [K-1        :0]     p               ;
 wire    [ADDR_W-1   :0]     i_cnt           ;
 wire    [ADDR_W     :0]     j_cnt           ;
 wire    [ADDR_W     :0]     rd_data_addr_i  ;
 wire    [ADDR_W     :0]     rd_data_addr_j  ;
+
+wire    [K-1        :0]     result_q_update ;
 
 wire                        cal_done        ;
 wire                        cal_sign        ;
@@ -70,6 +73,29 @@ iddmm_ctrl iddmm_ctrl(
     ,   .fifo_rd_data_sub   (fifo_rd_data_sub   )
 );
 
+iddmm_q_update iddmm_q_update(
+        .clk                (clk                )
+    ,   .rst_n              (rst_n              )
+
+    ,   .wr_ena             (wr_ena             )
+    ,   .wr_addr            (wr_addr            )
+    ,   .wr_x               (wr_x               )
+    ,   .wr_y               (wr_y               )
+    
+    ,   .i_cnt              (i_cnt              )
+    ,   .j_cnt              (j_cnt              )
+    ,   .x                  (x                  )
+    ,   .y_adv              (y_adv              )
+    
+    ,   .wr_a_en            (wr_a_en            )
+    ,   .wr_a_addr          (wr_a_addr          )
+    ,   .wr_a_data          (wr_a_data          )
+    
+    ,   .p1                 (wr_m1              )
+
+    ,   .result_q_update    (result_q_update    )
+);
+
 //fully pipelined calculation architecture
 iddmm_cal iddmm_cal(
         .clk                (clk                )
@@ -95,6 +121,8 @@ iddmm_cal iddmm_cal(
 
     ,   .cal_done           (cal_done           )
     ,   .cal_sign           (cal_sign           )
+
+    ,   .result_q_update    (result_q_update    )
 );
 
 dual_port_ram#(
@@ -122,6 +150,19 @@ dual_port_ram#(
     ,   .rd_en              (1                  )
     ,   .rd_addr            (rd_data_addr_i     )
     ,   .rd_data            (y                  )
+);
+dual_port_ram#(
+        .filename           ("none"             )
+    ,   .RAM_WIDTH          (K                  )
+    ,   .ADDR_LINE          ($clog2(N)          )
+)dual_port_ram_y_adv(
+        .clk                (clk                )
+    ,   .wr_en              (wr_ena[1]          )
+    ,   .wr_addr            (wr_addr            )
+    ,   .wr_data            (wr_y               )
+    ,   .rd_en              (1                  )
+    ,   .rd_addr            (rd_data_addr_i+1   )
+    ,   .rd_data            (y_adv              )
 );
 dual_port_ram#(
         .filename           ("none"             )

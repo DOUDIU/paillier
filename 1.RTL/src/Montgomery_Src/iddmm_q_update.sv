@@ -26,16 +26,18 @@ module iddmm_q_update#(
 
     ,   output  [K-1        :0]     result_q_update
 );
+reg     [K-1        :0]     s                   ;
 reg     [K-1        :0]     mux_mul_x           ;
-reg     [K-1        :0]     mux_mul_x_reg       ;
 reg     [K-1        :0]     mux_mul_y           ;
+reg     [K-1        :0]     mux_mul_x_reg       ;
+reg     [K-1        :0]     mux_mul_y_reg       ;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        mux_mul_x_reg   <=  0;
+        s   <=  0;
     end
     else begin
-        mux_mul_x_reg   <=  wr_a_data + result_q_update;
+        s   <=  wr_a_data + result_q_update;
     end
 end
 
@@ -48,21 +50,30 @@ always@(posedge clk or negedge rst_n) begin
         mux_mul_x <= wr_x;
         mux_mul_y <= wr_y;
     end
+    else if(wr_ena & (wr_addr == 9)) begin
+        mux_mul_x <= result_q_update;
+        mux_mul_y <= p1;
+    end
     else if(j_cnt == 0) begin
         mux_mul_x <= x;
         mux_mul_y <= y_adv;
     end
-    else if((wr_a_en & (wr_a_addr == 0+1) || (wr_ena & (wr_addr == 8))))begin
-        mux_mul_x <= mux_mul_x_reg;
+    else if(wr_a_en & (wr_a_addr == 1))begin
+        mux_mul_x <= s;
         mux_mul_y <= p1;
     end
+end
+
+always@(posedge clk) begin
+    mux_mul_x_reg <= mux_mul_x;
+    mux_mul_y_reg <= mux_mul_y;
 end
 
 iddmm_mul_128_to_128 iddmm_mul_q_update(
         .clk            (clk                )
     ,   .rst_n          (rst_n              )
-    ,   .x              (mux_mul_x          )
-    ,   .y              (mux_mul_y          )
+    ,   .x              (mux_mul_x_reg      )
+    ,   .y              (mux_mul_y_reg      )
     ,   .result         (result_q_update    )
 );
 

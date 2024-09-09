@@ -80,21 +80,46 @@ always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         for(i = 0; i < 9; i = i + 1)begin
             p_stage_0_d[i]      <= 0;
-            a_stage_0_d[i]      <= 0;
             i_cnt_stage_0_d[i]  <= 0;
             j_cnt_stage_0_d[i]  <= 0;
         end
     end
     else begin
         p_stage_0_d[0] <= p;
-        a_stage_0_d[0] <= (j_cnt == N) ? (a + carry) : a;
         i_cnt_stage_0_d[0] <= i_cnt;
         j_cnt_stage_0_d[0] <= j_cnt;
         for(i = 1; i < 9; i = i + 1)begin
             p_stage_0_d[i] <= p_stage_0_d[i - 1];
-            a_stage_0_d[i] <= a_stage_0_d[i - 1];
             i_cnt_stage_0_d[i] <= i_cnt_stage_0_d[i - 1];
             j_cnt_stage_0_d[i] <= j_cnt_stage_0_d[i - 1];
+        end
+    end
+end
+
+reg     [K-1        :0]     sum_a_carry                 ;
+reg     [K-1        :0]     a_d1                        ;
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        sum_a_carry <= 0;
+        a_d1 <= 0;
+    end
+    else begin
+        sum_a_carry <= a + carry;
+        a_d1 <= a;
+    end
+end
+
+always@(posedge clk or negedge rst_n) begin
+    if(!rst_n) begin
+        for(i = 0; i < 9; i = i + 1)begin
+            a_stage_0_d[i]      <= 0;
+        end
+    end
+    else begin
+        a_stage_0_d[1] <= (j_cnt_stage_0_d[0] == N) ? sum_a_carry : a_d1;
+        for(i = 2; i < 9; i = i + 1)begin
+            a_stage_0_d[i] <= a_stage_0_d[i - 1];
         end
     end
 end

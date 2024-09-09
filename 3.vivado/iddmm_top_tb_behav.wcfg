@@ -11,18 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="756.792 ns"></ZoomStartTime>
-      <ZoomEndTime time="866.043 ns"></ZoomEndTime>
-      <Cursor1Time time="775.000 ns"></Cursor1Time>
+      <ZoomStartTime time="0.045000 us"></ZoomStartTime>
+      <ZoomEndTime time="109.895001 us"></ZoomEndTime>
+      <Cursor1Time time="11.075000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="253"></NameColumnWidth>
+      <NameColumnWidth column_width="241"></NameColumnWidth>
       <ValueColumnWidth column_width="90"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="60" />
-   <wave_markers>
-      <marker time="845000" label="" />
-   </wave_markers>
+   <WVObjectSize size="64" />
    <wvobject type="divider" fp_name="divider57">
       <obj_property name="label">POTRS</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -413,6 +410,22 @@
    <wvobject type="divider" fp_name="divider374">
       <obj_property name="label">fifo</obj_property>
       <obj_property name="DisplayName">label</obj_property>
+   </wvobject>
+   <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/fifo_wr_en_a" type="logic">
+      <obj_property name="ElementShortName">fifo_wr_en_a</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_en_a</obj_property>
+   </wvobject>
+   <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/fifo_wr_en_sub" type="logic">
+      <obj_property name="ElementShortName">fifo_wr_en_sub</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_en_sub</obj_property>
+   </wvobject>
+   <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/fifo_wr_en_a_reg" type="logic">
+      <obj_property name="ElementShortName">fifo_wr_en_a_reg</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_en_a_reg</obj_property>
+   </wvobject>
+   <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_cal/fifo_wr_en_sub_reg" type="logic">
+      <obj_property name="ElementShortName">fifo_wr_en_sub_reg</obj_property>
+      <obj_property name="ObjectShortName">fifo_wr_en_sub_reg</obj_property>
    </wvobject>
    <wvobject fp_name="/iddmm_top_tb/iddmm_top_inst/iddmm_ctrl/fifo_rd_en" type="logic">
       <obj_property name="ElementShortName">fifo_rd_en</obj_property>

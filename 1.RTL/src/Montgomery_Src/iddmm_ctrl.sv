@@ -94,7 +94,7 @@ end
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
-        i_cnt_reg       <=  N-1;
+        i_cnt_reg       <=  0;
         j_cnt_reg       <=  N;
         i_cnt           <=  0;
         j_cnt           <=  0;
@@ -110,7 +110,7 @@ always@(posedge clk or negedge rst_n) begin
         task_req_d1     <=  task_req;
         case(state_now)
             STA_IDLE: begin
-                i_cnt_reg       <=  N-1;
+                i_cnt_reg       <=  0;
                 j_cnt_reg       <=  N;
                 output_cnt      <=  0;
                 fifo_rd_en      <=  0;

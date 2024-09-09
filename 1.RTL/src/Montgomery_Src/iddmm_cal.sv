@@ -98,15 +98,18 @@ end
 
 reg     [K-1        :0]     sum_a_carry                 ;
 reg     [K-1        :0]     a_d1                        ;
+reg     [K-1        :0]     a_d2                        ;
 
 always@(posedge clk or negedge rst_n) begin
     if(!rst_n) begin
         sum_a_carry <= 0;
         a_d1 <= 0;
+        a_d2 <= 0;
     end
     else begin
-        sum_a_carry <= a + carry;
+        sum_a_carry <= a_d1 + carry;
         a_d1 <= a;
+        a_d2 <= a_d1;
     end
 end
 
@@ -117,8 +120,8 @@ always@(posedge clk or negedge rst_n) begin
         end
     end
     else begin
-        a_stage_0_d[1] <= (j_cnt_stage_0_d[0] == N) ? sum_a_carry : a_d1;
-        for(i = 2; i < 9; i = i + 1)begin
+        a_stage_0_d[2] <= (j_cnt_stage_0_d[1] == N) ? sum_a_carry : a_d2;
+        for(i = 3; i < 9; i = i + 1)begin
             a_stage_0_d[i] <= a_stage_0_d[i - 1];
         end
     end

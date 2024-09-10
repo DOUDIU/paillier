@@ -11,15 +11,15 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.000000000 ms"></ZoomStartTime>
-      <ZoomEndTime time="105.900000001 ms"></ZoomEndTime>
-      <Cursor1Time time="21.073146000 ms"></Cursor1Time>
+      <ZoomStartTime time="4,422.000 ns"></ZoomStartTime>
+      <ZoomEndTime time="6,546.001 ns"></ZoomEndTime>
+      <Cursor1Time time="4,990.000 ns"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="309"></NameColumnWidth>
-      <ValueColumnWidth column_width="101"></ValueColumnWidth>
+      <ValueColumnWidth column_width="95"></ValueColumnWidth>
    </column_width_setting>
-   <WVObjectSize size="33" />
+   <WVObjectSize size="36" />
    <wvobject type="divider" fp_name="divider58">
       <obj_property name="label">me_top</obj_property>
       <obj_property name="DisplayName">label</obj_property>
@@ -68,6 +68,15 @@
       <obj_property name="ElementShortName">loop_counter[12:0]</obj_property>
       <obj_property name="ObjectShortName">loop_counter[12:0]</obj_property>
       <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y_rd_addr" type="array">
+      <obj_property name="ElementShortName">ram_y_rd_addr[3:0]</obj_property>
+      <obj_property name="ObjectShortName">ram_y_rd_addr[3:0]</obj_property>
+      <obj_property name="Radix">UNSIGNEDDECRADIX</obj_property>
+   </wvobject>
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/yy" type="array">
+      <obj_property name="ElementShortName">yy[127:0]</obj_property>
+      <obj_property name="ObjectShortName">yy[127:0]</obj_property>
    </wvobject>
    <wvobject type="divider" fp_name="divider58">
       <obj_property name="label">iddmm_top</obj_property>
@@ -125,32 +134,36 @@
       <obj_property name="label">ram</obj_property>
       <obj_property name="DisplayName">label</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/clk" type="logic">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>
       <obj_property name="ObjectShortName">clk</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/rd_en" type="logic">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/rd_en" type="logic">
       <obj_property name="ElementShortName">rd_en</obj_property>
       <obj_property name="ObjectShortName">rd_en</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/wr_en" type="logic">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/wr_en" type="logic">
       <obj_property name="ElementShortName">wr_en</obj_property>
       <obj_property name="ObjectShortName">wr_en</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/wr_addr" type="array">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/wr_addr" type="array">
       <obj_property name="ElementShortName">wr_addr[4:0]</obj_property>
       <obj_property name="ObjectShortName">wr_addr[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/rd_addr" type="array">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/rd_addr" type="array">
       <obj_property name="ElementShortName">rd_addr[4:0]</obj_property>
       <obj_property name="ObjectShortName">rd_addr[4:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/wr_data" type="array">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/wr_data" type="array">
       <obj_property name="ElementShortName">wr_data[127:0]</obj_property>
       <obj_property name="ObjectShortName">wr_data[127:0]</obj_property>
    </wvobject>
-   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_result/rd_data" type="array">
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/rd_data" type="array">
       <obj_property name="ElementShortName">rd_data[127:0]</obj_property>
       <obj_property name="ObjectShortName">rd_data[127:0]</obj_property>
+   </wvobject>
+   <wvobject fp_name="/me_iddmm_top_tb/u_me_iddmm_top/ram_y/memory" type="array">
+      <obj_property name="ElementShortName">memory[31:0][127:0]</obj_property>
+      <obj_property name="ObjectShortName">memory[31:0][127:0]</obj_property>
    </wvobject>
 </wave_config>

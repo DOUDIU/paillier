@@ -21,7 +21,9 @@
 //---------------------------------------------------------------------
 
 //function:result = x^^y mod m
-
+//To reduce the loop times, we can use the following method:
+//reg     [ADDR_W-1-1     : 0]    ram_y_rd_addr           ;
+//The bitwidth of ram_y_rd_addr is ADDR_W-1-1, which is less than ADDR_W-1, so the loop times is reduced by half.
 module me_iddmm_top#(
         parameter K                     = 128
     ,   parameter N                     = 32
@@ -115,7 +117,7 @@ wire    [K-1            : 0]    ram_result_backup_rd_data     ;
 reg                             ram_y_wr_en             ;
 reg     [ADDR_W-1       : 0]    ram_y_wr_addr           ;
 reg     [K-1            : 0]    ram_y_wr_data           ;
-reg     [ADDR_W-1       : 0]    ram_y_rd_addr           ;
+reg     [ADDR_W-1-1     : 0]    ram_y_rd_addr           ;
 wire    [K-1            : 0]    ram_y_rd_data           ;
 
 assign ram_result2_wr_en    =   (state_now == STA_STORE_RESULT2) & task_grant;
@@ -241,7 +243,7 @@ always@(*) begin
             end
             STA_LOOP_STORE_THEN_JUMP: begin
                 if(task_end) begin
-                    state_next  =   yy[K-1] ? STA_LOOP_STEP2 : ((loop_counter == (K*N-1)) ? STA_FINAL_MM : STA_LOOP_STEP1);
+                    state_next  =   yy[K-1] ? STA_LOOP_STEP2 : ((loop_counter == ((K*N/2)-1)) ? STA_FINAL_MM : STA_LOOP_STEP1);
                 end
                 else begin
                     state_next  =   STA_LOOP_STORE_THEN_JUMP;
@@ -249,7 +251,7 @@ always@(*) begin
             end
             STA_LOOP_STORE2: begin
                 if(task_end) begin
-                    state_next  =   (loop_counter == (K*N)) ? STA_FINAL_MM : STA_LOOP_STEP1;
+                    state_next  =   (loop_counter == (K*N/2)) ? STA_FINAL_MM : STA_LOOP_STEP1;
                 end
                 else begin
                     state_next  =   STA_LOOP_STORE2;
@@ -378,7 +380,7 @@ always@(posedge clk or negedge rst_n)begin
             STA_LOOP_STORE_THEN_JUMP:begin
                 if(task_end)begin
                     task_req          <=  0;
-                    loop_counter      <=  loop_counter == (K*N) ? loop_counter : loop_counter + 1;
+                    loop_counter      <=  loop_counter == (K*N/2) ? loop_counter : loop_counter + 1;
 
                     if(loop_counter[($clog2(K)-1):0] == K-1)begin//loop_counter+1 % 128 == 0
                         ram_y_rd_addr       <=  ram_y_rd_addr - 1;//inverted read address
@@ -585,7 +587,7 @@ dual_port_ram#(
     ,   .wr_addr        (ram_y_wr_addr      )
     ,   .wr_data        (ram_y_wr_data      )
     ,   .rd_en          (1                  )
-    ,   .rd_addr        (ram_y_rd_addr      )
+    ,   .rd_addr        ({1'b0,ram_y_rd_addr})
     ,   .rd_data        (ram_y_rd_data      )
 );
 

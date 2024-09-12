@@ -176,26 +176,20 @@ endgenerate
 
 generate 
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
-        fifo #(
-                .FDW            (K                          )// data width
-            ,   .FAW            ($clog2(N<<1)               )// The FIFO depth is twice the value of the output data.
-            ,   .ULN            ()// lookahead-full
-        )fifo_inst(
-                .clk            (M_AXI_ACLK                 )
-            ,   .rst            (!M_AXI_ARESETN             )// asynchronous reset (active high)
-            ,   .clr            ()// synchronous reset (active high)
-            ,   .wr_rdy         ()
-            ,   .wr_vld         (enc_out_valid          [o] )
-            ,   .wr_din         (enc_out_data           [o] )
-            ,   .rd_rdy         (rd_rdy                 [o] )
-            ,   .rd_vld         ()
-            ,   .rd_dout        (rd_dout                [o] )
-            ,   .full           ()
-            ,   .empty          ()
-            ,   .fullN          ()// lookahead full: there are only N rooms in the FIFO
-            ,   .emptyN         ()// lookahead empty: there are only N items in the FIFO
-            ,   .rd_cnt         (rd_cnt                 [o] )// num of elements in the FIFO to be read
-            ,   .wr_cnt         ()// num of rooms in the FIFO to be written
+        fifo_ram # (
+                .DATA_WIDTH (K                      )
+            ,   .DATA_DEPTH (N<<1                   )
+        )fifo_inst (
+                .clk        (M_AXI_ACLK             )
+
+            ,   .wr_en      (enc_out_valid  [o]     )
+            ,   .wr_data    (enc_out_data   [o]     )
+            ,   .wr_full    ()
+
+            ,   .rd_en      (rd_rdy         [o]     )
+            ,   .rd_data    (rd_dout        [o]     )
+            ,   .rd_empty   ()
+            ,   .rd_cnt     (rd_cnt         [o]     )
         );
     end
 endgenerate

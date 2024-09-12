@@ -34,9 +34,9 @@ localparam  STA_ENCRYPTION          = 2'b00,
             STA_HOMOMORPHIC_ADD     = 2'b10,
             STA_SCALAR_MUL          = 2'b11;
 
-parameter   PAILLIER_MODE           = STA_HOMOMORPHIC_ADD;
-parameter   BLOCK_COUNT             = 10;
-parameter   TEST_TIMES              = 10;
+parameter   PAILLIER_MODE           = STA_SCALAR_MUL;
+parameter   BLOCK_COUNT             = 1;
+parameter   TEST_TIMES              = 1;
 
 initial begin
     @(posedge S_LITE_AXI_ARESETN);

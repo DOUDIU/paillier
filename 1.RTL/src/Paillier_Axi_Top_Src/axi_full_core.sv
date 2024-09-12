@@ -910,7 +910,7 @@ module axi_full_core#(
 				end
 
 				STA_ENCRYPTION: begin
-					if(state_next == STA_ENCRYPTION_RD) begin
+					if((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 						if(single_task_read_cnt == 0) begin
 							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_ENCRYPTION[1:0];
 							task_req[block_lowest_zero_bit]					<=	1;
@@ -918,7 +918,8 @@ module axi_full_core#(
 						end
 					end
 
-					if(state_next == STA_ENCRYPTION_WR) begin
+					// if(state_next == STA_ENCRYPTION_WR) begin
+					if(!all_fifo_is_empty) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
 
@@ -973,13 +974,14 @@ module axi_full_core#(
 				end
 
 				STA_DECRYPTION: begin
-					if(state_next == STA_DECRYPTION_RD) begin
+					if((!loop_end) & (!all_block_is_busy)) begin
 						task_cmd[block_lowest_zero_bit]					<=	PAILLIER_DECRYPTION;
 						task_req[block_lowest_zero_bit]					<=	1;
 						block_is_busy_next 								<=	block_lowest_zero_bit;
 					end
 
-					if(state_next == STA_DECRYPTION_WR) begin
+					// if(state_next == STA_DECRYPTION_WR) begin
+					if(!all_fifo_is_empty) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
 
@@ -1029,7 +1031,7 @@ module axi_full_core#(
 				end
 
 				STA_HOMOMORPHIC_ADD: begin
-					if(state_next == STA_HOMOMORPHIC_ADD_RD) begin
+					if((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 						if(single_task_read_cnt == 0) begin
 							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_HOMOMORPHIC_ADD;
 							task_req[block_lowest_zero_bit]					<=	1;
@@ -1037,7 +1039,8 @@ module axi_full_core#(
 						end
 					end
 
-					if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
+					// if(state_next == STA_HOMOMORPHIC_ADD_WR) begin
+					if(!all_fifo_is_empty) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
 
@@ -1092,7 +1095,7 @@ module axi_full_core#(
 				end
 
 				STA_SCALAR_MUL: begin
-					if(state_next == STA_SCALAR_MUL_RD) begin
+					if((!loop_end) & ((!all_block_is_busy) | (single_task_read_cnt != 0))) begin
 						if(single_task_read_cnt == 0) begin
 							task_cmd[block_lowest_zero_bit]					<=	PAILLIER_SCALAR_MUL;
 							task_req[block_lowest_zero_bit]					<=	1;
@@ -1100,7 +1103,8 @@ module axi_full_core#(
 						end
 					end
 
-					if(state_next == STA_SCALAR_MUL_WR) begin
+					// if(state_next == STA_SCALAR_MUL_WR) begin
+					if(!all_fifo_is_empty) begin
 						fifo_is_busy_next	<=	fifo_lowest_zero_bit;//keep the current read fifo
 					end
 

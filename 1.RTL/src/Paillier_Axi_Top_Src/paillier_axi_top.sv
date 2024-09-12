@@ -178,7 +178,7 @@ generate
     for(o = 0; o < BLOCK_COUNT; o = o + 1) begin
         fifo_ram # (
                 .DATA_WIDTH (K                      )
-            ,   .DATA_DEPTH (N<<1                   )
+            ,   .DATA_DEPTH (N                      )
         )fifo_inst (
                 .clk        (M_AXI_ACLK             )
 

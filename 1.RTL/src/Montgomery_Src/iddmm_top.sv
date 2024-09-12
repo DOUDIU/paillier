@@ -125,7 +125,7 @@ iddmm_cal iddmm_cal(
     ,   .result_q_update    (result_q_update    )
 );
 
-dual_port_ram#(
+dual_port_dram#(
         .filename           ("none"             )
     ,   .RAM_WIDTH          (K                  )
     ,   .ADDR_LINE          ($clog2(N)+1        )
@@ -138,7 +138,7 @@ dual_port_ram#(
     ,   .rd_addr            (rd_data_addr_j     )
     ,   .rd_data            (x                  )
 );
-dual_port_ram#(
+dual_port_dram#(
         .filename           ("none"             )
     ,   .RAM_WIDTH          (K                  )
     ,   .ADDR_LINE          ($clog2(N)          )

@@ -9,7 +9,7 @@ wire    [127:0]     result_low128   ;
 
 wire    [255:0]     result_confirm;
 
-always #5 clk = ~clk;
+always #2 clk = ~clk;
 initial #30 rst_n = 1;
 assign result_confirm = (mul_x * mul_y);//&((1<<64) - 1);
 integer i;

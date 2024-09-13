@@ -340,8 +340,8 @@ assign PAILLIER_DEC_RESULT_CONFIRM = 4096'h1000000019091;
 
 initial begin
     // paillier_encrypt_task;
-    paillier_decrypt_task;
-    // paillier_homomorphic_addition_task;
+     paillier_decrypt_task;
+//     paillier_homomorphic_addition_task;
     // paillier_postive_scalar_multiplication_task;
 end
 

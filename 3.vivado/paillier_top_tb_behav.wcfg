@@ -11,19 +11,18 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="58,661,349.800 ns"></ZoomStartTime>
-      <ZoomEndTime time="58,661,769.801 ns"></ZoomEndTime>
-      <Cursor1Time time="58,661,425.000 ns"></Cursor1Time>
+      <ZoomStartTime time="0.000000000 ms"></ZoomStartTime>
+      <ZoomEndTime time="21.060000001 ms"></ZoomEndTime>
+      <Cursor1Time time="0.000142000 ms"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
       <NameColumnWidth column_width="269"></NameColumnWidth>
-      <ValueColumnWidth column_width="159"></ValueColumnWidth>
+      <ValueColumnWidth column_width="153"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="31" />
    <wave_markers>
-      <marker time="59665325000" label="" />
-      <marker time="46675000" label="" />
-      <marker time="59665025000" label="" />
+      <marker time="13885226000" label="" />
+      <marker time="142000" label="" />
    </wave_markers>
    <wvobject fp_name="/paillier_top_tb/paillier_top_inst/clk" type="logic">
       <obj_property name="ElementShortName">clk</obj_property>

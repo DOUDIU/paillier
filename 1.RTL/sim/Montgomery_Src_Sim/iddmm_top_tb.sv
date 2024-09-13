@@ -36,7 +36,7 @@ reg [K*N-1:0]   iddmm_result = 0;
 
 reg clk = 0;
 reg rst_n = 0;
-always #5 clk = ~clk;
+always #2 clk = ~clk;
 initial #30 rst_n = 1;
 
 

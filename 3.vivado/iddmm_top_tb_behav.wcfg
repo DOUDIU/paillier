@@ -11,15 +11,19 @@
       </db_ref>
    </db_ref_list>
    <zoom_setting>
-      <ZoomStartTime time="0.045000 us"></ZoomStartTime>
-      <ZoomEndTime time="109.895001 us"></ZoomEndTime>
-      <Cursor1Time time="11.075000 us"></Cursor1Time>
+      <ZoomStartTime time="5.404000 us"></ZoomStartTime>
+      <ZoomEndTime time="27.434001 us"></ZoomEndTime>
+      <Cursor1Time time="18.234000 us"></Cursor1Time>
    </zoom_setting>
    <column_width_setting>
-      <NameColumnWidth column_width="241"></NameColumnWidth>
+      <NameColumnWidth column_width="235"></NameColumnWidth>
       <ValueColumnWidth column_width="90"></ValueColumnWidth>
    </column_width_setting>
    <WVObjectSize size="64" />
+   <wave_markers>
+      <marker time="13818000" label="" />
+      <marker time="18234000" label="" />
+   </wave_markers>
    <wvobject type="divider" fp_name="divider57">
       <obj_property name="label">POTRS</obj_property>
       <obj_property name="DisplayName">label</obj_property>

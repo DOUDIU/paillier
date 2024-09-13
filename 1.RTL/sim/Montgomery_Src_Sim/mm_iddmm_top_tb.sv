@@ -6,7 +6,7 @@ localparam N       = 32  ;
 reg     clk = 0;
 reg     rst_n = 0;
 
-always #5 clk = ~clk;
+always #2 clk = ~clk;
 initial #100 rst_n = 1;
 
 reg [K*N-1:0]   big_x                 [0:2] = {
